@@ -1,0 +1,32 @@
+{
+  "resources": [
+    {
+      "id": "wood",
+      "name": "木材",
+      "icon": "🌲",
+      "basePrice": 1,
+      "rarity": "common"
+    },
+    {
+      "id": "food",
+      "name": "食物",
+      "icon": "🍞",
+      "basePrice": 2,
+      "rarity": "common"
+    },
+    {
+      "id": "stone",
+      "name": "石头",
+      "icon": "🪨",
+      "basePrice": 3,
+      "rarity": "common"
+    },
+    {
+      "id": "treasure",
+      "name": "宝藏",
+      "icon": "💰",
+      "basePrice": 20,
+      "rarity": "rare"
+    }
+  ]
+}
