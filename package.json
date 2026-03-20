@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "simulate:resolution": "tsc -p tsconfig.scripts.json && node .tmp-scripts/scripts/simulate-resolution.js"
   },
   "devDependencies": {
     "@types/node": "^22.13.14",

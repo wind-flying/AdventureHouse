@@ -1,0 +1,134 @@
+{
+  "questTemplates": [
+    {
+      "id": "forest-trace",
+      "title": "林间异动追踪",
+      "description": "沿林边踪迹调查异常动静，可能带回木材，也可能带回别的发现。",
+      "lineId": "forest-anomaly",
+      "lineTitle": "林边异动",
+      "entryPoint": true,
+      "contentStageTag": "test",
+      "disabledForCurrentTesting": true,
+      "unlockConditions": [
+        {
+          "type": "default"
+        }
+      ],
+      "followUpStageTag": "test-chain",
+      "testOutcomeMode": "success",
+      "resultIntelId": "forest-trace-lead",
+      "designerNote": "测试模板：用于验证调查类任务与成功后续链，不代表正式世界观内容。",
+      "resultMode": "lead",
+      "resolutionVisibility": "hide",
+      "publicationMode": "uniqueWhileOpen",
+      "publishMode": "intel",
+      "focusText": "林边异动与延伸足迹",
+      "risk": "risky",
+      "nature": "investigation",
+      "minReward": 4,
+      "maxReward": 7,
+      "difficulty": "medium",
+      "timingMode": "fixed",
+      "fixedDurationDays": 3
+    },
+    {
+      "id": "forest-deeper-trace",
+      "title": "沿足迹继续深入",
+      "description": "根据先前带回的线索，继续沿林间足迹深入调查。",
+      "lineId": "forest-anomaly",
+      "lineTitle": "林边异动",
+      "contentStageTag": "test",
+      "disabledForCurrentTesting": true,
+      "followUpStageTag": "test-chain",
+      "resultIntelId": "forest-deeper-trace-lead",
+      "unlockConditions": [
+        {
+          "type": "intelReceived",
+          "intelId": "forest-trace-lead"
+        }
+      ],
+      "designerNote": "测试模板：仅在获得林间异动追踪带回的线索后出现，用于验证线索触发后续任务。",
+      "resultMode": "lead",
+      "resolutionVisibility": "hide",
+      "publicationMode": "uniqueWhileOpen",
+      "publishMode": "intel",
+      "focusText": "更深处的林间足迹",
+      "risk": "risky",
+      "nature": "investigation",
+      "minReward": 6,
+      "maxReward": 10,
+      "difficulty": "medium",
+      "timingMode": "fixed",
+      "fixedDurationDays": 3
+    },
+    {
+      "id": "forest-echo-source-check",
+      "title": "确认回音源头",
+      "description": "根据林间深处的新线索，前往偏北陡坡附近确认异常回音究竟从何而来。",
+      "lineId": "forest-anomaly",
+      "lineTitle": "林边异动",
+      "contentStageTag": "test",
+      "disabledForCurrentTesting": true,
+      "followUpStageTag": "test-chain",
+      "resultIntelId": "forest-echo-source-lead",
+      "unlockConditions": [
+        {
+          "type": "intelReceived",
+          "intelId": "forest-deeper-trace-lead"
+        }
+      ],
+      "designerNote": "测试模板：用于把森林线索链再往前推进一层，验证线索板和后续任务不会只停在一跳。",
+      "resultMode": "lead",
+      "resolutionVisibility": "hide",
+      "publicationMode": "uniqueWhileOpen",
+      "publishMode": "intel",
+      "focusText": "偏北陡坡的异常回音",
+      "risk": "dangerous",
+      "nature": "investigation",
+      "minReward": 8,
+      "maxReward": 12,
+      "difficulty": "hard",
+      "timingMode": "fixed",
+      "fixedDurationDays": 4
+    },
+    {
+      "id": "forest-anomaly-summary",
+      "title": "整理林边异动",
+      "description": "只要已经掌握任意一条林边线索，就能先把零散见闻整理成一份更明确的异动记录。",
+      "lineId": "forest-anomaly",
+      "lineTitle": "林边异动",
+      "contentStageTag": "test",
+      "disabledForCurrentTesting": true,
+      "followUpStageTag": "test-chain",
+      "resultIntelId": "forest-anomaly-summary-discovery",
+      "unlockMode": "any",
+      "unlockConditions": [
+        {
+          "type": "intelReceived",
+          "intelId": "forest-trace-lead"
+        },
+        {
+          "type": "intelReceived",
+          "intelId": "forest-deeper-trace-lead"
+        },
+        {
+          "type": "intelReceived",
+          "intelId": "forest-echo-source-lead"
+        }
+      ],
+      "designerNote": "测试模板：用于验证任意一条森林线索都能开启同一条后续任务，对照 unlockMode:any 的实际效果。",
+      "resultMode": "discovery",
+      "resolutionVisibility": "hide",
+      "publicationMode": "uniqueWhileOpen",
+      "publishMode": "intel",
+      "focusText": "林边异动的整理记录",
+      "risk": "safe",
+      "nature": "investigation",
+      "minReward": 3,
+      "maxReward": 6,
+      "difficulty": "easy",
+      "timingMode": "fixed",
+      "fixedDurationDays": 2
+    }
+  ]
+}

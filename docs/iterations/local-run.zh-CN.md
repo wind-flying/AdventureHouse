@@ -91,6 +91,49 @@ conda run -p /home/windflying/Code/AdventureHouse/.conda-node npm run dev -- --h
 conda run -p /home/windflying/Code/AdventureHouse/.conda-node npm run build
 ```
 
+结算模拟脚本：
+
+```bash
+conda run -p /home/windflying/Code/AdventureHouse/.conda-node npm run simulate:resolution
+```
+
+指定样本次数与线索数量：
+
+```bash
+conda run -p /home/windflying/Code/AdventureHouse/.conda-node npm run simulate:resolution -- --runs 5000 --intel-count 2
+```
+
+只看某条测试任务：
+
+```bash
+conda run -p /home/windflying/Code/AdventureHouse/.conda-node npm run simulate:resolution -- --quest resolution-danger-match
+```
+
+## 关于 Windows / WSL 混跑
+
+如果项目目录位于 WSL 路径下，不要直接在 Windows 的 `cmd.exe` 或 Windows 侧 `npm` 环境里运行这些命令。
+
+常见错误表现是：
+
+- `UNC 路径不受支持`
+- `tsc 不是内部或外部命令`
+
+原因是：
+
+- Windows 的 `cmd.exe` 无法把 `\\\\wsl.localhost\\...` 这样的 UNC 路径当成当前工作目录
+- 回退到 Windows 目录后，就找不到 WSL / conda 环境里的 `node`、`npm`、`tsc`
+
+当前项目最稳的做法是：
+
+- 在 WSL bash 里执行命令
+- 并统一走 `conda run -p /home/windflying/Code/AdventureHouse/.conda-node ...`
+
+如果必须从 Windows 侧发起，也应该显式包一层 `wsl`，例如：
+
+```powershell
+wsl bash -lc "cd /home/windflying/Code/AdventureHouse && conda run -p /home/windflying/Code/AdventureHouse/.conda-node npm run simulate:resolution -- --runs 5000 --intel-count 2"
+```
+
 ## 后续可优化项
 
 现在这套方式已经能跑，但还不是最终形态。后面可以考虑：

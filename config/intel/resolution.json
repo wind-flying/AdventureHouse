@@ -1,0 +1,19 @@
+{
+  "intelDefinitions": [
+    {"id": "resolution-standard-advantage-lead", "kind": "lead", "lineId": "resolution-standard", "lineTitle": "结算测试", "title": "resolution / standard / advantage / lead", "content": "标准任务在调查优势模板手里带回了符合基准的结果。"},
+    {"id": "resolution-standard-challenge-lead", "kind": "lead", "lineId": "resolution-standard", "lineTitle": "结算测试", "title": "resolution / standard / challenge / lead", "content": "标准任务在调查劣势模板手里落进了挑战区间。"},
+    {"id": "resolution-physique-strong-lead", "kind": "lead", "lineId": "resolution-physique", "lineTitle": "结算测试", "title": "resolution / physique / strong / lead", "content": "体魄主场任务在体魄强模板手里完成度更高。"},
+    {"id": "resolution-physique-weak-lead", "kind": "lead", "lineId": "resolution-physique", "lineTitle": "结算测试", "title": "resolution / physique / weak / lead", "content": "体魄主场任务在体魄弱模板手里明显更吃力。"},
+    {"id": "resolution-survival-strong-lead", "kind": "lead", "lineId": "resolution-survival", "lineTitle": "结算测试", "title": "resolution / survival / strong / lead", "content": "生存主场任务在生存强模板手里更稳。"},
+    {"id": "resolution-survival-weak-lead", "kind": "lead", "lineId": "resolution-survival", "lineTitle": "结算测试", "title": "resolution / survival / weak / lead", "content": "生存主场任务在生存弱模板手里压力明显更大。"},
+    {"id": "resolution-exploration-strong-lead", "kind": "lead", "lineId": "resolution-exploration", "lineTitle": "结算测试", "title": "resolution / exploration / strong / lead", "content": "探索主场任务在探索强模板手里更容易推进。"},
+    {"id": "resolution-exploration-weak-lead", "kind": "lead", "lineId": "resolution-exploration", "lineTitle": "结算测试", "title": "resolution / exploration / weak / lead", "content": "探索主场任务在探索弱模板手里更容易卡住。"},
+    {"id": "resolution-observation-strong-lead", "kind": "lead", "lineId": "resolution-observation", "lineTitle": "结算测试", "title": "resolution / observation / strong / lead", "content": "观察主场任务在观察强模板手里回报更完整。"},
+    {"id": "resolution-observation-weak-lead", "kind": "lead", "lineId": "resolution-observation", "lineTitle": "结算测试", "title": "resolution / observation / weak / lead", "content": "观察主场任务在观察弱模板手里更难形成清楚判断。"},
+    {"id": "resolution-combat-strong-discovery", "kind": "discovery", "lineId": "resolution-combat", "lineTitle": "结算测试", "title": "resolution / combat / strong / discovery", "content": "战斗主场任务在战斗强模板手里更能压住异常局面。"},
+    {"id": "resolution-combat-weak-discovery", "kind": "discovery", "lineId": "resolution-combat", "lineTitle": "结算测试", "title": "resolution / combat / weak / discovery", "content": "战斗主场任务在战斗弱模板手里明显更危险。"},
+    {"id": "resolution-all-max-lead", "kind": "lead", "lineId": "resolution-all-max", "lineTitle": "结算测试", "title": "resolution / all-max / lead", "content": "全满模板在标准任务上给出理论上界结果。"},
+    {"id": "resolution-intel-seed-lead", "kind": "lead", "lineId": "resolution-intel", "lineTitle": "结算测试", "title": "resolution / intel / seed / lead", "content": "先行任务确认了一条可用于后续修正的同线线索。"},
+    {"id": "resolution-intel-followup-lead", "kind": "lead", "lineId": "resolution-intel", "lineTitle": "结算测试", "title": "resolution / intel / followup / lead", "content": "已有同线线索后，后续任务的判断质量被明显抬高。"}
+  ]
+}

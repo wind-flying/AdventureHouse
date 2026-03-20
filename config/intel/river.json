@@ -1,0 +1,28 @@
+{
+  "intelDefinitions": [
+    {
+      "id": "river-watch-failure",
+      "kind": "lead",
+      "lineId": "river-night-route",
+      "lineTitle": "河谷夜路",
+      "title": "河谷复查传闻",
+      "content": "河谷营地一带没有形成稳定成果，只留下了需要谨慎复查的零散传闻。"
+    },
+    {
+      "id": "river-cautious-recheck-lead",
+      "kind": "lead",
+      "lineId": "river-night-route",
+      "lineTitle": "河谷夜路",
+      "title": "河谷夜间动静",
+      "content": "再次复查后，能确认河谷的异常并非偶发，夜间仍有不明动静持续出现。"
+    },
+    {
+      "id": "river-night-route-lead",
+      "kind": "lead",
+      "lineId": "river-night-route",
+      "lineTitle": "河谷夜路",
+      "title": "浅滩夜行痕迹",
+      "content": "河谷浅滩边留下了连续夜行的痕迹，看起来像是有人固定在夜里沿水边来回往返。"
+    }
+  ]
+}

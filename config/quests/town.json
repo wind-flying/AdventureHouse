@@ -1,0 +1,77 @@
+{
+  "questTemplates": [
+    {
+      "id": "town-rumor-gathering",
+      "title": "镇口零碎传闻收集",
+      "description": "挂出一份轻量调查委托，收集镇口近期反复出现的零碎见闻。",
+      "lineId": "town-rumors",
+      "lineTitle": "镇口传闻",
+      "entryPoint": true,
+      "contentStageTag": "test",
+      "disabledForCurrentTesting": true,
+      "unlockConditions": [
+        {
+          "type": "default"
+        }
+      ],
+      "followUpStageTag": "test-chain",
+      "designerNote": "测试模板：用于验证可重复刷线索任务与随机线索池的组合，不代表正式世界观内容。",
+      "resultMode": "lead",
+      "publicationMode": "uniqueWhileOpen",
+      "publishMode": "intel",
+      "resultIntelPoolIds": [
+        "town-rumor-cart-lead",
+        "town-rumor-lantern-lead",
+        "town-rumor-bundle-lead"
+      ],
+      "resolutionVisibility": "stay",
+      "focusText": "镇口零碎传闻",
+      "risk": "safe",
+      "nature": "investigation",
+      "minReward": 2,
+      "maxReward": 4,
+      "difficulty": "easy",
+      "timingMode": "fixed",
+      "fixedDurationDays": 2
+    },
+    {
+      "id": "town-rumor-thread",
+      "title": "整理镇口传闻",
+      "description": "只要先掌握到任意一条镇口见闻，就可以进一步把零散传闻整理成更明确的调查方向。",
+      "lineId": "town-rumors",
+      "lineTitle": "镇口传闻",
+      "contentStageTag": "test",
+      "disabledForCurrentTesting": true,
+      "followUpStageTag": "test-chain",
+      "designerNote": "测试模板：用于验证可重复刷线索任务产出的任意线索都能触发同一条后续任务。",
+      "resultMode": "discovery",
+      "publicationMode": "uniqueWhileOpen",
+      "publishMode": "intel",
+      "resultIntelId": "town-rumor-thread-discovery",
+      "unlockMode": "any",
+      "unlockConditions": [
+        {
+          "type": "intelReceived",
+          "intelId": "town-rumor-cart-lead"
+        },
+        {
+          "type": "intelReceived",
+          "intelId": "town-rumor-lantern-lead"
+        },
+        {
+          "type": "intelReceived",
+          "intelId": "town-rumor-bundle-lead"
+        }
+      ],
+      "resolutionVisibility": "hide",
+      "focusText": "镇口传闻的整理方向",
+      "risk": "safe",
+      "nature": "investigation",
+      "minReward": 3,
+      "maxReward": 6,
+      "difficulty": "easy",
+      "timingMode": "fixed",
+      "fixedDurationDays": 2
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "questTemplates": [
+    {
+      "id": "treasure-hunt",
+      "title": "旧矿道遗物搜寻",
+      "description": "沿着旧矿道的异常传闻搜寻遗物，收益高，但风险也明显更高。",
+      "lineId": "mine-relics",
+      "lineTitle": "旧矿道异闻",
+      "entryPoint": true,
+      "contentStageTag": "test",
+      "disabledForCurrentTesting": true,
+      "unlockConditions": [
+        {
+          "type": "default"
+        }
+      ],
+      "designerNote": "测试模板：用于验证异常/高风险任务，也作为暂时没有后续链的独立异常线示例。",
+      "resultMode": "discovery",
+      "publicationMode": "uniqueWhileOpen",
+      "publishMode": "intel",
+      "resolutionVisibility": "stay",
+      "focusText": "旧矿道遗物与异常痕迹",
+      "risk": "dangerous",
+      "nature": "mysterious",
+      "minReward": 15,
+      "maxReward": 30,
+      "difficulty": "hard",
+      "timingMode": "fixed",
+      "fixedDurationDays": 4
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "intelDefinitions": [
+    {
+      "id": "forest-trace-lead",
+      "kind": "lead",
+      "lineId": "forest-anomaly",
+      "lineTitle": "林边异动",
+      "title": "林间足迹延伸",
+      "content": "林边留下的痕迹并没有在入口处消失，而是继续向更深处延伸。"
+    },
+    {
+      "id": "forest-deeper-trace-lead",
+      "kind": "lead",
+      "lineId": "forest-anomaly",
+      "lineTitle": "林边异动",
+      "title": "林间深处回音",
+      "content": "沿足迹继续深入后，能确认林间深处不止有行迹，还伴随着规律性的异常回声。"
+    },
+    {
+      "id": "forest-echo-source-lead",
+      "kind": "lead",
+      "lineId": "forest-anomaly",
+      "lineTitle": "林边异动",
+      "title": "回音源头偏北",
+      "content": "新的回音并不是原地徘徊，而是持续从林间偏北的一段陡坡附近传来。"
+    },
+    {
+      "id": "forest-anomaly-summary-discovery",
+      "kind": "discovery",
+      "lineId": "forest-anomaly",
+      "lineTitle": "林边异动",
+      "title": "林边异动整理记录",
+      "content": "无论最先掌握的是足迹、回音还是北坡方向，都足以确认林边异动已不再只是零散传闻。"
+    }
+  ]
+}

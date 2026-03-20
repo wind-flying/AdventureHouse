@@ -1,0 +1,96 @@
+{
+  "questTemplates": [
+    {
+      "id": "river-watch",
+      "title": "河谷营地观察",
+      "description": "在河谷附近蹲守并带回可用补给或线索，属于偏调查型的日常委托。",
+      "lineId": "river-night-route",
+      "lineTitle": "河谷夜路",
+      "entryPoint": true,
+      "contentStageTag": "test",
+      "disabledForCurrentTesting": true,
+      "unlockConditions": [
+        {
+          "type": "default"
+        }
+      ],
+      "followUpStageTag": "test-chain",
+      "testOutcomeMode": "failure",
+      "failureIntelId": "river-watch-failure",
+      "failureIntelSummary": "河谷营地观察没有形成稳定成果，只留下了需要谨慎复查的传闻。",
+      "designerNote": "测试模板：用于验证调查任务失败后续链，不代表正式世界观内容。",
+      "resultMode": "lead",
+      "resolutionVisibility": "hide",
+      "publicationMode": "uniqueWhileOpen",
+      "publishMode": "intel",
+      "focusText": "河谷营地动静与夜间往返",
+      "risk": "risky",
+      "nature": "investigation",
+      "minReward": 5,
+      "maxReward": 9,
+      "difficulty": "medium",
+      "timingMode": "fixed",
+      "fixedDurationDays": 3
+    },
+    {
+      "id": "river-cautious-recheck",
+      "title": "河谷谨慎复查",
+      "description": "上一次观察没有形成稳定结果，这次需要更谨慎地重新确认动静。",
+      "lineId": "river-night-route",
+      "lineTitle": "河谷夜路",
+      "contentStageTag": "test",
+      "disabledForCurrentTesting": true,
+      "followUpStageTag": "test-chain",
+      "resultIntelId": "river-cautious-recheck-lead",
+      "unlockConditions": [
+        {
+          "type": "intelReceived",
+          "intelId": "river-watch-failure"
+        }
+      ],
+      "designerNote": "测试模板：仅在收到河谷营地观察失败带回的线索后出现，用于验证线索触发后续任务。",
+      "resultMode": "lead",
+      "resolutionVisibility": "hide",
+      "publicationMode": "uniqueWhileOpen",
+      "publishMode": "intel",
+      "focusText": "河谷浅滩的可疑夜路",
+      "risk": "safe",
+      "nature": "investigation",
+      "minReward": 4,
+      "maxReward": 8,
+      "difficulty": "easy",
+      "timingMode": "fixed",
+      "fixedDurationDays": 2
+    },
+    {
+      "id": "river-night-route-check",
+      "title": "追查浅滩夜路",
+      "description": "根据复查带回的动静记录，继续沿河谷浅滩确认夜间往返的路线。",
+      "lineId": "river-night-route",
+      "lineTitle": "河谷夜路",
+      "contentStageTag": "test",
+      "disabledForCurrentTesting": true,
+      "followUpStageTag": "test-chain",
+      "resultIntelId": "river-night-route-lead",
+      "unlockConditions": [
+        {
+          "type": "intelReceived",
+          "intelId": "river-cautious-recheck-lead"
+        }
+      ],
+      "designerNote": "测试模板：用于把河谷线索链再往前推进一层，验证失败线索也能逐步导出稳定后续。",
+      "resultMode": "lead",
+      "resolutionVisibility": "hide",
+      "publicationMode": "uniqueWhileOpen",
+      "publishMode": "intel",
+      "focusText": "浅滩夜路的来回路线",
+      "risk": "risky",
+      "nature": "investigation",
+      "minReward": 6,
+      "maxReward": 11,
+      "difficulty": "medium",
+      "timingMode": "fixed",
+      "fixedDurationDays": 3
+    }
+  ]
+}
