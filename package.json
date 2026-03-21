@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "simulate:resolution": "tsc -p tsconfig.scripts.json && node .tmp-scripts/scripts/simulate-resolution.js"
+    "simulate:resolution": "tsc -p tsconfig.scripts.json && node .tmp-scripts/scripts/simulate-resolution.js",
+    "simulate:acceptance": "tsc -p tsconfig.scripts.json && node .tmp-scripts/scripts/simulate-acceptance.js"
   },
   "devDependencies": {
     "@types/node": "^22.13.14",

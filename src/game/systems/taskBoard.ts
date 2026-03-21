@@ -3,6 +3,7 @@ import {getQuestResourceLabel, getQuestTemplateFocusLabel} from "../ui/resourceD
 import {createStoryEntry} from "../text/storyText";
 import {getQuestActionFeedback, getQuestPublishModeText} from "../text/uiText";
 import {getUnlockedTemplatesFromQuestResolution} from "./questUnlocks";
+import {chooseAdventurerForQuest as chooseAdventurerForQuestByAcceptance} from "./taskAcceptance";
 import {getQuestResolutionInput, getQuestSuccessBreakdown} from "./taskResolution";
 import type {
   ActionResult,
@@ -16,96 +17,6 @@ import type {
   StoryEntry,
   QuestTemplate
 } from "../types";
-
-// 临时调参区：控制“谁更可能接下任务”。
-// 这些值越大，代表对应因素对接任务分数的影响越强。
-// 例如 easyTaskBonus 越大，勤勉高的人在简单任务上的得分优势就越明显。
-// 当前仍是第一版验证参数，后续可能改成更稳定的任务特征模型或配置数据。
-const QUEST_ACCEPTANCE_TUNING = {
-  // 基础随机扰动，值越大，说明人物之间即使条件接近也更容易出现随机波动。
-  randomVariance: 0.25,
-  // 候选窗口，值越大，说明“不是最优但接近最优”的人也更容易进入候选池。
-  candidateWindow: 0.75,
-  // 逐利人格的报酬基准线。值越高，同样一份报酬看起来就越“不够高”。
-  rewardPerDayBaseline: 6,
-  // 偏好资源的固定加成。值越高，资源偏好对接任务结果的影响越强。
-  preferredResourceBonus: 1.6,
-  diligence: {
-    // 简单任务对高勤勉人格的吸引力。值越高，勤勉的人越偏向稳定补货类任务。
-    easyTaskBonus: 0.8,
-    // 非简单任务时，勤勉仍然会提供一点正向影响，但远弱于简单任务。
-    nonEasyTaskBonus: 0.25
-  },
-  courage: {
-    // 高危任务对勇敢人格的强加成。值越高，勇敢的人越会主动接真正危险的活。
-    dangerousTaskBonus: 0.95,
-    // 有风险但未必致命的任务，对勇敢人格仍有正向吸引，但弱于高危任务。
-    riskyTaskBonus: 0.45,
-    // 安全任务对勇敢人格只造成轻微“无聊感”，不应与害怕高危的排斥对称。
-    safeTaskPenalty: -0.08
-  },
-  // 社交人格的轻微通用加成。值越高，外向的人整体更容易接任务。
-  sociabilityFactor: 0.08,
-  caution: {
-    // 安全任务对审慎人格的加成。值越高，审慎的人越偏向稳妥选择。
-    safeTaskBonus: 0.55,
-    // 中风险任务对审慎人格的惩罚。绝对值越大，审慎的人越不愿意尝试有风险的活。
-    riskyTaskPenalty: -0.42,
-    // 高危任务对审慎人格的强惩罚。这里应明显重于“勇敢者觉得低危无聊”的轻惩罚。
-    dangerousTaskPenalty: -0.88
-  },
-  curiosity: {
-    // 异常任务对求知人格的强吸引。值越高，爱追新鲜事的人越会主动靠近未知内容。
-    mysteriousTaskBonus: 0.95,
-    // 调查任务对求知人格的中等吸引，弱于真正异常的内容。
-    investigationTaskBonus: 0.62,
-    // 日常 / 补货任务对求知人格只保留极轻的影响。
-    // 这里故意不做对称惩罚：爱新鲜的人做普通活只是略感无趣，不应等价于厌恶异常的人被迫接怪任务。
-    ordinaryTaskWeight: 0.08
-  },
-  discipline: {
-    // 短任务对纪律人格的加成。值越高，守规矩的人越偏向可控、短周期合作。
-    shortTaskBonus: 0.35,
-    // 长任务时纪律人格仍提供一点稳定性，但影响弱于短任务。
-    longTaskBonus: 0.12
-  },
-  resilience: {
-    // 长任务对韧性人格的加成。值越高，能扛的人越不怕拖得久的任务。
-    longTaskBonus: 0.2,
-    // 短任务时韧性的影响较小，只保留一个轻度加成。
-    shortTaskBonus: 0.05
-  }
-} as const;
-
-// 临时意愿阈值：控制“这个人连考虑都不考虑”的下限。
-// 先由人格决定基础高低，再叠加最近是否刚做完任务这类状态修正。
-// 值越高，代表人物越挑活；值越低，代表人物越容易进入候选池。
-const QUEST_INTEREST_TUNING = {
-  // 所有人的基础接活门槛。任务吸引分必须先超过它，人物才会参与竞争。
-  baseThreshold: 0.45,
-  personality: {
-    // 勤勉高的人更容易愿意接活，所以会拉低门槛。
-    diligenceThresholdFactor: -0.12,
-    // 逐利高的人更容易被任务打动，也会稍微降低门槛。
-    greedThresholdFactor: -0.08,
-    // 审慎高的人更容易观望，因此会抬高门槛。
-    cautionThresholdFactor: 0.1,
-    // 社交高的人更容易参与公共事务，门槛略低。
-    sociabilityThresholdFactor: -0.05,
-    // 纪律高的人更容易保持合作节奏，门槛略低。
-    disciplineThresholdFactor: -0.06
-  },
-  recency: {
-    // 刚结束任务的当天，人物更倾向先歇一下，因此门槛明显抬高。
-    sameDayFinishedPenalty: 0.55,
-    // 前一天刚结束任务，仍有余波，门槛继续偏高。
-    oneDayAgoFinishedPenalty: 0.3,
-    // 连续闲置几天后，人物会更愿意出门，因此门槛降低。
-    idleBonusAfterDays: 2,
-    // 闲置加成。值越高，挂板久了的人越容易开始考虑任务。
-    idleThresholdReduction: 0.18
-  }
-} as const;
 
 // 临时规则参数：控制任务推荐报酬和耗时估算。
 // 后续如果要做更细的经济系统或任务特征模型，这一组应优先被替换或配置化。
@@ -382,119 +293,7 @@ function createDailyDisplayId(gameData: GameData, day: number): string {
 function chooseAdventurerForQuest(gameData: GameData, quest: Quest): Adventurer | null {
   const template = getQuestTemplateById(gameData, quest.templateId);
   const availableAdventurers = gameData.adventurers.filter((adventurer) => adventurer.currentQuestId === null);
-  if (availableAdventurers.length === 0) {
-    return null;
-  }
-
-  // 测试专用：如果模板指定了接取者，则优先直接让该冒险者接下任务，避免反复等待自然竞争。
-  if (template?.forcedAdventurerId) {
-    return availableAdventurers.find((adventurer) => adventurer.id === template.forcedAdventurerId) ?? null;
-  }
-
-  const weightedAdventurers = availableAdventurers
-    .map((adventurer) => {
-      const score = getQuestAcceptanceScore(gameData, adventurer, quest);
-      const threshold = getQuestInterestThreshold(gameData, adventurer);
-      return {
-        adventurer,
-        score,
-        threshold
-      };
-    })
-    .filter(({score, threshold}) => score >= threshold);
-
-  if (weightedAdventurers.length === 0) {
-    return null;
-  }
-
-  weightedAdventurers.sort((left, right) => right.score - left.score);
-  const bestScore = weightedAdventurers[0]?.score ?? 0;
-  const candidates = weightedAdventurers.filter(
-    ({score}) => score >= bestScore - QUEST_ACCEPTANCE_TUNING.candidateWindow
-  );
-  const index = Math.floor(Math.random() * candidates.length);
-  return candidates[index]?.adventurer ?? null;
-}
-
-function getQuestAcceptanceScore(gameData: GameData, adventurer: Adventurer, quest: Quest): number {
-  const rewardPerDay = quest.reward / Math.max(1, quest.totalDays);
-  let score = Math.random() * QUEST_ACCEPTANCE_TUNING.randomVariance;
-
-  if (quest.resource && adventurer.preferences.includes(quest.resource)) {
-    score += QUEST_ACCEPTANCE_TUNING.preferredResourceBonus;
-  }
-
-  score += adventurer.personality.diligence * (
-    quest.nature === "routine" || quest.nature === "supply"
-      ? QUEST_ACCEPTANCE_TUNING.diligence.easyTaskBonus
-      : QUEST_ACCEPTANCE_TUNING.diligence.nonEasyTaskBonus
-  );
-  score += adventurer.personality.courage * (
-    quest.risk === "dangerous"
-      ? QUEST_ACCEPTANCE_TUNING.courage.dangerousTaskBonus
-      : quest.risk === "risky" || quest.totalDays >= 4
-        ? QUEST_ACCEPTANCE_TUNING.courage.riskyTaskBonus
-        : QUEST_ACCEPTANCE_TUNING.courage.safeTaskPenalty
-  );
-  score += adventurer.personality.greed * normalizeValue(
-    rewardPerDay / QUEST_ACCEPTANCE_TUNING.rewardPerDayBaseline
-  );
-  score += adventurer.personality.sociability * QUEST_ACCEPTANCE_TUNING.sociabilityFactor;
-  score += adventurer.personality.caution * (
-    quest.risk === "safe"
-      ? QUEST_ACCEPTANCE_TUNING.caution.safeTaskBonus
-      : quest.risk === "dangerous"
-        ? QUEST_ACCEPTANCE_TUNING.caution.dangerousTaskPenalty
-        : QUEST_ACCEPTANCE_TUNING.caution.riskyTaskPenalty
-  );
-  score += adventurer.personality.curiosity * (
-    quest.nature === "mysterious"
-      ? QUEST_ACCEPTANCE_TUNING.curiosity.mysteriousTaskBonus
-      : quest.nature === "investigation"
-        ? QUEST_ACCEPTANCE_TUNING.curiosity.investigationTaskBonus
-        : QUEST_ACCEPTANCE_TUNING.curiosity.ordinaryTaskWeight
-  );
-  score += adventurer.personality.discipline * (
-    quest.totalDays <= 3
-      ? QUEST_ACCEPTANCE_TUNING.discipline.shortTaskBonus
-      : QUEST_ACCEPTANCE_TUNING.discipline.longTaskBonus
-  );
-  score += adventurer.personality.resilience * (
-    quest.totalDays >= 3
-      ? QUEST_ACCEPTANCE_TUNING.resilience.longTaskBonus
-      : QUEST_ACCEPTANCE_TUNING.resilience.shortTaskBonus
-  );
-
-  return score;
-}
-
-function getQuestInterestThreshold(gameData: GameData, adventurer: Adventurer): number {
-  let threshold = QUEST_INTEREST_TUNING.baseThreshold;
-
-  threshold += adventurer.personality.diligence * QUEST_INTEREST_TUNING.personality.diligenceThresholdFactor;
-  threshold += adventurer.personality.greed * QUEST_INTEREST_TUNING.personality.greedThresholdFactor;
-  threshold += adventurer.personality.caution * QUEST_INTEREST_TUNING.personality.cautionThresholdFactor;
-  threshold += adventurer.personality.sociability * QUEST_INTEREST_TUNING.personality.sociabilityThresholdFactor;
-  threshold += adventurer.personality.discipline * QUEST_INTEREST_TUNING.personality.disciplineThresholdFactor;
-
-  const latestQuestDay = getLatestQuestActivityDay(gameData, adventurer);
-  if (latestQuestDay !== null) {
-    const daysSinceLastQuest = gameData.day - latestQuestDay;
-
-    if (daysSinceLastQuest <= 0) {
-      threshold += QUEST_INTEREST_TUNING.recency.sameDayFinishedPenalty;
-    } else if (daysSinceLastQuest === 1) {
-      threshold += QUEST_INTEREST_TUNING.recency.oneDayAgoFinishedPenalty;
-    } else if (daysSinceLastQuest >= QUEST_INTEREST_TUNING.recency.idleBonusAfterDays) {
-      threshold -= QUEST_INTEREST_TUNING.recency.idleThresholdReduction;
-    }
-  }
-
-  return threshold;
-}
-
-function normalizeValue(value: number): number {
-  return Math.max(-1, Math.min(1, value - 1));
+  return chooseAdventurerForQuestByAcceptance(gameData, quest, template, availableAdventurers);
 }
 
 function getQuestAdventurer(gameData: GameData, quest: Quest): Adventurer | undefined {
@@ -503,27 +302,6 @@ function getQuestAdventurer(gameData: GameData, quest: Quest): Adventurer | unde
   }
 
   return gameData.adventurers.find((adventurer) => adventurer.id === quest.adventurerId);
-}
-
-function getLatestQuestActivityDay(gameData: GameData, adventurer: Adventurer): number | null {
-  let latestDay: number | null = null;
-
-  gameData.player.quests.forEach((quest) => {
-    if (quest.adventurerId !== adventurer.id) {
-      return;
-    }
-
-    if (quest.completedDay !== null && (latestDay === null || quest.completedDay > latestDay)) {
-      latestDay = quest.completedDay;
-      return;
-    }
-
-    if (quest.acceptedDay !== null && (latestDay === null || quest.acceptedDay > latestDay)) {
-      latestDay = quest.acceptedDay;
-    }
-  });
-
-  return latestDay;
 }
 
 function resolveQuestResult(gameData: GameData, quest: Quest): QuestResult {
