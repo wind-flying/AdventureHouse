@@ -109,14 +109,13 @@ function restoreGameDataFromSave(saveData: SaveDataV1): GameData {
 
   gameData.player.money = getSafeInteger(saveData.game.player.money, gameData.player.money);
   gameData.player.resultInsightLevel = sanitizeResultInsightLevel(saveData.game.player.resultInsightLevel);
-  gameData.player.stock = {
-    ...gameData.player.stock,
-    ...Object.fromEntries(
-      Object.entries(saveData.game.player.stock).filter(([resourceId, amount]) => {
-        return resourceId in gameData.player.stock && typeof amount === "number" && amount >= 0;
-      })
-    )
-  };
+  const restoredStock: Record<string, number> = {...gameData.player.stock};
+  Object.entries(saveData.game.player.stock).forEach(([resourceId, amount]) => {
+    if (resourceId in restoredStock && typeof amount === "number" && amount >= 0) {
+      restoredStock[resourceId] = amount;
+    }
+  });
+  gameData.player.stock = restoredStock;
   gameData.player.leads = saveData.game.player.leads.map((record) => ({...record}));
   gameData.player.discoveries = saveData.game.player.discoveries.map((record) => ({...record}));
   gameData.dayLog = sanitizeStoryEntries(saveData.game.dayLog);

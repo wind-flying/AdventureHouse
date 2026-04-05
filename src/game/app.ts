@@ -147,13 +147,16 @@ function handleExportSave(gameData: GameData, _elements: Elements): void {
 }
 
 async function handleImportSave(gameData: GameData, elements: Elements): Promise<void> {
-  const selectedFile = elements.importSaveInput?.files?.[0] ?? null;
+  const importInput = elements.importSaveInput;
+  const selectedFile = importInput?.files?.[0] ?? null;
   if (!selectedFile) {
     return;
   }
 
   const importedText = await selectedFile.text().catch(() => null);
-  elements.importSaveInput.value = "";
+  if (importInput) {
+    importInput.value = "";
+  }
   if (!importedText) {
     showNotification("导入失败：无法读取存档文件。", "error");
     return;
@@ -176,11 +179,5 @@ async function handleImportSave(gameData: GameData, elements: Elements): Promise
 }
 
 function replaceGameData(target: GameData, source: GameData): void {
-  const mutableTarget = target as Record<string, unknown>;
-  const targetKeys = Object.keys(mutableTarget);
-  targetKeys.forEach((key) => {
-    delete mutableTarget[key];
-  });
-
-  Object.assign(mutableTarget, source);
+  Object.assign(target, source);
 }
