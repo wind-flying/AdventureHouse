@@ -1,4 +1,4 @@
-import type {NotificationType, Quest, QuestPublishMode} from "../types";
+import type {NotificationType, Quest, QuestPublishMode} from "../core/types";
 
 export const uiText: Record<string, string> = {
   emptyOverviewQuests: "最近还没有任务。",

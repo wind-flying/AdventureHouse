@@ -1,4 +1,4 @@
-import type {StoryEntry, StoryEntryTone} from "../types";
+import type {StoryEntry, StoryEntryTone} from "../core/types";
 
 type StoryEventKey =
   | "opening_day"

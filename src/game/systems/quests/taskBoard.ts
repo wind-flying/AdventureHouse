@@ -13,7 +13,7 @@ import type {
   Quest,
   StoryEntry,
   QuestTemplate
-} from "../../types";
+} from "../../core/types";
 
 // 临时规则参数：控制任务推荐报酬和耗时估算。
 // 后续如果要做更细的经济系统或任务特征模型，这一组应优先被替换或配置化。

@@ -6,7 +6,7 @@ import {
   getWeightedCapabilityScore,
   normalizeQuestFeatures
 } from "./taskResolution.js";
-import type {Adventurer, GameData, Quest, QuestTemplate} from "../../types.js";
+import type {Adventurer, GameData, Quest, QuestTemplate} from "../../core/types.js";
 
 export const QUEST_ACCEPTANCE_TUNING = {
   randomVariance: {

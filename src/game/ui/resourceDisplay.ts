@@ -1,4 +1,4 @@
-import type {GameData, Quest, QuestTemplate, ResourceDefinition} from "../types";
+import type {GameData, Quest, QuestTemplate, ResourceDefinition} from "../core/types";
 
 interface ResourceDisplayFallback {
   name?: string;

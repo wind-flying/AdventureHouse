@@ -19,7 +19,7 @@ import {
   getQuestPublishModeText,
   getQuestProgressText
 } from "../text/uiText";
-import type {Adventurer, GameData, IntelRecord, IntelStatus, Quest} from "../types";
+import type {Adventurer, GameData, IntelRecord, IntelStatus, Quest} from "../core/types";
 import {getQuestDisplayIdByInternalId, getQuestPublishMode, getQuestTemplateById} from "../systems/quests/taskBoard";
 import {getFollowUpTemplatesForIntel} from "../systems/quests/questUnlocks";
 import {getQuestResultSummary, getQuestResultVisibleReasonTexts} from "../systems/quests/taskResult";

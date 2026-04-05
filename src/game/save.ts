@@ -10,7 +10,7 @@ import type {
   SavedAdventurer,
   SavedQuest,
   StoryEntry
-} from "./types";
+} from "./core/types";
 
 const SAVE_STORAGE_KEY = "adventure-house.save";
 const SAVE_FORMAT_VERSION = 2 as const;

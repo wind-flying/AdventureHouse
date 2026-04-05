@@ -5,7 +5,7 @@ import type {
   AdventurerOriginType,
   AdventurerTemplate,
   SavedAdventurer
-} from "../../types";
+} from "../../core/types";
 
 const DISCOVERY_POINTS_BY_LEVEL: Record<AdventurerDiscoveryLevel, number> = {
   heard: 0,

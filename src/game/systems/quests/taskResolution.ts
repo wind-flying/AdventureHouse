@@ -6,7 +6,7 @@ import type {
   QuestNature,
   QuestRisk,
   QuestTemplate
-} from "../../types.js";
+} from "../../core/types.js";
 
 export const QUEST_RESOLUTION_TUNING = {
   baseIntelSuccessChance: 0.7,

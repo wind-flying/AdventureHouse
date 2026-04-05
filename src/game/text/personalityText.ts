@@ -1,4 +1,4 @@
-import type {Adventurer, AdventurerPersonalityAxis} from "../types";
+import type {Adventurer, AdventurerPersonalityAxis} from "../core/types";
 
 // 临时展示参数：控制玩家多早能看出人格，以及一次显示多少个标签。
 // 阈值越低，人物会更容易被贴上明显标签；阈值越高，只有非常突出的性格才会显露出来。

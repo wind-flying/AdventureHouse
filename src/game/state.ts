@@ -1,7 +1,7 @@
 import {adventurerTemplates, intelDefinitions, questTemplates, resources} from "./config";
 import {createInitialAdventurerInstances} from "./systems/adventurers/adventurerInstances";
 import {createStoryEntry} from "./text/storyText";
-import type {Elements, GameData} from "./types";
+import type {Elements, GameData} from "./core/types";
 
 // 当前原型的基础常量。
 // 这些不是最终经济数值，但至少要集中放在这里，避免散落成来路不明的初始值。

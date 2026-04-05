@@ -4,7 +4,7 @@ import {
   type AdventurerDiscoveryLevel,
   type AdventurerPinnedFilter,
   type AdventurerStatusFilter
-} from "./types";
+} from "./core/types";
 import {type QuestNatureFilter, type QuestStatusFilter} from "./questDefinitions";
 import {createEmptyElements, createInitialGameData} from "./state";
 import {createQuest} from "./systems/quests/taskBoard";
@@ -17,7 +17,7 @@ import {
   showNotification,
   syncQuestForm
 } from "./ui/ui";
-import type {Elements, GameData, TabId} from "./types";
+import type {Elements, GameData, TabId} from "./core/types";
 
 export function initApp(): void {
   const container = document.getElementById("game-container");

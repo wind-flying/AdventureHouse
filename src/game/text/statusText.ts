@@ -8,7 +8,7 @@ import type {
   ResultInsightLevel,
   QuestRisk,
   QuestStatus
-} from "../types";
+} from "../core/types";
 
 export function getQuestStatusText(status: QuestStatus): string {
   switch (status) {

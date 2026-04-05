@@ -1,6 +1,6 @@
 import resourcesData from "../../config/resourcesType.json";
 import adventurersData from "../../config/adventurers.json";
-import type {AdventurerTemplate, IntelDefinition, QuestTemplate, ResourceDefinition} from "./types";
+import type {AdventurerTemplate, IntelDefinition, QuestTemplate, ResourceDefinition} from "./core/types";
 
 export const resources = resourcesData.resources as ResourceDefinition[];
 export const adventurerTemplates = adventurersData.adventurers as AdventurerTemplate[];

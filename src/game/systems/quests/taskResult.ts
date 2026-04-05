@@ -16,7 +16,7 @@ import type {
   SavedQuestResult,
   QuestTemplate,
   StoryEntry
-} from "../../types";
+} from "../../core/types";
 
 export function resolveQuestResult(gameData: GameData, quest: Quest): QuestResult {
   const template = getQuestTemplateById(gameData, quest.templateId);

@@ -37,7 +37,7 @@ import {
   getStockItemViewModel
 } from "./viewModels";
 import {getQuestTemplateFocusLabel, getResourceLabel} from "./resourceDisplay";
-import type {Elements, GameData, NotificationType, Quest, StoryEntry, TabId} from "../types";
+import type {Elements, GameData, NotificationType, Quest, StoryEntry, TabId} from "../core/types";
 
 // 临时 UI 常量：控制通知和摘要列表显示。
 // 这类值虽然不一定是玩法参数，但也应集中放在显眼位置，便于统一调整。

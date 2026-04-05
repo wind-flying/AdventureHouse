@@ -1,5 +1,5 @@
 import {getQuestNatureText, getQuestStatusText} from "./text/statusText";
-import type {QuestNature, QuestStatus} from "./types";
+import type {QuestNature, QuestStatus} from "./core/types";
 
 export type QuestStatusFilter = "all" | QuestStatus;
 export type QuestNatureFilter = "all" | QuestNature;

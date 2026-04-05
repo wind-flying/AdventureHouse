@@ -1,5 +1,5 @@
 import {getDiscoveryLevelText} from "./text/statusText";
-import type {AdventurerDiscoveryLevel, AdventurerPinnedFilter, AdventurerStatusFilter} from "./types";
+import type {AdventurerDiscoveryLevel, AdventurerPinnedFilter, AdventurerStatusFilter} from "./core/types";
 
 export interface AdventurerFilterOption<TValue extends string> {
   value: TValue;
