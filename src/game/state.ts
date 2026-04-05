@@ -1,6 +1,6 @@
 import {adventurerTemplates, intelDefinitions, questTemplates, resources} from "./config";
 import {createStoryEntry} from "./text/storyText";
-import type {AdventurerDiscoveryLevel, Elements, GameData} from "./types";
+import type {AdventurerDiscoveryLevel, AdventurerInstance, AdventurerTemplate, Elements, GameData} from "./types";
 
 // 当前原型的基础常量。
 // 这些不是最终经济数值，但至少要集中放在这里，避免散落成来路不明的初始值。
@@ -39,6 +39,23 @@ export function getDiscoveryLevelFromPoints(points: number): AdventurerDiscovery
   return "heard";
 }
 
+export function createAdventurerInstanceFromTemplate(
+  template: AdventurerTemplate,
+  day: number
+): AdventurerInstance {
+  return {
+    ...template,
+    templateId: template.id,
+    originType: "handcrafted",
+    knownLevel: template.knownByDefault ? template.discoveryLevel : "heard",
+    acquaintancePoints: template.knownByDefault
+      ? DISCOVERY_POINTS_BY_LEVEL[template.discoveryLevel]
+      : DISCOVERY_POINTS_BY_LEVEL.heard,
+    lastSeenDay: template.knownByDefault ? day : null,
+    currentQuestId: null
+  };
+}
+
 export function createInitialGameData(): GameData {
   return {
     day: INITIAL_DAY,
@@ -66,15 +83,8 @@ export function createInitialGameData(): GameData {
     resources,
     questTemplates,
     intelDefinitions,
-    adventurers: adventurerTemplates.map((adventurer) => ({
-      ...adventurer,
-      knownLevel: adventurer.knownByDefault ? adventurer.discoveryLevel : "heard",
-      acquaintancePoints: adventurer.knownByDefault
-        ? DISCOVERY_POINTS_BY_LEVEL[adventurer.discoveryLevel]
-        : DISCOVERY_POINTS_BY_LEVEL.heard,
-      lastSeenDay: adventurer.knownByDefault ? INITIAL_DAY : null,
-      currentQuestId: null
-    })),
+    adventurerTemplates,
+    adventurers: adventurerTemplates.map((adventurer) => createAdventurerInstanceFromTemplate(adventurer, INITIAL_DAY)),
     dayLog: [
       createStoryEntry("opening_day", {day: INITIAL_DAY})
     ]

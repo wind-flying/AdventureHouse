@@ -37,6 +37,7 @@ export type AdventurerDiscoveryLevel = "heard" | "seen" | "acquainted" | "famili
 export type AdventurerStatusFilter = "all" | "idle" | "away";
 export type AdventurerPinnedFilter = "all" | "pinned" | "unpinned";
 export type StoryEntryTone = "neutral" | "quest" | "reward";
+export type AdventurerOriginType = "handcrafted" | "generated";
 export type AdventurerPersonalityAxis =
   | "diligence"
   | "courage"
@@ -209,7 +210,7 @@ export interface IntelDefinition {
   designerNote?: string;
 }
 
-export interface Adventurer {
+export interface AdventurerTemplate {
   id: string;
   name: string;
   title: string;
@@ -223,11 +224,18 @@ export interface Adventurer {
   capabilities: AdventurerCapabilities;
   impression: string;
   rumor: string;
+}
+
+export interface AdventurerInstance extends AdventurerTemplate {
+  templateId: string | null;
+  originType: AdventurerOriginType;
   knownLevel: AdventurerDiscoveryLevel;
   acquaintancePoints: number;
   lastSeenDay: number | null;
   currentQuestId: number | null;
 }
+
+export type Adventurer = AdventurerInstance;
 
 export interface GameData {
   day: number;
@@ -255,7 +263,8 @@ export interface GameData {
   resources: ResourceDefinition[];
   questTemplates: QuestTemplate[];
   intelDefinitions: IntelDefinition[];
-  adventurers: Adventurer[];
+  adventurerTemplates: AdventurerTemplate[];
+  adventurers: AdventurerInstance[];
   dayLog: StoryEntry[];
 }
 
@@ -286,7 +295,9 @@ export interface SavedQuest {
   result: SavedQuestResult | null;
 }
 
-export interface SavedAdventurerState {
+export type SavedAdventurer = AdventurerInstance;
+
+export interface SavedAdventurerStateV1 {
   id: string;
   acquaintancePoints: number;
   lastSeenDay: number | null;
@@ -307,7 +318,26 @@ export interface SaveDataV1 {
       leads: IntelRecord[];
       discoveries: IntelRecord[];
     };
-    adventurers: SavedAdventurerState[];
+    adventurers: SavedAdventurerStateV1[];
+    dayLog: StoryEntry[];
+  };
+}
+
+export interface SaveDataV2 {
+  version: 2;
+  game: {
+    day: number;
+    questIdCounter: number;
+    pinnedAdventurerIds: string[];
+    player: {
+      money: number;
+      resultInsightLevel: ResultInsightLevel;
+      quests: SavedQuest[];
+      stock: Partial<Record<string, number>>;
+      leads: IntelRecord[];
+      discoveries: IntelRecord[];
+    };
+    adventurers: SavedAdventurer[];
     dayLog: StoryEntry[];
   };
 }

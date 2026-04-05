@@ -1,9 +1,9 @@
 import resourcesData from "../../config/resourcesType.json";
 import adventurersData from "../../config/adventurers.json";
-import type {Adventurer, IntelDefinition, QuestTemplate, ResourceDefinition} from "./types";
+import type {AdventurerTemplate, IntelDefinition, QuestTemplate, ResourceDefinition} from "./types";
 
 export const resources = resourcesData.resources as ResourceDefinition[];
-export const adventurerTemplates = adventurersData.adventurers as Omit<Adventurer, "knownLevel" | "lastSeenDay" | "currentQuestId">[];
+export const adventurerTemplates = adventurersData.adventurers as AdventurerTemplate[];
 
 const questModuleMap = import.meta.glob("../../config/quests/*.json", {eager: true});
 const intelModuleMap = import.meta.glob("../../config/intel/*.json", {eager: true});
