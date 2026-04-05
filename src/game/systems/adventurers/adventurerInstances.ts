@@ -3,9 +3,11 @@ import type {
   AdventurerDiscoveryLevel,
   AdventurerInstance,
   AdventurerOriginType,
+  AdventurerRoleType,
   AdventurerTemplate,
   SavedAdventurer,
-  SavedAdventurerV2
+  SavedAdventurerV2,
+  SavedAdventurerV3
 } from "../../core/types";
 
 const DISCOVERY_POINTS_BY_LEVEL: Record<AdventurerDiscoveryLevel, number> = {
@@ -41,11 +43,13 @@ export function createAdventurerInstanceFromTemplate(
   day: number,
   originType: AdventurerOriginType = "handcrafted"
 ): AdventurerInstance {
+  const roleType = getAdventurerRoleType(template);
   return {
     ...template,
     instanceId: createAdventurerInstanceId(template.id, originType),
     templateId: template.id,
     originType,
+    roleType,
     knownLevel: template.knownByDefault ? template.discoveryLevel : "heard",
     acquaintancePoints: template.knownByDefault
       ? DISCOVERY_POINTS_BY_LEVEL[template.discoveryLevel]
@@ -101,6 +105,7 @@ export function restoreAdventurerInstance(
     instanceId: savedAdventurer.instanceId,
     templateId: savedAdventurer.templateId ?? null,
     originType: savedAdventurer.originType,
+    roleType: savedAdventurer.roleType,
     acquaintancePoints,
     knownLevel: getDiscoveryLevelFromPoints(acquaintancePoints),
     lastSeenDay: getSafeNullableInteger(savedAdventurer.lastSeenDay),
@@ -108,15 +113,22 @@ export function restoreAdventurerInstance(
   };
 }
 
-export function restoreSavedAdventurerV2(
+export function restoreLegacySavedAdventurer(
   templates: AdventurerTemplate[],
-  savedAdventurer: SavedAdventurerV2
+  savedAdventurer: SavedAdventurerV2 | SavedAdventurerV3
 ): SavedAdventurer {
   const originType = savedAdventurer.originType;
   const fallbackKey = savedAdventurer.templateId ?? savedAdventurer.id;
+  const template = savedAdventurer.templateId
+    ? templates.find((adventurerTemplate) => adventurerTemplate.id === savedAdventurer.templateId) ?? null
+    : null;
+  const roleType = "roleType" in savedAdventurer
+    ? savedAdventurer.roleType
+    : (template ? getAdventurerRoleType(template) : "adventurer");
 
   return restoreAdventurerInstance(templates, {
     ...savedAdventurer,
+    roleType,
     instanceId: createAdventurerInstanceId(fallbackKey, originType)
   });
 }
@@ -163,4 +175,8 @@ function createAdventurerInstanceId(sourceKey: string, originType: AdventurerOri
   return originType === "generated"
     ? `generated:${sourceKey}`
     : `handcrafted:${sourceKey}`;
+}
+
+function getAdventurerRoleType(template: AdventurerTemplate): AdventurerRoleType {
+  return template.roleType ?? "adventurer";
 }

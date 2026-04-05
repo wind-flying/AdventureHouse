@@ -38,6 +38,7 @@ export type AdventurerStatusFilter = "all" | "idle" | "away";
 export type AdventurerPinnedFilter = "all" | "pinned" | "unpinned";
 export type StoryEntryTone = "neutral" | "quest" | "reward";
 export type AdventurerOriginType = "handcrafted" | "generated";
+export type AdventurerRoleType = "anchor" | "adventurer";
 export type AdventurerPersonalityAxis =
   | "diligence"
   | "courage"
@@ -215,6 +216,7 @@ export interface AdventurerTemplate {
   name: string;
   title: string;
   motive: string;
+  roleType?: AdventurerRoleType;
   contentStageTag?: ContentStageTag;
   designerNote?: string;
   knownByDefault: boolean;
@@ -230,6 +232,7 @@ export interface AdventurerInstance extends AdventurerTemplate {
   instanceId: string;
   templateId: string | null;
   originType: AdventurerOriginType;
+  roleType: AdventurerRoleType;
   knownLevel: AdventurerDiscoveryLevel;
   acquaintancePoints: number;
   lastSeenDay: number | null;
@@ -347,6 +350,27 @@ export interface SavedAdventurerV2 extends Omit<AdventurerInstance, "instanceId"
 
 export interface SaveDataV3 {
   version: 3;
+  game: {
+    day: number;
+    questIdCounter: number;
+    pinnedAdventurerIds: string[];
+    player: {
+      money: number;
+      resultInsightLevel: ResultInsightLevel;
+      quests: SavedQuest[];
+      stock: Partial<Record<string, number>>;
+      leads: IntelRecord[];
+      discoveries: IntelRecord[];
+    };
+    adventurers: SavedAdventurerV3[];
+    dayLog: StoryEntry[];
+  };
+}
+
+export interface SavedAdventurerV3 extends Omit<AdventurerInstance, "roleType"> {}
+
+export interface SaveDataV4 {
+  version: 4;
   game: {
     day: number;
     questIdCounter: number;

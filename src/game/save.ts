@@ -2,8 +2,8 @@ import {createInitialGameData, INITIAL_DAY, LOG_HISTORY_LIMIT} from "./state";
 import {
   createInitialAdventurerInstances,
   restoreAdventurerInstance,
+  restoreLegacySavedAdventurer,
   restoreLegacyAdventurerState,
-  restoreSavedAdventurerV2
 } from "./systems/adventurers/adventurerInstances";
 import {restoreQuestResult, toSavedQuestResult} from "./systems/quests/taskResult";
 import type {
@@ -13,13 +13,14 @@ import type {
   SaveDataV1,
   SaveDataV2,
   SaveDataV3,
+  SaveDataV4,
   SavedAdventurer,
   SavedQuest,
   StoryEntry
 } from "./core/types";
 
 const SAVE_STORAGE_KEY = "adventure-house.save";
-const SAVE_FORMAT_VERSION = 3 as const;
+const SAVE_FORMAT_VERSION = 4 as const;
 
 export function loadGameData(): GameData | null {
   const rawSave = readRawSave();
@@ -71,7 +72,7 @@ export function replaceSavedGameData(gameData: GameData): void {
   saveGameData(gameData);
 }
 
-function createSaveData(gameData: GameData): SaveDataV3 {
+function createSaveData(gameData: GameData): SaveDataV4 {
   return {
     version: SAVE_FORMAT_VERSION,
     game: {
@@ -101,7 +102,7 @@ function createSavedQuest(quest: Quest): SavedQuest {
   };
 }
 
-function restoreGameDataFromSave(saveData: SaveDataV3): GameData {
+function restoreGameDataFromSave(saveData: SaveDataV4): GameData {
   const gameData = createInitialGameData();
 
   gameData.day = getSafePositiveInteger(saveData.game.day, INITIAL_DAY);
@@ -172,25 +173,29 @@ function readRawSave(): unknown {
   }
 }
 
-function migrateSaveData(rawSave: unknown): SaveDataV3 | null {
+function migrateSaveData(rawSave: unknown): SaveDataV4 | null {
   if (!rawSave || typeof rawSave !== "object") {
     return null;
   }
 
-  const candidate = rawSave as Partial<SaveDataV1 | SaveDataV2 | SaveDataV3>;
+  const candidate = rawSave as Partial<SaveDataV1 | SaveDataV2 | SaveDataV3 | SaveDataV4>;
   switch (candidate.version) {
     case 1:
-      return isSaveDataV1(candidate) ? migrateSaveDataV2ToV3(migrateSaveDataV1ToV2(candidate)) : null;
+      return isSaveDataV1(candidate)
+        ? migrateSaveDataV3ToV4(migrateSaveDataV2ToV3(migrateSaveDataV1ToV2(candidate)))
+        : null;
     case 2:
-      return isSaveDataV2(candidate) ? migrateSaveDataV2ToV3(candidate) : null;
+      return isSaveDataV2(candidate) ? migrateSaveDataV3ToV4(migrateSaveDataV2ToV3(candidate)) : null;
+    case 3:
+      return isSaveDataV3(candidate) ? migrateSaveDataV3ToV4(candidate) : null;
     case SAVE_FORMAT_VERSION:
-      return isSaveDataV3(candidate) ? candidate : null;
+      return isSaveDataV4(candidate) ? candidate : null;
     default:
       return null;
   }
 }
 
-function isSaveDataV1(candidate: Partial<SaveDataV1 | SaveDataV2 | SaveDataV3>): candidate is SaveDataV1 {
+function isSaveDataV1(candidate: Partial<SaveDataV1 | SaveDataV2 | SaveDataV3 | SaveDataV4>): candidate is SaveDataV1 {
   return candidate.version === 1
     && Array.isArray(candidate.game?.pinnedAdventurerIds)
     && Array.isArray(candidate.game?.adventurers)
@@ -202,7 +207,7 @@ function isSaveDataV1(candidate: Partial<SaveDataV1 | SaveDataV2 | SaveDataV3>):
     && Array.isArray(candidate.game?.player?.discoveries);
 }
 
-function isSaveDataV2(candidate: Partial<SaveDataV1 | SaveDataV2 | SaveDataV3>): candidate is SaveDataV2 {
+function isSaveDataV2(candidate: Partial<SaveDataV1 | SaveDataV2 | SaveDataV3 | SaveDataV4>): candidate is SaveDataV2 {
   return candidate.version === 2
     && Array.isArray(candidate.game?.pinnedAdventurerIds)
     && Array.isArray(candidate.game?.adventurers)
@@ -214,8 +219,20 @@ function isSaveDataV2(candidate: Partial<SaveDataV1 | SaveDataV2 | SaveDataV3>):
     && Array.isArray(candidate.game?.player?.discoveries);
 }
 
-function isSaveDataV3(candidate: Partial<SaveDataV1 | SaveDataV2 | SaveDataV3>): candidate is SaveDataV3 {
+function isSaveDataV3(candidate: Partial<SaveDataV1 | SaveDataV2 | SaveDataV3 | SaveDataV4>): candidate is SaveDataV3 {
   return candidate.version === 3
+    && Array.isArray(candidate.game?.pinnedAdventurerIds)
+    && Array.isArray(candidate.game?.adventurers)
+    && Array.isArray(candidate.game?.dayLog)
+    && Array.isArray(candidate.game?.player?.quests)
+    && Boolean(candidate.game?.player?.stock)
+    && typeof candidate.game?.player?.stock === "object"
+    && Array.isArray(candidate.game?.player?.leads)
+    && Array.isArray(candidate.game?.player?.discoveries);
+}
+
+function isSaveDataV4(candidate: Partial<SaveDataV1 | SaveDataV2 | SaveDataV3 | SaveDataV4>): candidate is SaveDataV4 {
+  return candidate.version === 4
     && Array.isArray(candidate.game?.pinnedAdventurerIds)
     && Array.isArray(candidate.game?.adventurers)
     && Array.isArray(candidate.game?.dayLog)
@@ -290,7 +307,21 @@ function migrateSaveDataV2ToV3(saveData: SaveDataV2): SaveDataV3 {
     game: {
       ...saveData.game,
       adventurers: saveData.game.adventurers.map((adventurer) => {
-        return restoreSavedAdventurerV2(initialGameData.adventurerTemplates, adventurer);
+        return restoreLegacySavedAdventurer(initialGameData.adventurerTemplates, adventurer);
+      })
+    }
+  };
+}
+
+function migrateSaveDataV3ToV4(saveData: SaveDataV3): SaveDataV4 {
+  const initialGameData = createInitialGameData();
+
+  return {
+    version: 4,
+    game: {
+      ...saveData.game,
+      adventurers: saveData.game.adventurers.map((adventurer) => {
+        return restoreLegacySavedAdventurer(initialGameData.adventurerTemplates, adventurer);
       })
     }
   };
