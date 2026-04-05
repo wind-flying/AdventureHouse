@@ -9,6 +9,7 @@ export const INITIAL_DAY = 1;
 export const INITIAL_PLAYER_MONEY = 120;
 export const INITIAL_QUEST_ID = 1;
 export const DAILY_SHOP_INCOME = 6;
+export const INITIAL_RESULT_INSIGHT_LEVEL = "basic" as const;
 
 const DISCOVERY_POINTS_BY_LEVEL = {
   heard: 0,
@@ -34,6 +35,7 @@ export function createInitialGameData(): GameData {
     pinnedAdventurerIds: [],
     player: {
       money: INITIAL_PLAYER_MONEY,
+      resultInsightLevel: INITIAL_RESULT_INSIGHT_LEVEL,
       quests: [],
       stock: Object.fromEntries(resources.map((resource) => [resource.id, 0])),
       leads: [],

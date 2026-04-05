@@ -73,6 +73,7 @@ export const uiLabels = {
     collect: "目标",
     investigate: "关注",
     result: "结果",
+    resultReason: "原因",
     risk: "风险",
     nature: "性质",
     reward: "悬赏",

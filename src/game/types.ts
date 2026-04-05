@@ -12,6 +12,22 @@ export type QuestResultMode = "resource" | "lead" | "discovery";
 export type QuestResultOutcome = "success" | "failure";
 export type QuestTestOutcomeMode = "normal" | "success" | "failure";
 export type QuestPublishMode = "stock" | "intel";
+export type ResultInsightLevel = "basic" | "aware" | "trained" | "expert";
+export type QuestResultReasonTag =
+  | "resource"
+  | "lead"
+  | "discovery"
+  | "failure"
+  | "danger"
+  | "challenge"
+  | "durationPressure"
+  | "uncertainty"
+  | "investigationComplexity"
+  | "reportDifficulty"
+  | "stability"
+  | "intel"
+  | "capability"
+  | "personality";
 export type IntelKind = "lead" | "discovery";
 export type IntelStatus = "recorded" | "followable" | "triggered";
 export type QuestUnlockMode = "all" | "any";
@@ -134,7 +150,23 @@ export interface Quest {
 export interface QuestResult {
   type: QuestResultMode;
   outcome: QuestResultOutcome;
+  // 兼容当前展示层保留的摘要字段。长期应优先从结果事实重建，而不是把它视为唯一真相。
   summary: string;
+  details: {
+    resourceId: string | null;
+    quantity: number | null;
+    intelKind: IntelKind | null;
+    intelId: string | null;
+    matchingIntelCount: number | null;
+    successChance: number | null;
+    rolledChance: number | null;
+    visibleReasonTags: QuestResultReasonTag[];
+    reasonTags: QuestResultReasonTag[];
+    display: {
+      intelTitleOverride: string | null;
+      intelSummaryOverride: string | null;
+    };
+  };
 }
 
 export interface IntelRecord {
@@ -197,6 +229,7 @@ export interface GameData {
   pinnedAdventurerIds: string[];
   player: {
     money: number;
+    resultInsightLevel: ResultInsightLevel;
     quests: Quest[];
     stock: Record<string, number>;
     leads: IntelRecord[];

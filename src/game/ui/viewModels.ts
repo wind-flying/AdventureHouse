@@ -6,6 +6,7 @@ import {
   getIntelSourceOutcomeText,
   getIntelStatusText,
   getQuestNatureText,
+  getQuestResultVisibleReasonLimit,
   getQuestRiskText,
   getQuestStatusText
 } from "../text/statusText";
@@ -21,6 +22,7 @@ import {
 import type {Adventurer, GameData, IntelRecord, IntelStatus, Quest} from "../types";
 import {getQuestDisplayIdByInternalId, getQuestPublishMode, getQuestTemplateById} from "../systems/taskBoard";
 import {getFollowUpTemplatesForIntel} from "../systems/questUnlocks";
+import {getQuestResultSummary, getQuestResultVisibleReasonTexts} from "../systems/taskResult";
 import {formatResourcePreferences, getQuestResourceLabel, getResourceLabel} from "./resourceDisplay";
 
 export interface HeaderSummaryViewModel {
@@ -47,6 +49,7 @@ export interface QuestCardViewModel {
   progressText: string;
   adventurerText: string;
   resultText: string | null;
+  resultReasonText: string | null;
 }
 
 export interface AdventurerCardViewModel {
@@ -117,8 +120,21 @@ export function getQuestCardViewModel(gameData: GameData, quest: Quest): QuestCa
     createdDayText: `${uiLabels.questCard.createdDay} ${quest.createdDay} ${uiLabels.questCard.daySuffix}`,
     progressText: getQuestProgressText(quest),
     adventurerText: getQuestAdventurerText(quest.adventurerName),
-    resultText: quest.result ? `${uiLabels.questCard.result} ${quest.result.summary}` : null
+    resultText: quest.result ? `${uiLabels.questCard.result} ${getQuestResultSummary(gameData, quest, quest.result)}` : null,
+    resultReasonText: quest.result
+      ? formatQuestResultReasonText(gameData, quest)
+      : null
   };
+}
+
+function formatQuestResultReasonText(gameData: GameData, quest: Quest) {
+  const visibleReasonTexts = getQuestResultVisibleReasonTexts(gameData, quest);
+  const visibleReasonLimit = getQuestResultVisibleReasonLimit(gameData.player.resultInsightLevel);
+  if (visibleReasonLimit <= 0 || visibleReasonTexts.length === 0) {
+    return null;
+  }
+
+  return `${uiLabels.questCard.resultReason} ${visibleReasonTexts.slice(0, visibleReasonLimit).join(" / ")}`;
 }
 
 export function getAdventurerCardViewModel(gameData: GameData, adventurer: Adventurer): AdventurerCardViewModel {

@@ -572,6 +572,7 @@ function buildQuestCardMarkup(quest: QuestCardViewModel): string {
     </div>
     ${quest.adventurerText ? `<div class="adventurer-meta">${quest.adventurerText}</div>` : ""}
     ${quest.resultText ? `<div class="adventurer-meta">${quest.resultText}</div>` : ""}
+    ${quest.resultReasonText ? `<div class="adventurer-meta">${quest.resultReasonText}</div>` : ""}
   `;
 }
 
