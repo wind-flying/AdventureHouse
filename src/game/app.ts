@@ -1,4 +1,4 @@
-import {loadGameData, saveGameData} from "./save";
+import {exportSaveData, importSaveData, loadGameData, replaceSavedGameData, saveGameData} from "./save";
 import {advanceDay} from "./systems/dayLoop";
 import {
   type AdventurerDiscoveryLevel,
@@ -81,6 +81,13 @@ function bindEvents(gameData: GameData, elements: Elements): void {
     render(gameData, elements);
   });
   elements.createQuestBtn?.addEventListener("click", () => handleCreateQuest(gameData, elements));
+  elements.exportSaveBtn?.addEventListener("click", () => handleExportSave(gameData, elements));
+  elements.importSaveBtn?.addEventListener("click", () => {
+    elements.importSaveInput?.click();
+  });
+  elements.importSaveInput?.addEventListener("change", async () => {
+    await handleImportSave(gameData, elements);
+  });
   elements.nextDayBtn?.addEventListener("click", () => {
     advanceDay(gameData);
     saveGameData(gameData);
@@ -124,4 +131,56 @@ function togglePinnedAdventurer(gameData: GameData, adventurerId: string): void 
   }
 
   gameData.pinnedAdventurerIds = [...gameData.pinnedAdventurerIds, adventurerId];
+}
+
+function handleExportSave(gameData: GameData, _elements: Elements): void {
+  const blob = new Blob([exportSaveData(gameData)], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `adventure-house-save-v1-day-${gameData.day}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  showNotification("存档已导出。", "success");
+}
+
+async function handleImportSave(gameData: GameData, elements: Elements): Promise<void> {
+  const selectedFile = elements.importSaveInput?.files?.[0] ?? null;
+  if (!selectedFile) {
+    return;
+  }
+
+  const importedText = await selectedFile.text().catch(() => null);
+  elements.importSaveInput.value = "";
+  if (!importedText) {
+    showNotification("导入失败：无法读取存档文件。", "error");
+    return;
+  }
+
+  const importedGameData = importSaveData(importedText);
+  if (!importedGameData) {
+    showNotification("导入失败：存档格式无效或版本不兼容。", "error");
+    return;
+  }
+
+  replaceGameData(gameData, importedGameData);
+  replaceSavedGameData(gameData);
+  populateQuestTemplateOptions(gameData, elements);
+  populateQuestFilterOptions(gameData, elements);
+  populateAdventurerFilterOptions(gameData, elements);
+  syncQuestForm(gameData, elements);
+  render(gameData, elements);
+  showNotification("存档已导入。", "success");
+}
+
+function replaceGameData(target: GameData, source: GameData): void {
+  const mutableTarget = target as Record<string, unknown>;
+  const targetKeys = Object.keys(mutableTarget);
+  targetKeys.forEach((key) => {
+    delete mutableTarget[key];
+  });
+
+  Object.assign(mutableTarget, source);
 }

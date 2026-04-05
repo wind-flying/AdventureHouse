@@ -319,6 +319,9 @@ export interface Elements {
   activeQuestDisplay: HTMLSpanElement | null;
   stockSummaryDisplay: HTMLSpanElement | null;
   knownAdventurerDisplay: HTMLSpanElement | null;
+  exportSaveBtn: HTMLButtonElement | null;
+  importSaveBtn: HTMLButtonElement | null;
+  importSaveInput: HTMLInputElement | null;
   templateSelect: HTMLSelectElement | null;
   questStatusFilterSelect: HTMLSelectElement | null;
   questNatureFilterSelect: HTMLSelectElement | null;

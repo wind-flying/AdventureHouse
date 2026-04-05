@@ -80,7 +80,12 @@ export function createUI(container: HTMLDivElement, gameData: GameData, elements
             <strong id="known-adventurer-display"></strong>
           </article>
         </div>
-        <button id="next-day-btn" class="primary-button" type="button">${uiLabels.form.nextDay}</button>
+        <div class="toolbar-actions">
+          <button id="export-save-btn" class="secondary-button" type="button">${uiLabels.saveControls.export}</button>
+          <button id="import-save-btn" class="secondary-button" type="button">${uiLabels.saveControls.import}</button>
+          <input id="import-save-input" type="file" accept="application/json,.json" hidden />
+          <button id="next-day-btn" class="primary-button" type="button">${uiLabels.form.nextDay}</button>
+        </div>
       </div>
     </header>
 
@@ -253,6 +258,9 @@ export function createUI(container: HTMLDivElement, gameData: GameData, elements
   elements.activeQuestDisplay = container.querySelector("#active-quest-display");
   elements.stockSummaryDisplay = container.querySelector("#stock-summary-display");
   elements.knownAdventurerDisplay = container.querySelector("#known-adventurer-display");
+  elements.exportSaveBtn = container.querySelector("#export-save-btn");
+  elements.importSaveBtn = container.querySelector("#import-save-btn");
+  elements.importSaveInput = container.querySelector("#import-save-input");
   elements.templateSelect = container.querySelector("#template-select");
   elements.questStatusFilterSelect = container.querySelector("#quest-status-filter");
   elements.questNatureFilterSelect = container.querySelector("#quest-nature-filter");

@@ -27,6 +27,26 @@ export function loadGameData(): GameData | null {
   return restoreGameDataFromSave(migratedSave);
 }
 
+export function exportSaveData(gameData: GameData): string {
+  return JSON.stringify(createSaveData(gameData), null, 2);
+}
+
+export function importSaveData(serializedSave: string): GameData | null {
+  let rawSave: unknown;
+  try {
+    rawSave = JSON.parse(serializedSave) as unknown;
+  } catch {
+    return null;
+  }
+
+  const migratedSave = migrateSaveData(rawSave);
+  if (!migratedSave) {
+    return null;
+  }
+
+  return restoreGameDataFromSave(migratedSave);
+}
+
 export function saveGameData(gameData: GameData): void {
   if (!canUseLocalStorage()) {
     return;
@@ -37,6 +57,10 @@ export function saveGameData(gameData: GameData): void {
   } catch {
     // 本地存储不可用时静默降级，不阻断当前流程。
   }
+}
+
+export function replaceSavedGameData(gameData: GameData): void {
+  saveGameData(gameData);
 }
 
 function createSaveData(gameData: GameData): SaveDataV1 {

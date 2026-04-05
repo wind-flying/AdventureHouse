@@ -9,6 +9,10 @@ export const uiLabels = {
     stockTotal: "库存总量",
     knownAdventurers: "已知冒险者"
   },
+  saveControls: {
+    export: "导出存档",
+    import: "导入存档"
+  },
   navigation: {
     title: "界面切换",
     description: "核心状态固定显示，详细内容在中间切换。",
