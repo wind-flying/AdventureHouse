@@ -1,5 +1,10 @@
 import {createInitialGameData, INITIAL_DAY, LOG_HISTORY_LIMIT} from "./state";
-import {createInitialAdventurerInstances, restoreAdventurerInstance, restoreLegacyAdventurerState} from "./systems/adventurers/adventurerInstances";
+import {
+  createInitialAdventurerInstances,
+  restoreAdventurerInstance,
+  restoreLegacyAdventurerState,
+  restoreSavedAdventurerV2
+} from "./systems/adventurers/adventurerInstances";
 import {restoreQuestResult, toSavedQuestResult} from "./systems/quests/taskResult";
 import type {
   GameData,
@@ -7,13 +12,14 @@ import type {
   ResultInsightLevel,
   SaveDataV1,
   SaveDataV2,
+  SaveDataV3,
   SavedAdventurer,
   SavedQuest,
   StoryEntry
 } from "./core/types";
 
 const SAVE_STORAGE_KEY = "adventure-house.save";
-const SAVE_FORMAT_VERSION = 2 as const;
+const SAVE_FORMAT_VERSION = 3 as const;
 
 export function loadGameData(): GameData | null {
   const rawSave = readRawSave();
@@ -65,7 +71,7 @@ export function replaceSavedGameData(gameData: GameData): void {
   saveGameData(gameData);
 }
 
-function createSaveData(gameData: GameData): SaveDataV2 {
+function createSaveData(gameData: GameData): SaveDataV3 {
   return {
     version: SAVE_FORMAT_VERSION,
     game: {
@@ -95,7 +101,7 @@ function createSavedQuest(quest: Quest): SavedQuest {
   };
 }
 
-function restoreGameDataFromSave(saveData: SaveDataV2): GameData {
+function restoreGameDataFromSave(saveData: SaveDataV3): GameData {
   const gameData = createInitialGameData();
 
   gameData.day = getSafePositiveInteger(saveData.game.day, INITIAL_DAY);
@@ -166,23 +172,25 @@ function readRawSave(): unknown {
   }
 }
 
-function migrateSaveData(rawSave: unknown): SaveDataV2 | null {
+function migrateSaveData(rawSave: unknown): SaveDataV3 | null {
   if (!rawSave || typeof rawSave !== "object") {
     return null;
   }
 
-  const candidate = rawSave as Partial<SaveDataV1 | SaveDataV2>;
+  const candidate = rawSave as Partial<SaveDataV1 | SaveDataV2 | SaveDataV3>;
   switch (candidate.version) {
     case 1:
-      return isSaveDataV1(candidate) ? migrateSaveDataV1ToV2(candidate) : null;
+      return isSaveDataV1(candidate) ? migrateSaveDataV2ToV3(migrateSaveDataV1ToV2(candidate)) : null;
+    case 2:
+      return isSaveDataV2(candidate) ? migrateSaveDataV2ToV3(candidate) : null;
     case SAVE_FORMAT_VERSION:
-      return isSaveDataV2(candidate) ? candidate : null;
+      return isSaveDataV3(candidate) ? candidate : null;
     default:
       return null;
   }
 }
 
-function isSaveDataV1(candidate: Partial<SaveDataV1 | SaveDataV2>): candidate is SaveDataV1 {
+function isSaveDataV1(candidate: Partial<SaveDataV1 | SaveDataV2 | SaveDataV3>): candidate is SaveDataV1 {
   return candidate.version === 1
     && Array.isArray(candidate.game?.pinnedAdventurerIds)
     && Array.isArray(candidate.game?.adventurers)
@@ -194,8 +202,20 @@ function isSaveDataV1(candidate: Partial<SaveDataV1 | SaveDataV2>): candidate is
     && Array.isArray(candidate.game?.player?.discoveries);
 }
 
-function isSaveDataV2(candidate: Partial<SaveDataV1 | SaveDataV2>): candidate is SaveDataV2 {
+function isSaveDataV2(candidate: Partial<SaveDataV1 | SaveDataV2 | SaveDataV3>): candidate is SaveDataV2 {
   return candidate.version === 2
+    && Array.isArray(candidate.game?.pinnedAdventurerIds)
+    && Array.isArray(candidate.game?.adventurers)
+    && Array.isArray(candidate.game?.dayLog)
+    && Array.isArray(candidate.game?.player?.quests)
+    && Boolean(candidate.game?.player?.stock)
+    && typeof candidate.game?.player?.stock === "object"
+    && Array.isArray(candidate.game?.player?.leads)
+    && Array.isArray(candidate.game?.player?.discoveries);
+}
+
+function isSaveDataV3(candidate: Partial<SaveDataV1 | SaveDataV2 | SaveDataV3>): candidate is SaveDataV3 {
+  return candidate.version === 3
     && Array.isArray(candidate.game?.pinnedAdventurerIds)
     && Array.isArray(candidate.game?.adventurers)
     && Array.isArray(candidate.game?.dayLog)
@@ -257,6 +277,20 @@ function migrateSaveDataV1ToV2(saveData: SaveDataV1): SaveDataV2 {
       adventurers: initialAdventurers.map((adventurer) => {
         const legacyState = legacyStateMap.get(adventurer.id);
         return restoreLegacyAdventurerState(adventurer, legacyState ?? null);
+      })
+    }
+  };
+}
+
+function migrateSaveDataV2ToV3(saveData: SaveDataV2): SaveDataV3 {
+  const initialGameData = createInitialGameData();
+
+  return {
+    version: 3,
+    game: {
+      ...saveData.game,
+      adventurers: saveData.game.adventurers.map((adventurer) => {
+        return restoreSavedAdventurerV2(initialGameData.adventurerTemplates, adventurer);
       })
     }
   };

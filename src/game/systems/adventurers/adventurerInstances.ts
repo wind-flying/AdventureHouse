@@ -4,7 +4,8 @@ import type {
   AdventurerInstance,
   AdventurerOriginType,
   AdventurerTemplate,
-  SavedAdventurer
+  SavedAdventurer,
+  SavedAdventurerV2
 } from "../../core/types";
 
 const DISCOVERY_POINTS_BY_LEVEL: Record<AdventurerDiscoveryLevel, number> = {
@@ -42,6 +43,7 @@ export function createAdventurerInstanceFromTemplate(
 ): AdventurerInstance {
   return {
     ...template,
+    instanceId: createAdventurerInstanceId(template.id, originType),
     templateId: template.id,
     originType,
     knownLevel: template.knownByDefault ? template.discoveryLevel : "heard",
@@ -53,11 +55,29 @@ export function createAdventurerInstanceFromTemplate(
   };
 }
 
+export function createHandcraftedAdventurerInstance(
+  template: AdventurerTemplate,
+  day: number
+): AdventurerInstance {
+  return createAdventurerInstanceFromTemplate(template, day, "handcrafted");
+}
+
+export function createGeneratedAdventurerInstance(
+  template: AdventurerTemplate,
+  day: number,
+  seedKey: string
+): AdventurerInstance {
+  return {
+    ...createAdventurerInstanceFromTemplate(template, day, "generated"),
+    instanceId: createAdventurerInstanceId(seedKey, "generated")
+  };
+}
+
 export function createInitialAdventurerInstances(
   templates: AdventurerTemplate[],
   day = INITIAL_DAY
 ): AdventurerInstance[] {
-  return templates.map((template) => createAdventurerInstanceFromTemplate(template, day));
+  return templates.map((template) => createHandcraftedAdventurerInstance(template, day));
 }
 
 export function restoreAdventurerInstance(
@@ -78,6 +98,7 @@ export function restoreAdventurerInstance(
   return {
     ...(baseAdventurer ?? savedAdventurer),
     ...savedAdventurer,
+    instanceId: savedAdventurer.instanceId,
     templateId: savedAdventurer.templateId ?? null,
     originType: savedAdventurer.originType,
     acquaintancePoints,
@@ -85,6 +106,19 @@ export function restoreAdventurerInstance(
     lastSeenDay: getSafeNullableInteger(savedAdventurer.lastSeenDay),
     currentQuestId: getSafeNullableInteger(savedAdventurer.currentQuestId)
   };
+}
+
+export function restoreSavedAdventurerV2(
+  templates: AdventurerTemplate[],
+  savedAdventurer: SavedAdventurerV2
+): SavedAdventurer {
+  const originType = savedAdventurer.originType;
+  const fallbackKey = savedAdventurer.templateId ?? savedAdventurer.id;
+
+  return restoreAdventurerInstance(templates, {
+    ...savedAdventurer,
+    instanceId: createAdventurerInstanceId(fallbackKey, originType)
+  });
 }
 
 export function restoreLegacyAdventurerState(
@@ -123,4 +157,10 @@ function getSafeNullableInteger(value: number | null): number | null {
   }
 
   return Number.isInteger(value) ? value : null;
+}
+
+function createAdventurerInstanceId(sourceKey: string, originType: AdventurerOriginType): string {
+  return originType === "generated"
+    ? `generated:${sourceKey}`
+    : `handcrafted:${sourceKey}`;
 }
