@@ -1,11 +1,11 @@
-import {INITIAL_DAY} from "../state";
+import {INITIAL_DAY} from "../../state";
 import type {
   AdventurerDiscoveryLevel,
   AdventurerInstance,
   AdventurerOriginType,
   AdventurerTemplate,
   SavedAdventurer
-} from "../types";
+} from "../../types";
 
 const DISCOVERY_POINTS_BY_LEVEL: Record<AdventurerDiscoveryLevel, number> = {
   heard: 0,

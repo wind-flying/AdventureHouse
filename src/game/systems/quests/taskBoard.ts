@@ -1,8 +1,8 @@
-import {LOG_HISTORY_LIMIT} from "../state";
-import {getQuestResourceLabel, getQuestTemplateFocusLabel} from "../ui/resourceDisplay";
-import {createStoryEntry} from "../text/storyText";
-import {getQuestActionFeedback, getQuestPublishModeText} from "../text/uiText";
-import {getDiscoveryLevelFromPoints} from "./adventurerInstances";
+import {LOG_HISTORY_LIMIT} from "../../state";
+import {getQuestResourceLabel, getQuestTemplateFocusLabel} from "../../ui/resourceDisplay";
+import {createStoryEntry} from "../../text/storyText";
+import {getQuestActionFeedback, getQuestPublishModeText} from "../../text/uiText";
+import {getDiscoveryLevelFromPoints} from "../adventurers/adventurerInstances";
 import {chooseAdventurerForQuest as chooseAdventurerForQuestByAcceptance} from "./taskAcceptance";
 import {applyQuestResult, resolveQuestResult} from "./taskResult";
 import type {
@@ -13,7 +13,7 @@ import type {
   Quest,
   StoryEntry,
   QuestTemplate
-} from "../types";
+} from "../../types";
 
 // 临时规则参数：控制任务推荐报酬和耗时估算。
 // 后续如果要做更细的经济系统或任务特征模型，这一组应优先被替换或配置化。

@@ -1,6 +1,6 @@
 import {LOG_HISTORY_LIMIT} from "../state";
 import {createStoryEntry} from "../text/storyText";
-import {advanceQuestBoard} from "./taskBoard";
+import {advanceQuestBoard} from "./quests/taskBoard";
 import type {GameData, StoryEntry} from "../types";
 
 export function advanceDay(gameData: GameData): void {

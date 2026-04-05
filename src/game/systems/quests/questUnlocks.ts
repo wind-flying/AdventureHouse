@@ -1,4 +1,4 @@
-import type {GameData, IntelRecord, Quest, QuestResultOutcome, QuestTemplate, QuestUnlockCondition} from "../types";
+import type {GameData, IntelRecord, Quest, QuestResultOutcome, QuestTemplate, QuestUnlockCondition} from "../../types";
 
 export function getQuestUnlockConditions(template: QuestTemplate): QuestUnlockCondition[] {
   if (template.disabledForCurrentTesting) {

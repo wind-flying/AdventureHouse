@@ -1,5 +1,5 @@
-import {createStoryEntry} from "../text/storyText";
-import {getQuestResourceLabel} from "../ui/resourceDisplay";
+import {createStoryEntry} from "../../text/storyText";
+import {getQuestResourceLabel} from "../../ui/resourceDisplay";
 import {getUnlockedTemplatesFromQuestResolution} from "./questUnlocks";
 import {getQuestCapabilityWeights, getQuestResolutionInput, getQuestSuccessBreakdown, normalizeQuestFeatures} from "./taskResolution";
 import type {
@@ -16,7 +16,7 @@ import type {
   SavedQuestResult,
   QuestTemplate,
   StoryEntry
-} from "../types";
+} from "../../types";
 
 export function resolveQuestResult(gameData: GameData, quest: Quest): QuestResult {
   const template = getQuestTemplateById(gameData, quest.templateId);

@@ -1,6 +1,6 @@
 import {createInitialGameData, INITIAL_DAY, LOG_HISTORY_LIMIT} from "./state";
-import {createInitialAdventurerInstances, restoreAdventurerInstance, restoreLegacyAdventurerState} from "./systems/adventurerInstances";
-import {restoreQuestResult, toSavedQuestResult} from "./systems/taskResult";
+import {createInitialAdventurerInstances, restoreAdventurerInstance, restoreLegacyAdventurerState} from "./systems/adventurers/adventurerInstances";
+import {restoreQuestResult, toSavedQuestResult} from "./systems/quests/taskResult";
 import type {
   GameData,
   Quest,

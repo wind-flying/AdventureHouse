@@ -20,9 +20,9 @@ import {
   getQuestProgressText
 } from "../text/uiText";
 import type {Adventurer, GameData, IntelRecord, IntelStatus, Quest} from "../types";
-import {getQuestDisplayIdByInternalId, getQuestPublishMode, getQuestTemplateById} from "../systems/taskBoard";
-import {getFollowUpTemplatesForIntel} from "../systems/questUnlocks";
-import {getQuestResultSummary, getQuestResultVisibleReasonTexts} from "../systems/taskResult";
+import {getQuestDisplayIdByInternalId, getQuestPublishMode, getQuestTemplateById} from "../systems/quests/taskBoard";
+import {getFollowUpTemplatesForIntel} from "../systems/quests/questUnlocks";
+import {getQuestResultSummary, getQuestResultVisibleReasonTexts} from "../systems/quests/taskResult";
 import {formatResourcePreferences, getQuestResourceLabel, getResourceLabel} from "./resourceDisplay";
 
 export interface HeaderSummaryViewModel {

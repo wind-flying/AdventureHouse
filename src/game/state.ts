@@ -1,5 +1,5 @@
 import {adventurerTemplates, intelDefinitions, questTemplates, resources} from "./config";
-import {createInitialAdventurerInstances} from "./systems/adventurerInstances";
+import {createInitialAdventurerInstances} from "./systems/adventurers/adventurerInstances";
 import {createStoryEntry} from "./text/storyText";
 import type {Elements, GameData} from "./types";
 

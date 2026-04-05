@@ -24,8 +24,8 @@ import {
   getQuestPublishMode,
   getRecommendedRewardForTemplate,
   isQuestTemplatePublicationBlocked
-} from "../systems/taskBoard";
-import {isQuestTemplateUnlocked} from "../systems/questUnlocks";
+} from "../systems/quests/taskBoard";
+import {isQuestTemplateUnlocked} from "../systems/quests/questUnlocks";
 import {
   type AdventurerCardViewModel,
   getAdventurerCardViewModel,

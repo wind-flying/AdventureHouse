@@ -7,7 +7,7 @@ import {
 } from "./types";
 import {type QuestNatureFilter, type QuestStatusFilter} from "./questDefinitions";
 import {createEmptyElements, createInitialGameData} from "./state";
-import {createQuest} from "./systems/taskBoard";
+import {createQuest} from "./systems/quests/taskBoard";
 import {
   createUI,
   populateAdventurerFilterOptions,
