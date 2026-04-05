@@ -1,4 +1,4 @@
-import {LOG_HISTORY_LIMIT} from "../state";
+import {getDiscoveryLevelFromPoints, LOG_HISTORY_LIMIT} from "../state";
 import {getQuestResourceLabel, getQuestTemplateFocusLabel} from "../ui/resourceDisplay";
 import {createStoryEntry} from "../text/storyText";
 import {getQuestActionFeedback, getQuestPublishModeText} from "../text/uiText";
@@ -35,14 +35,6 @@ const QUEST_RULE_TUNING = {
   baseDurationDays: 1,
   // 数量额外增加耗时的步长。值越大，数量对耗时的放大越慢。
   quantityDurationStep: 2
-} as const;
-
-const ACQUAINTANCE_LEVEL_THRESHOLD = {
-  heard: 0,
-  seen: 1,
-  acquainted: 2,
-  familiar: 4,
-  trusted: 7
 } as const;
 
 export function getQuestTemplateById(gameData: GameData, templateId: string): QuestTemplate | undefined {
@@ -303,24 +295,4 @@ function getQuestAdventurer(gameData: GameData, quest: Quest): Adventurer | unde
 function increaseAcquaintance(adventurer: Adventurer, points: number): void {
   adventurer.acquaintancePoints += points;
   adventurer.knownLevel = getDiscoveryLevelFromPoints(adventurer.acquaintancePoints);
-}
-
-function getDiscoveryLevelFromPoints(points: number): Adventurer["knownLevel"] {
-  if (points >= ACQUAINTANCE_LEVEL_THRESHOLD.trusted) {
-    return "trusted";
-  }
-
-  if (points >= ACQUAINTANCE_LEVEL_THRESHOLD.familiar) {
-    return "familiar";
-  }
-
-  if (points >= ACQUAINTANCE_LEVEL_THRESHOLD.acquainted) {
-    return "acquainted";
-  }
-
-  if (points >= ACQUAINTANCE_LEVEL_THRESHOLD.seen) {
-    return "seen";
-  }
-
-  return "heard";
 }

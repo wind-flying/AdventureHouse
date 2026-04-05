@@ -1,6 +1,6 @@
 import {adventurerTemplates, intelDefinitions, questTemplates, resources} from "./config";
 import {createStoryEntry} from "./text/storyText";
-import type {Elements, GameData} from "./types";
+import type {AdventurerDiscoveryLevel, Elements, GameData} from "./types";
 
 // 当前原型的基础常量。
 // 这些不是最终经济数值，但至少要集中放在这里，避免散落成来路不明的初始值。
@@ -18,6 +18,26 @@ const DISCOVERY_POINTS_BY_LEVEL = {
   familiar: 4,
   trusted: 7
 } as const;
+
+export function getDiscoveryLevelFromPoints(points: number): AdventurerDiscoveryLevel {
+  if (points >= DISCOVERY_POINTS_BY_LEVEL.trusted) {
+    return "trusted";
+  }
+
+  if (points >= DISCOVERY_POINTS_BY_LEVEL.familiar) {
+    return "familiar";
+  }
+
+  if (points >= DISCOVERY_POINTS_BY_LEVEL.acquainted) {
+    return "acquainted";
+  }
+
+  if (points >= DISCOVERY_POINTS_BY_LEVEL.seen) {
+    return "seen";
+  }
+
+  return "heard";
+}
 
 export function createInitialGameData(): GameData {
   return {

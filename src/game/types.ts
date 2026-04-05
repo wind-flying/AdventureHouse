@@ -169,6 +169,21 @@ export interface QuestResult {
   };
 }
 
+export interface SavedQuestResult {
+  type: QuestResultMode;
+  outcome: QuestResultOutcome;
+  details: {
+    resourceId: string | null;
+    quantity: number | null;
+    intelKind: IntelKind | null;
+    intelId: string | null;
+    matchingIntelCount: number | null;
+    successChance: number | null;
+    rolledChance: number | null;
+    reasonTags: QuestResultReasonTag[];
+  };
+}
+
 export interface IntelRecord {
   id: string;
   kind: IntelKind;
@@ -242,6 +257,59 @@ export interface GameData {
   intelDefinitions: IntelDefinition[];
   adventurers: Adventurer[];
   dayLog: StoryEntry[];
+}
+
+export interface SavedQuest {
+  id: number;
+  category: QuestCategory;
+  templateId: string;
+  title: string;
+  description: string;
+  contentStageTag?: ContentStageTag;
+  designerNote?: string;
+  followUpStageTag?: FollowUpStageTag;
+  risk: QuestRisk;
+  nature: QuestNature;
+  displayId: string;
+  resource: string | null;
+  focusText: string | null;
+  reward: number;
+  quantity: number;
+  status: QuestStatus;
+  createdDay: number;
+  acceptedDay: number | null;
+  completedDay: number | null;
+  totalDays: number;
+  daysRemaining: number;
+  adventurerId: string | null;
+  adventurerName: string | null;
+  result: SavedQuestResult | null;
+}
+
+export interface SavedAdventurerState {
+  id: string;
+  acquaintancePoints: number;
+  lastSeenDay: number | null;
+  currentQuestId: number | null;
+}
+
+export interface SaveDataV1 {
+  version: 1;
+  game: {
+    day: number;
+    questIdCounter: number;
+    pinnedAdventurerIds: string[];
+    player: {
+      money: number;
+      resultInsightLevel: ResultInsightLevel;
+      quests: SavedQuest[];
+      stock: Partial<Record<string, number>>;
+      leads: IntelRecord[];
+      discoveries: IntelRecord[];
+    };
+    adventurers: SavedAdventurerState[];
+    dayLog: StoryEntry[];
+  };
 }
 
 export interface Elements {

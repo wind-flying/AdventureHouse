@@ -1,3 +1,4 @@
+import {loadGameData, saveGameData} from "./save";
 import {advanceDay} from "./systems/dayLoop";
 import {
   type AdventurerDiscoveryLevel,
@@ -24,7 +25,7 @@ export function initApp(): void {
     throw new Error("Missing #game-container root element.");
   }
 
-  const gameData = createInitialGameData();
+  const gameData = loadGameData() ?? createInitialGameData();
   const elements = createEmptyElements();
 
   createUI(container, gameData, elements);
@@ -76,11 +77,13 @@ function bindEvents(gameData: GameData, elements: Elements): void {
     }
 
     togglePinnedAdventurer(gameData, adventurerId);
+    saveGameData(gameData);
     render(gameData, elements);
   });
   elements.createQuestBtn?.addEventListener("click", () => handleCreateQuest(gameData, elements));
   elements.nextDayBtn?.addEventListener("click", () => {
     advanceDay(gameData);
+    saveGameData(gameData);
     render(gameData, elements);
   });
 
@@ -107,6 +110,9 @@ function handleCreateQuest(gameData: GameData, elements: Elements): void {
     quantity: Number.parseInt(elements.quantityInput.value, 10)
   });
 
+  if (result.ok) {
+    saveGameData(gameData);
+  }
   render(gameData, elements);
   showNotification(result.message, result.type);
 }

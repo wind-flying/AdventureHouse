@@ -13,6 +13,7 @@ import type {
   QuestResult,
   QuestResultOutcome,
   QuestResultReasonTag,
+  SavedQuestResult,
   QuestTemplate,
   StoryEntry
 } from "../types";
@@ -27,13 +28,10 @@ export function resolveQuestResult(gameData: GameData, quest: Quest): QuestResul
   if (outcome === "failure") {
     const failureIntel = getIntelDefinitionById(gameData, template?.failureIntelId);
     const failureKind = failureIntel?.kind ?? (resultMode === "discovery" ? "discovery" : "lead");
-    const failureSummary = failureIntel?.content ?? template?.failureIntelSummary ?? `${quest.title} 这次没有带回稳定成果`;
     const reasonTags = getQuestResultReasonTags(template, outcomeDetails.successBreakdown, "failure");
-    const visibleReasonTags = getVisibleQuestResultReasonTags(reasonTags);
-    return {
+    return restoreQuestResult(gameData, quest, {
       type: failureKind,
       outcome,
-      summary: failureSummary,
       details: {
         resourceId: null,
         quantity: null,
@@ -42,26 +40,18 @@ export function resolveQuestResult(gameData: GameData, quest: Quest): QuestResul
         matchingIntelCount: matchingIntelCount || null,
         successChance: outcomeDetails.successChance,
         rolledChance: outcomeDetails.rolledChance,
-        visibleReasonTags,
-        reasonTags,
-        display: {
-          intelTitleOverride: failureIntel?.title ?? getFallbackIntelTitle(quest, failureKind, true),
-          intelSummaryOverride: failureSummary
-        }
+        reasonTags
       }
-    };
+    });
   }
 
   if (resultMode === "lead") {
     const leadIntel = getRandomIntelDefinitionFromPool(gameData, template?.resultIntelPoolIds)
       ?? getIntelDefinitionById(gameData, template?.resultIntelId);
-    const leadSummary = leadIntel?.content ?? buildLeadText(quest);
     const reasonTags = getQuestResultReasonTags(template, outcomeDetails.successBreakdown, "lead");
-    const visibleReasonTags = getVisibleQuestResultReasonTags(reasonTags);
-    return {
+    return restoreQuestResult(gameData, quest, {
       type: "lead",
       outcome,
-      summary: `获得线索：${leadSummary}`,
       details: {
         resourceId: null,
         quantity: null,
@@ -70,25 +60,17 @@ export function resolveQuestResult(gameData: GameData, quest: Quest): QuestResul
         matchingIntelCount,
         successChance: outcomeDetails.successChance,
         rolledChance: outcomeDetails.rolledChance,
-        visibleReasonTags,
-        reasonTags,
-        display: {
-          intelTitleOverride: leadIntel?.title ?? getFallbackIntelTitle(quest, "lead"),
-          intelSummaryOverride: leadSummary
-        }
+        reasonTags
       }
-    };
+    });
   }
 
   if (resultMode === "discovery") {
     const discoveryIntel = getIntelDefinitionById(gameData, template?.resultIntelId);
-    const discoverySummary = discoveryIntel?.content ?? buildDiscoveryText(quest);
     const reasonTags = getQuestResultReasonTags(template, outcomeDetails.successBreakdown, "discovery");
-    const visibleReasonTags = getVisibleQuestResultReasonTags(reasonTags);
-    return {
+    return restoreQuestResult(gameData, quest, {
       type: "discovery",
       outcome,
-      summary: `获得发现：${discoverySummary}`,
       details: {
         resourceId: null,
         quantity: null,
@@ -97,22 +79,15 @@ export function resolveQuestResult(gameData: GameData, quest: Quest): QuestResul
         matchingIntelCount,
         successChance: outcomeDetails.successChance,
         rolledChance: outcomeDetails.rolledChance,
-        visibleReasonTags,
-        reasonTags,
-        display: {
-          intelTitleOverride: discoveryIntel?.title ?? getFallbackIntelTitle(quest, "discovery"),
-          intelSummaryOverride: discoverySummary
-        }
+        reasonTags
       }
-    };
+    });
   }
 
   const reasonTags = getQuestResultReasonTags(template, outcomeDetails.successBreakdown, "resource");
-  const visibleReasonTags = getVisibleQuestResultReasonTags(reasonTags);
-  return {
+  return restoreQuestResult(gameData, quest, {
     type: "resource",
     outcome,
-    summary: `获得 ${quest.quantity} 个 ${getQuestResourceLabel(gameData, quest)}`,
     details: {
       resourceId: quest.resource,
       quantity: quest.quantity,
@@ -121,13 +96,42 @@ export function resolveQuestResult(gameData: GameData, quest: Quest): QuestResul
       matchingIntelCount: null,
       successChance: outcomeDetails.successChance,
       rolledChance: outcomeDetails.rolledChance,
-      visibleReasonTags,
-      reasonTags,
-      display: {
-        intelTitleOverride: null,
-        intelSummaryOverride: null
-      }
+      reasonTags
     }
+  });
+}
+
+export function toSavedQuestResult(result: QuestResult): SavedQuestResult {
+  return {
+    type: result.type,
+    outcome: result.outcome,
+    details: {
+      resourceId: result.details.resourceId,
+      quantity: result.details.quantity,
+      intelKind: result.details.intelKind,
+      intelId: result.details.intelId,
+      matchingIntelCount: result.details.matchingIntelCount,
+      successChance: result.details.successChance,
+      rolledChance: result.details.rolledChance,
+      reasonTags: [...result.details.reasonTags]
+    }
+  };
+}
+
+export function restoreQuestResult(gameData: GameData, quest: Quest, savedResult: SavedQuestResult): QuestResult {
+  const display = buildQuestResultDisplay(gameData, quest, savedResult);
+  const details = {
+    ...savedResult.details,
+    reasonTags: [...savedResult.details.reasonTags],
+    visibleReasonTags: getVisibleQuestResultReasonTags(savedResult.details.reasonTags),
+    display
+  };
+
+  return {
+    type: savedResult.type,
+    outcome: savedResult.outcome,
+    summary: buildQuestResultSummary(gameData, quest, savedResult, display),
+    details
   };
 }
 
@@ -627,6 +631,60 @@ export function getQuestResultIntelSummary(quest: Quest, result: QuestResult): s
   }
 
   return result.type === "discovery" ? buildDiscoveryText(quest) : buildLeadText(quest);
+}
+
+function buildQuestResultSummary(
+  gameData: GameData,
+  quest: Quest,
+  savedResult: SavedQuestResult,
+  display: QuestResult["details"]["display"]
+): string {
+  if (savedResult.type === "resource") {
+    return `获得 ${savedResult.details.quantity ?? quest.quantity} 个 ${getQuestResourceLabel(gameData, quest)}`;
+  }
+
+  const intelSummary = display.intelSummaryOverride ?? (
+    savedResult.type === "discovery" ? buildDiscoveryText(quest) : buildLeadText(quest)
+  );
+  if (savedResult.type === "lead") {
+    return `获得线索：${intelSummary}`;
+  }
+
+  if (savedResult.type === "discovery") {
+    return `获得发现：${intelSummary}`;
+  }
+
+  return intelSummary;
+}
+
+function buildQuestResultDisplay(
+  gameData: GameData,
+  quest: Quest,
+  savedResult: SavedQuestResult
+): QuestResult["details"]["display"] {
+  if (savedResult.type === "resource") {
+    return {
+      intelTitleOverride: null,
+      intelSummaryOverride: null
+    };
+  }
+
+  const template = getQuestTemplateById(gameData, quest.templateId);
+  const fallbackKind = savedResult.type === "discovery" ? "discovery" : "lead";
+  const kind = savedResult.details.intelKind ?? fallbackKind;
+  const intelDefinition = getIntelDefinitionById(gameData, savedResult.details.intelId ?? undefined);
+
+  if (savedResult.outcome === "failure") {
+    return {
+      intelTitleOverride: intelDefinition?.title ?? getFallbackIntelTitle(quest, kind, true),
+      intelSummaryOverride: intelDefinition?.content ?? template?.failureIntelSummary ?? `${quest.title} 这次没有带回稳定成果`
+    };
+  }
+
+  return {
+    intelTitleOverride: intelDefinition?.title ?? getFallbackIntelTitle(quest, kind),
+    intelSummaryOverride: intelDefinition?.content ?? (savedResult.type === "discovery" ? buildDiscoveryText(quest) : buildLeadText(quest))
+  };
 }
 
 function getFallbackIntelTitle(quest: Quest, kind: IntelRecord["kind"], isFailure = false): string {
