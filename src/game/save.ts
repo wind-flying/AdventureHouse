@@ -1,7 +1,7 @@
-import {createAdventurerInstanceFromTemplate, createInitialGameData, getDiscoveryLevelFromPoints, INITIAL_DAY, LOG_HISTORY_LIMIT} from "./state";
+import {createInitialGameData, INITIAL_DAY, LOG_HISTORY_LIMIT} from "./state";
+import {createInitialAdventurerInstances, restoreAdventurerInstance, restoreLegacyAdventurerState} from "./systems/adventurerInstances";
 import {restoreQuestResult, toSavedQuestResult} from "./systems/taskResult";
 import type {
-  AdventurerInstance,
   GameData,
   Quest,
   ResultInsightLevel,
@@ -117,7 +117,9 @@ function restoreGameDataFromSave(saveData: SaveDataV2): GameData {
   gameData.player.discoveries = saveData.game.player.discoveries.map((record) => ({...record}));
   gameData.dayLog = sanitizeStoryEntries(saveData.game.dayLog);
 
-  gameData.adventurers = saveData.game.adventurers.map((savedAdventurer) => restoreSavedAdventurer(gameData, savedAdventurer));
+  gameData.adventurers = saveData.game.adventurers.map((savedAdventurer) => {
+    return restoreAdventurerInstance(gameData.adventurerTemplates, savedAdventurer);
+  });
 
   gameData.player.quests = saveData.game.player.quests.map((savedQuest) => {
     const quest: Quest = {
@@ -231,14 +233,6 @@ function getSafeInteger(value: number, fallback: number): number {
   return value;
 }
 
-function getSafeNullableInteger(value: number | null): number | null {
-  if (value === null) {
-    return null;
-  }
-
-  return Number.isInteger(value) ? value : null;
-}
-
 function sanitizeResultInsightLevel(level: ResultInsightLevel): ResultInsightLevel {
   switch (level) {
     case "aware":
@@ -251,52 +245,18 @@ function sanitizeResultInsightLevel(level: ResultInsightLevel): ResultInsightLev
   }
 }
 
-function restoreSavedAdventurer(gameData: GameData, savedAdventurer: SavedAdventurer): AdventurerInstance {
-  const template = savedAdventurer.templateId
-    ? gameData.adventurerTemplates.find((adventurerTemplate) => adventurerTemplate.id === savedAdventurer.templateId) ?? null
-    : null;
-  const baseAdventurer = template
-    ? createAdventurerInstanceFromTemplate(template, INITIAL_DAY)
-    : null;
-  const acquaintancePoints = getSafeInteger(
-    savedAdventurer.acquaintancePoints,
-    baseAdventurer?.acquaintancePoints ?? 0
-  );
-
-  return {
-    ...(baseAdventurer ?? savedAdventurer),
-    ...savedAdventurer,
-    templateId: savedAdventurer.templateId ?? null,
-    originType: savedAdventurer.originType,
-    acquaintancePoints,
-    knownLevel: getDiscoveryLevelFromPoints(acquaintancePoints),
-    lastSeenDay: getSafeNullableInteger(savedAdventurer.lastSeenDay),
-    currentQuestId: getSafeNullableInteger(savedAdventurer.currentQuestId)
-  };
-}
-
 function migrateSaveDataV1ToV2(saveData: SaveDataV1): SaveDataV2 {
   const initialGameData = createInitialGameData();
   const legacyStateMap = new Map(saveData.game.adventurers.map((adventurer) => [adventurer.id, adventurer]));
+  const initialAdventurers = createInitialAdventurerInstances(initialGameData.adventurerTemplates, INITIAL_DAY);
 
   return {
     version: 2,
     game: {
       ...saveData.game,
-      adventurers: initialGameData.adventurers.map((adventurer) => {
+      adventurers: initialAdventurers.map((adventurer) => {
         const legacyState = legacyStateMap.get(adventurer.id);
-        if (!legacyState) {
-          return {...adventurer};
-        }
-
-        const acquaintancePoints = getSafeInteger(legacyState.acquaintancePoints, adventurer.acquaintancePoints);
-        return {
-          ...adventurer,
-          acquaintancePoints,
-          knownLevel: getDiscoveryLevelFromPoints(acquaintancePoints),
-          lastSeenDay: getSafeNullableInteger(legacyState.lastSeenDay),
-          currentQuestId: getSafeNullableInteger(legacyState.currentQuestId)
-        };
+        return restoreLegacyAdventurerState(adventurer, legacyState ?? null);
       })
     }
   };

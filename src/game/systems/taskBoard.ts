@@ -1,7 +1,8 @@
-import {getDiscoveryLevelFromPoints, LOG_HISTORY_LIMIT} from "../state";
+import {LOG_HISTORY_LIMIT} from "../state";
 import {getQuestResourceLabel, getQuestTemplateFocusLabel} from "../ui/resourceDisplay";
 import {createStoryEntry} from "../text/storyText";
 import {getQuestActionFeedback, getQuestPublishModeText} from "../text/uiText";
+import {getDiscoveryLevelFromPoints} from "./adventurerInstances";
 import {chooseAdventurerForQuest as chooseAdventurerForQuestByAcceptance} from "./taskAcceptance";
 import {applyQuestResult, resolveQuestResult} from "./taskResult";
 import type {

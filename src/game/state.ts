@@ -1,6 +1,7 @@
 import {adventurerTemplates, intelDefinitions, questTemplates, resources} from "./config";
+import {createInitialAdventurerInstances} from "./systems/adventurerInstances";
 import {createStoryEntry} from "./text/storyText";
-import type {AdventurerDiscoveryLevel, AdventurerInstance, AdventurerTemplate, Elements, GameData} from "./types";
+import type {Elements, GameData} from "./types";
 
 // 当前原型的基础常量。
 // 这些不是最终经济数值，但至少要集中放在这里，避免散落成来路不明的初始值。
@@ -10,51 +11,6 @@ export const INITIAL_PLAYER_MONEY = 120;
 export const INITIAL_QUEST_ID = 1;
 export const DAILY_SHOP_INCOME = 6;
 export const INITIAL_RESULT_INSIGHT_LEVEL = "basic" as const;
-
-const DISCOVERY_POINTS_BY_LEVEL = {
-  heard: 0,
-  seen: 1,
-  acquainted: 2,
-  familiar: 4,
-  trusted: 7
-} as const;
-
-export function getDiscoveryLevelFromPoints(points: number): AdventurerDiscoveryLevel {
-  if (points >= DISCOVERY_POINTS_BY_LEVEL.trusted) {
-    return "trusted";
-  }
-
-  if (points >= DISCOVERY_POINTS_BY_LEVEL.familiar) {
-    return "familiar";
-  }
-
-  if (points >= DISCOVERY_POINTS_BY_LEVEL.acquainted) {
-    return "acquainted";
-  }
-
-  if (points >= DISCOVERY_POINTS_BY_LEVEL.seen) {
-    return "seen";
-  }
-
-  return "heard";
-}
-
-export function createAdventurerInstanceFromTemplate(
-  template: AdventurerTemplate,
-  day: number
-): AdventurerInstance {
-  return {
-    ...template,
-    templateId: template.id,
-    originType: "handcrafted",
-    knownLevel: template.knownByDefault ? template.discoveryLevel : "heard",
-    acquaintancePoints: template.knownByDefault
-      ? DISCOVERY_POINTS_BY_LEVEL[template.discoveryLevel]
-      : DISCOVERY_POINTS_BY_LEVEL.heard,
-    lastSeenDay: template.knownByDefault ? day : null,
-    currentQuestId: null
-  };
-}
 
 export function createInitialGameData(): GameData {
   return {
@@ -84,7 +40,7 @@ export function createInitialGameData(): GameData {
     questTemplates,
     intelDefinitions,
     adventurerTemplates,
-    adventurers: adventurerTemplates.map((adventurer) => createAdventurerInstanceFromTemplate(adventurer, INITIAL_DAY)),
+    adventurers: createInitialAdventurerInstances(adventurerTemplates, INITIAL_DAY),
     dayLog: [
       createStoryEntry("opening_day", {day: INITIAL_DAY})
     ]
