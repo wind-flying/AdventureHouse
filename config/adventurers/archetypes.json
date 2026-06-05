@@ -1,0 +1,103 @@
+{
+  "adventurers": [
+    {
+      "id": "inn-porter",
+      "textId": "inn-porter",
+      "name": "",
+      "title": "",
+      "motive": "",
+      "namePoolId": "town-common",
+      "archetypeTags": ["porter", "supply", "routine"],
+      "introductionTags": ["inn_introduction", "quest_referral"],
+      "designerNote": "世界观普通模板：偏日常补货与短线体力活。",
+      "knownByDefault": false,
+      "discoveryLevel": "heard",
+      "preferences": ["food", "wood"],
+      "personality": {
+        "diligence": 0.71,
+        "courage": -0.12,
+        "greed": 0.18,
+        "sociability": 0.11,
+        "caution": 0.43,
+        "curiosity": -0.22,
+        "discipline": 0.64,
+        "resilience": 0.35
+      },
+      "capabilities": {
+        "physique": 57,
+        "survival": 51,
+        "exploration": 29,
+        "observation": 24,
+        "combat": 16
+      },
+      "impression": "",
+      "rumor": ""
+    },
+    {
+      "id": "road-listener",
+      "textId": "road-listener",
+      "name": "",
+      "title": "",
+      "motive": "",
+      "namePoolId": "town-common",
+      "archetypeTags": ["listener", "investigation", "rumor"],
+      "introductionTags": ["inn_introduction", "quest_referral"],
+      "designerNote": "世界观普通模板：偏调查、传闻与异常消息。",
+      "knownByDefault": false,
+      "discoveryLevel": "heard",
+      "preferences": ["food", "treasure"],
+      "personality": {
+        "diligence": 0.22,
+        "courage": 0.18,
+        "greed": -0.06,
+        "sociability": 0.69,
+        "caution": -0.09,
+        "curiosity": 0.88,
+        "discipline": -0.08,
+        "resilience": 0.24
+      },
+      "capabilities": {
+        "physique": 23,
+        "survival": 31,
+        "exploration": 63,
+        "observation": 79,
+        "combat": 12
+      },
+      "impression": "",
+      "rumor": ""
+    },
+    {
+      "id": "quarry-hand",
+      "textId": "quarry-hand",
+      "name": "",
+      "title": "",
+      "motive": "",
+      "namePoolId": "town-common",
+      "archetypeTags": ["quarry", "danger", "longhaul"],
+      "introductionTags": ["quest_referral"],
+      "designerNote": "世界观普通模板：偏高压长线和石料相关任务。",
+      "knownByDefault": false,
+      "discoveryLevel": "heard",
+      "preferences": ["stone", "treasure"],
+      "personality": {
+        "diligence": 0.37,
+        "courage": 0.51,
+        "greed": 0.24,
+        "sociability": -0.16,
+        "caution": 0.09,
+        "curiosity": 0.14,
+        "discipline": 0.28,
+        "resilience": 0.82
+      },
+      "capabilities": {
+        "physique": 74,
+        "survival": 68,
+        "exploration": 57,
+        "observation": 33,
+        "combat": 49
+      },
+      "impression": "",
+      "rumor": ""
+    }
+  ]
+}

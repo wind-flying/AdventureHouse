@@ -1,0 +1,31 @@
+:root {
+  color-scheme: light;
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #1f2328;
+  background:
+    radial-gradient(circle at top left, rgba(208, 231, 202, 0.75), transparent 28%),
+    linear-gradient(180deg, #f6efdf 0%, #ece1ce 100%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  overflow: hidden;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}

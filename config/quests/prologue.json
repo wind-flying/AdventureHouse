@@ -1,0 +1,263 @@
+{
+  "questTemplates": [
+    {
+      "id": "prologue-pantry-restock",
+      "textId": "prologue-pantry-restock",
+      "title": "",
+      "description": "",
+      "lineId": "adventure-house-opening",
+      "lineTitle": "",
+      "entryPoint": true,
+      "unlockConditions": [
+        {
+          "type": "default"
+        }
+      ],
+      "preferredArchetypeTags": ["porter", "routine"],
+      "allowGeneratedTaker": true,
+      "generatedTakerWeight": 0.45,
+      "resultMode": "resource",
+      "publicationMode": "repeatable",
+      "publishMode": "stock",
+      "focusText": "",
+      "risk": "safe",
+      "nature": "routine",
+      "resource": "food",
+      "minReward": 2,
+      "maxReward": 4,
+      "difficulty": "easy",
+      "timingMode": "byDifficulty"
+    },
+    {
+      "id": "prologue-riverside-wood",
+      "textId": "prologue-riverside-wood",
+      "title": "",
+      "description": "",
+      "lineId": "adventure-house-opening",
+      "lineTitle": "",
+      "unlockConditions": [
+        {
+          "type": "default"
+        }
+      ],
+      "preferredArchetypeTags": ["porter", "supply"],
+      "allowGeneratedTaker": true,
+      "generatedTakerWeight": 0.55,
+      "resultMode": "resource",
+      "publicationMode": "repeatable",
+      "publishMode": "stock",
+      "focusText": "",
+      "risk": "safe",
+      "nature": "supply",
+      "resource": "wood",
+      "minReward": 2,
+      "maxReward": 5,
+      "difficulty": "easy",
+      "timingMode": "byDifficulty"
+    },
+    {
+      "id": "prologue-hearth-stone",
+      "textId": "prologue-hearth-stone",
+      "title": "",
+      "description": "",
+      "lineId": "adventure-house-opening",
+      "lineTitle": "",
+      "unlockConditions": [
+        {
+          "type": "default"
+        }
+      ],
+      "preferredArchetypeTags": ["quarry", "routine"],
+      "allowGeneratedTaker": true,
+      "generatedTakerWeight": 0.34,
+      "resultMode": "resource",
+      "publicationMode": "repeatable",
+      "publishMode": "stock",
+      "focusText": "",
+      "risk": "risky",
+      "nature": "supply",
+      "resource": "stone",
+      "minReward": 4,
+      "maxReward": 7,
+      "difficulty": "medium",
+      "timingMode": "byDifficulty"
+    },
+    {
+      "id": "prologue-old-road-opening",
+      "textId": "prologue-old-road-opening",
+      "title": "",
+      "description": "",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "entryPoint": true,
+      "unlockConditions": [
+        {
+          "type": "default"
+        }
+      ],
+      "preferredArchetypeTags": ["listener", "investigation", "rumor"],
+      "allowGeneratedTaker": true,
+      "generatedTakerWeight": 0.68,
+      "resultMode": "lead",
+      "publicationMode": "uniqueWhileOpen",
+      "publishMode": "intel",
+      "resultIntelPoolIds": [
+        "prologue-old-road-whisper-lead",
+        "prologue-old-road-lantern-lead"
+      ],
+      "failureIntelId": "prologue-old-road-opening-failure",
+      "successVisibility": "hide",
+      "failureVisibility": "hide",
+      "focusText": "",
+      "risk": "safe",
+      "nature": "investigation",
+      "minReward": 2,
+      "maxReward": 4,
+      "difficulty": "easy",
+      "timingMode": "fixed",
+      "fixedDurationDays": 2
+    },
+    {
+      "id": "prologue-old-road-lantern-watch",
+      "textId": "prologue-old-road-lantern-watch",
+      "title": "",
+      "description": "",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "unlockConditions": [
+        {
+          "type": "questResult",
+          "templateId": "prologue-old-road-opening"
+        }
+      ],
+      "preferredArchetypeTags": ["listener", "investigation", "rumor"],
+      "allowGeneratedTaker": true,
+      "generatedTakerWeight": 0.74,
+      "resultMode": "lead",
+      "publicationMode": "uniqueWhileOpen",
+      "publishMode": "intel",
+      "resultIntelPoolIds": [
+        "prologue-old-road-lantern-pattern-lead",
+        "prologue-old-road-rest-point-lead"
+      ],
+      "failureIntelId": "prologue-old-road-lantern-watch-failure",
+      "successVisibility": "hide",
+      "failureVisibility": "stay",
+      "focusText": "",
+      "risk": "safe",
+      "nature": "investigation",
+      "minReward": 4,
+      "maxReward": 7,
+      "difficulty": "easy",
+      "timingMode": "fixed",
+      "fixedDurationDays": 2
+    },
+    {
+      "id": "prologue-old-road-cart-trace",
+      "textId": "prologue-old-road-cart-trace",
+      "title": "",
+      "description": "",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "unlockConditions": [
+        {
+          "type": "questResult",
+          "templateId": "prologue-old-road-opening"
+        }
+      ],
+      "preferredArchetypeTags": ["listener", "investigation", "quarry", "longhaul"],
+      "allowGeneratedTaker": true,
+      "generatedTakerWeight": 0.5,
+      "resultMode": "lead",
+      "publicationMode": "uniqueWhileOpen",
+      "publishMode": "intel",
+      "resultIntelPoolIds": [
+        "prologue-old-road-cart-lead",
+        "prologue-old-road-cart-rut-lead"
+      ],
+      "failureIntelId": "prologue-old-road-cart-trace-failure",
+      "successVisibility": "hide",
+      "failureVisibility": "hide",
+      "focusText": "",
+      "risk": "risky",
+      "nature": "investigation",
+      "minReward": 6,
+      "maxReward": 10,
+      "difficulty": "medium",
+      "timingMode": "fixed",
+      "fixedDurationDays": 4
+    },
+    {
+      "id": "prologue-old-road-cart-confirm",
+      "textId": "prologue-old-road-cart-confirm",
+      "title": "",
+      "description": "",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "unlockConditions": [
+        {
+          "type": "questResult",
+          "templateId": "prologue-old-road-cart-trace",
+          "outcome": "success"
+        }
+      ],
+      "preferredArchetypeTags": ["quarry", "danger", "longhaul"],
+      "allowGeneratedTaker": true,
+      "generatedTakerWeight": 0.42,
+      "resultMode": "lead",
+      "publicationMode": "uniqueWhileOpen",
+      "publishMode": "intel",
+      "resultIntelPoolIds": [
+        "prologue-old-road-marker-lead",
+        "prologue-old-road-culvert-lead"
+      ],
+      "failureIntelId": "prologue-old-road-cart-confirm-failure",
+      "successVisibility": "stay",
+      "failureVisibility": "stay",
+      "focusText": "",
+      "risk": "risky",
+      "nature": "investigation",
+      "minReward": 8,
+      "maxReward": 12,
+      "difficulty": "medium",
+      "timingMode": "fixed",
+      "fixedDurationDays": 4
+    },
+    {
+      "id": "prologue-old-road-cart-recovery",
+      "textId": "prologue-old-road-cart-recovery",
+      "title": "",
+      "description": "",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "unlockConditions": [
+        {
+          "type": "questResult",
+          "templateId": "prologue-old-road-cart-trace",
+          "outcome": "failure"
+        }
+      ],
+      "preferredArchetypeTags": ["listener", "investigation", "rumor"],
+      "allowGeneratedTaker": true,
+      "generatedTakerWeight": 0.66,
+      "resultMode": "lead",
+      "publicationMode": "uniqueWhileOpen",
+      "publishMode": "intel",
+      "resultIntelPoolIds": [
+        "prologue-old-road-recovery-lead",
+        "prologue-old-road-side-track-lead"
+      ],
+      "failureIntelId": "prologue-old-road-cart-recovery-failure",
+      "successVisibility": "stay",
+      "failureVisibility": "stay",
+      "focusText": "",
+      "risk": "safe",
+      "nature": "investigation",
+      "minReward": 4,
+      "maxReward": 8,
+      "difficulty": "easy",
+      "timingMode": "fixed",
+      "fixedDurationDays": 3
+    }
+  ]
+}
