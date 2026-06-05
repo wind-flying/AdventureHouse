@@ -11,7 +11,8 @@ export const uiLabels = {
   },
   saveControls: {
     export: "导出存档",
-    import: "导入存档"
+    import: "导入存档",
+    reset: "清空存档"
   },
   navigation: {
     title: "界面切换",

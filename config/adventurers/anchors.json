@@ -1,0 +1,35 @@
+{
+  "adventurers": [
+    {
+      "id": "anchor-a",
+      "textId": "anchor-a",
+      "name": "",
+      "title": "",
+      "motive": "",
+      "roleType": "anchor",
+      "designerNote": "世界观固定角色：开场锚点，不属于普通随机人池。",
+      "knownByDefault": true,
+      "discoveryLevel": "trusted",
+      "preferences": ["food", "wood"],
+      "personality": {
+        "diligence": 0.66,
+        "courage": -0.52,
+        "greed": 0.04,
+        "sociability": 0.21,
+        "caution": 0.83,
+        "curiosity": -0.18,
+        "discipline": 0.61,
+        "resilience": 0.27
+      },
+      "capabilities": {
+        "physique": 31,
+        "survival": 44,
+        "exploration": 18,
+        "observation": 39,
+        "combat": 9
+      },
+      "impression": "",
+      "rumor": ""
+    }
+  ]
+}

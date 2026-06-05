@@ -1,0 +1,139 @@
+{
+  "intelDefinitions": [
+    {
+      "id": "prologue-old-road-opening-failure",
+      "textId": "prologue-old-road-opening-failure",
+      "kind": "lead",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "title": "",
+      "content": ""
+    },
+    {
+      "id": "prologue-old-road-whisper-lead",
+      "textId": "prologue-old-road-whisper-lead",
+      "kind": "lead",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "title": "",
+      "content": ""
+    },
+    {
+      "id": "prologue-old-road-lantern-lead",
+      "textId": "prologue-old-road-lantern-lead",
+      "kind": "lead",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "title": "",
+      "content": ""
+    },
+    {
+      "id": "prologue-old-road-lantern-watch-failure",
+      "textId": "prologue-old-road-lantern-watch-failure",
+      "kind": "lead",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "title": "",
+      "content": ""
+    },
+    {
+      "id": "prologue-old-road-lantern-pattern-lead",
+      "textId": "prologue-old-road-lantern-pattern-lead",
+      "kind": "lead",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "title": "",
+      "content": ""
+    },
+    {
+      "id": "prologue-old-road-rest-point-lead",
+      "textId": "prologue-old-road-rest-point-lead",
+      "kind": "lead",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "title": "",
+      "content": ""
+    },
+    {
+      "id": "prologue-old-road-cart-lead",
+      "textId": "prologue-old-road-cart-lead",
+      "kind": "lead",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "title": "",
+      "content": ""
+    },
+    {
+      "id": "prologue-old-road-cart-rut-lead",
+      "textId": "prologue-old-road-cart-rut-lead",
+      "kind": "lead",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "title": "",
+      "content": ""
+    },
+    {
+      "id": "prologue-old-road-cart-trace-failure",
+      "textId": "prologue-old-road-cart-trace-failure",
+      "kind": "lead",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "title": "",
+      "content": ""
+    },
+    {
+      "id": "prologue-old-road-culvert-lead",
+      "textId": "prologue-old-road-culvert-lead",
+      "kind": "lead",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "title": "",
+      "content": ""
+    },
+    {
+      "id": "prologue-old-road-marker-lead",
+      "textId": "prologue-old-road-marker-lead",
+      "kind": "lead",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "title": "",
+      "content": ""
+    },
+    {
+      "id": "prologue-old-road-cart-confirm-failure",
+      "textId": "prologue-old-road-cart-confirm-failure",
+      "kind": "lead",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "title": "",
+      "content": ""
+    },
+    {
+      "id": "prologue-old-road-recovery-lead",
+      "textId": "prologue-old-road-recovery-lead",
+      "kind": "lead",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "title": "",
+      "content": ""
+    },
+    {
+      "id": "prologue-old-road-side-track-lead",
+      "textId": "prologue-old-road-side-track-lead",
+      "kind": "lead",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "title": "",
+      "content": ""
+    },
+    {
+      "id": "prologue-old-road-cart-recovery-failure",
+      "textId": "prologue-old-road-cart-recovery-failure",
+      "kind": "lead",
+      "lineId": "old-road-night-lantern",
+      "lineTitle": "",
+      "title": "",
+      "content": ""
+    }
+  ]
+}

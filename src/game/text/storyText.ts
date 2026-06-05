@@ -1,9 +1,12 @@
+import introductionTextData from "../../../config/text/adventurer-introductions.json";
 import type {StoryEntry, StoryEntryTone} from "../core/types";
 
 type StoryEventKey =
   | "opening_day"
   | "task_created"
   | "daily_income"
+  | "adventurer_introduced_at_inn"
+  | "adventurer_referred_for_quest"
   | "task_started"
   | "task_progress"
   | "task_completed"
@@ -26,6 +29,18 @@ type StoryTemplateMap = {
   daily_income: {
     day: number;
     income: number;
+  };
+  adventurer_introduced_at_inn: {
+    day: number;
+    adventurerName: string;
+    adventurerTitle: string;
+  };
+  adventurer_referred_for_quest: {
+    day: number;
+    adventurerName: string;
+    adventurerTitle: string;
+    questDisplayId: string;
+    questTitle: string;
   };
   task_started: {
     day: number;
@@ -92,6 +107,8 @@ const storyText: Record<StoryEventKey, string[]> = {
     "第 {day} 天：靠着今天的零散买卖，据点进账 {income} 钱。",
     "第 {day} 天：虽然没什么大事发生，但日常经营还是带来了 {income} 钱收入。"
   ],
+  adventurer_introduced_at_inn: introductionTextData.introductionTexts.adventurer_introduced_at_inn,
+  adventurer_referred_for_quest: introductionTextData.introductionTexts.adventurer_referred_for_quest,
   task_started: [
     "第 {day} 天：{adventurerName} 接下了任务 {questDisplayId} · {questTitle}，目标转向了 {targetText}。",
     "第 {day} 天：{adventurerName} 撕下了任务 {questDisplayId} · {questTitle}，看样子愿意替你去处理 {targetText}。",
@@ -138,6 +155,8 @@ const storyEntryMeta: Record<StoryEventKey, {tone: StoryEntryTone; badge: string
   opening_day: {tone: "quest", badge: "开端"},
   task_created: {tone: "quest", badge: "委托"},
   daily_income: {tone: "reward", badge: "收益"},
+  adventurer_introduced_at_inn: {tone: "quest", badge: "新面孔"},
+  adventurer_referred_for_quest: {tone: "quest", badge: "引介"},
   task_started: {tone: "quest", badge: "出发"},
   task_progress: {tone: "quest", badge: "推进"},
   task_completed: {tone: "reward", badge: "完成"},

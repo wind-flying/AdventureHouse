@@ -1,4 +1,11 @@
-import {exportSaveData, importSaveData, loadGameData, replaceSavedGameData, saveGameData} from "./save";
+import {
+  clearSavedGameData,
+  exportSaveData,
+  importSaveData,
+  loadGameData,
+  replaceSavedGameData,
+  saveGameData
+} from "./save";
 import {advanceDay} from "./systems/dayLoop";
 import {
   type AdventurerDiscoveryLevel,
@@ -85,6 +92,7 @@ function bindEvents(gameData: GameData, elements: Elements): void {
   elements.importSaveBtn?.addEventListener("click", () => {
     elements.importSaveInput?.click();
   });
+  elements.resetSaveBtn?.addEventListener("click", () => handleResetSave(gameData, elements));
   elements.importSaveInput?.addEventListener("change", async () => {
     await handleImportSave(gameData, elements);
   });
@@ -176,6 +184,24 @@ async function handleImportSave(gameData: GameData, elements: Elements): Promise
   syncQuestForm(gameData, elements);
   render(gameData, elements);
   showNotification("存档已导入。", "success");
+}
+
+function handleResetSave(gameData: GameData, elements: Elements): void {
+  const confirmed = window.confirm("这会清空当前浏览器中的本地存档，并重置为初始开局。是否继续？");
+  if (!confirmed) {
+    return;
+  }
+
+  const freshGameData = createInitialGameData();
+  clearSavedGameData();
+  replaceGameData(gameData, freshGameData);
+  saveGameData(gameData);
+  populateQuestTemplateOptions(gameData, elements);
+  populateQuestFilterOptions(gameData, elements);
+  populateAdventurerFilterOptions(gameData, elements);
+  syncQuestForm(gameData, elements);
+  render(gameData, elements);
+  showNotification("本地存档已清空。", "success");
 }
 
 function replaceGameData(target: GameData, source: GameData): void {

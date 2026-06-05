@@ -1,4 +1,5 @@
 import {createStoryEntry} from "../../text/storyText";
+import {intelTextPoolsById} from "../../config";
 import {getQuestResourceLabel} from "../../ui/resourceDisplay";
 import {getUnlockedTemplatesFromQuestResolution} from "./questUnlocks";
 import {getQuestCapabilityWeights, getQuestResolutionInput, getQuestSuccessBreakdown, normalizeQuestFeatures} from "./taskResolution";
@@ -582,15 +583,16 @@ function createIntelRecord(
   summary: string
 ): IntelRecord {
   const intelDefinition = getIntelDefinitionById(gameData, intelId);
+  const generatedIntelText = getGeneratedIntelText(intelDefinition, `${quest.id}:${kind}:${intelId ?? "fallback"}:${quest.result?.outcome ?? "success"}`);
   const questTemplate = getQuestTemplateById(gameData, quest.templateId);
   return {
     id: intelId ?? `${quest.templateId}-${kind}-${gameData.day}`,
     kind,
-    title,
+    title: generatedIntelText.title ?? title,
     day: gameData.day,
-    summary,
+    summary: generatedIntelText.content ?? summary,
     lineId: intelDefinition?.lineId ?? questTemplate?.lineId ?? null,
-    lineTitle: intelDefinition?.lineTitle ?? questTemplate?.lineTitle ?? null,
+    lineTitle: generatedIntelText.lineTitle ?? intelDefinition?.lineTitle ?? questTemplate?.lineTitle ?? null,
     sourceQuestDisplayId: quest.displayId,
     sourceQuestTitle: quest.title,
     sourceTemplateId: quest.templateId,
@@ -673,17 +675,21 @@ function buildQuestResultDisplay(
   const fallbackKind = savedResult.type === "discovery" ? "discovery" : "lead";
   const kind = savedResult.details.intelKind ?? fallbackKind;
   const intelDefinition = getIntelDefinitionById(gameData, savedResult.details.intelId ?? undefined);
+  const generatedIntelText = getGeneratedIntelText(
+    intelDefinition,
+    `${quest.id}:${kind}:${savedResult.details.intelId ?? "fallback"}:${savedResult.outcome}`
+  );
 
   if (savedResult.outcome === "failure") {
     return {
-      intelTitleOverride: intelDefinition?.title ?? getFallbackIntelTitle(quest, kind, true),
-      intelSummaryOverride: intelDefinition?.content ?? template?.failureIntelSummary ?? `${quest.title} 这次没有带回稳定成果`
+      intelTitleOverride: generatedIntelText.title ?? intelDefinition?.title ?? getFallbackIntelTitle(quest, kind, true),
+      intelSummaryOverride: generatedIntelText.content ?? intelDefinition?.content ?? template?.failureIntelSummary ?? `${quest.title} 这次没有带回稳定成果`
     };
   }
 
   return {
-    intelTitleOverride: intelDefinition?.title ?? getFallbackIntelTitle(quest, kind),
-    intelSummaryOverride: intelDefinition?.content ?? (savedResult.type === "discovery" ? buildDiscoveryText(quest) : buildLeadText(quest))
+    intelTitleOverride: generatedIntelText.title ?? intelDefinition?.title ?? getFallbackIntelTitle(quest, kind),
+    intelSummaryOverride: generatedIntelText.content ?? intelDefinition?.content ?? (savedResult.type === "discovery" ? buildDiscoveryText(quest) : buildLeadText(quest))
   };
 }
 
@@ -701,6 +707,57 @@ function buildLeadText(quest: Quest): string {
 
 function buildDiscoveryText(quest: Quest): string {
   return `${quest.title} 带回了一条异常发现记录`;
+}
+
+function getGeneratedIntelText(
+  intelDefinition: IntelDefinition | undefined,
+  seedKey: string
+): {title: string | null; content: string | null; lineTitle: string | null} {
+  if (!intelDefinition) {
+    return {
+      title: null,
+      content: null,
+      lineTitle: null
+    };
+  }
+
+  const textPool = intelTextPoolsById[intelDefinition.textId ?? intelDefinition.id] ?? {};
+  return {
+    title: pickFlexibleTextValue(textPool.title, `${seedKey}:title`, intelDefinition.title),
+    content: pickFlexibleTextValue(textPool.content, `${seedKey}:content`, intelDefinition.content),
+    lineTitle: pickFlexibleTextValue(textPool.lineTitle, `${seedKey}:lineTitle`, intelDefinition.lineTitle ?? "")
+  };
+}
+
+function pickFlexibleTextValue(
+  value: string | string[] | undefined,
+  seedKey: string,
+  fallback: string
+): string {
+  if (Array.isArray(value)) {
+    if (value.length === 0) {
+      return fallback;
+    }
+
+    return pickSeeded(value, seedKey);
+  }
+
+  return value ?? fallback;
+}
+
+function pickSeeded<T>(items: T[], seedKey: string): T {
+  const normalized = (normalizedSeed(seedKey) + 1) / 2;
+  const index = Math.min(items.length - 1, Math.floor(normalized * items.length));
+  return items[index];
+}
+
+function normalizedSeed(seedKey: string): number {
+  let hash = 0;
+  for (let index = 0; index < seedKey.length; index += 1) {
+    hash = ((hash << 5) - hash + seedKey.charCodeAt(index)) | 0;
+  }
+
+  return ((hash >>> 0) / 0xffffffff) * 2 - 1;
 }
 
 function pushUnlockedFollowUpEntries(

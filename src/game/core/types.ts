@@ -62,16 +62,31 @@ export type AdventurerPersonality = Record<AdventurerPersonalityAxis, number>;
 export type AdventurerCapabilities = Record<AdventurerCapabilityAxis, number>;
 export type QuestFeatures = Record<QuestFeatureAxis, number>;
 
+export interface AdventurerAxisRange {
+  min: number;
+  max: number;
+}
+
+export type AdventurerPersonalityRanges = Partial<Record<AdventurerPersonalityAxis, AdventurerAxisRange>>;
+export type AdventurerCapabilityRanges = Partial<Record<AdventurerCapabilityAxis, AdventurerAxisRange>>;
+
 export interface ResourceDefinition {
   id: string;
   name: string;
   icon: string;
 }
 
+export interface NamePoolDefinition {
+  id: string;
+  surnames: string[];
+  givenNames: string[];
+}
+
 export interface QuestTemplate {
   id: string;
   title: string;
   description: string;
+  textId?: string;
   focusText?: string;
   lineId?: string;
   lineTitle?: string;
@@ -89,6 +104,8 @@ export interface QuestTemplate {
   resultIntelPoolIds?: string[];
   failureIntelId?: string;
   resolutionVisibility?: QuestResolutionVisibility;
+  successVisibility?: QuestResolutionVisibility;
+  failureVisibility?: QuestResolutionVisibility;
   prerequisiteTemplateId?: string;
   prerequisiteOutcome?: QuestResultOutcome;
   failureIntelSummary?: string;
@@ -104,6 +121,9 @@ export interface QuestTemplate {
   difficulty: Difficulty;
   timingMode: QuestTimingMode;
   fixedDurationDays?: number;
+  preferredArchetypeTags?: string[];
+  allowGeneratedTaker?: boolean;
+  generatedTakerWeight?: number;
 }
 
 export type QuestUnlockCondition =
@@ -205,6 +225,7 @@ export interface IntelDefinition {
   kind: IntelKind;
   title: string;
   content: string;
+  textId?: string;
   lineId?: string;
   lineTitle?: string;
   contentStageTag?: ContentStageTag;
@@ -216,14 +237,20 @@ export interface AdventurerTemplate {
   name: string;
   title: string;
   motive: string;
+  textId?: string;
   roleType?: AdventurerRoleType;
+  namePoolId?: string;
+  archetypeTags?: string[];
+  introductionTags?: string[];
   contentStageTag?: ContentStageTag;
   designerNote?: string;
   knownByDefault: boolean;
   discoveryLevel: AdventurerDiscoveryLevel;
   preferences: string[];
   personality: AdventurerPersonality;
+  personalityRanges?: AdventurerPersonalityRanges;
   capabilities: AdventurerCapabilities;
+  capabilityRanges?: AdventurerCapabilityRanges;
   impression: string;
   rumor: string;
 }
@@ -265,6 +292,7 @@ export interface GameData {
   questIdCounter: number;
   dailyShopIncome: number;
   resources: ResourceDefinition[];
+  namePools: NamePoolDefinition[];
   questTemplates: QuestTemplate[];
   intelDefinitions: IntelDefinition[];
   adventurerTemplates: AdventurerTemplate[];
@@ -397,6 +425,7 @@ export interface Elements {
   knownAdventurerDisplay: HTMLSpanElement | null;
   exportSaveBtn: HTMLButtonElement | null;
   importSaveBtn: HTMLButtonElement | null;
+  resetSaveBtn: HTMLButtonElement | null;
   importSaveInput: HTMLInputElement | null;
   templateSelect: HTMLSelectElement | null;
   questStatusFilterSelect: HTMLSelectElement | null;

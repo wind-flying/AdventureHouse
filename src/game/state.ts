@@ -1,4 +1,4 @@
-import {adventurerTemplates, intelDefinitions, questTemplates, resources} from "./config";
+import {adventurerTemplates, intelDefinitions, namePools, questTemplates, resources} from "./config";
 import {createInitialAdventurerInstances} from "./systems/adventurers/adventurerInstances";
 import {createStoryEntry} from "./text/storyText";
 import type {Elements, GameData} from "./core/types";
@@ -37,6 +37,7 @@ export function createInitialGameData(): GameData {
     questIdCounter: INITIAL_QUEST_ID,
     dailyShopIncome: DAILY_SHOP_INCOME,
     resources,
+    namePools,
     questTemplates,
     intelDefinitions,
     adventurerTemplates,
@@ -57,6 +58,7 @@ export function createEmptyElements(): Elements {
     knownAdventurerDisplay: null,
     exportSaveBtn: null,
     importSaveBtn: null,
+    resetSaveBtn: null,
     importSaveInput: null,
     templateSelect: null,
     questStatusFilterSelect: null,

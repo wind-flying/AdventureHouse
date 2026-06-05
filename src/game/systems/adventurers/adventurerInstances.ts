@@ -1,10 +1,12 @@
 import {INITIAL_DAY} from "../../state";
+import {adventurerTextPoolsById} from "../../config";
 import type {
   AdventurerDiscoveryLevel,
   AdventurerInstance,
   AdventurerOriginType,
   AdventurerRoleType,
   AdventurerTemplate,
+  NamePoolDefinition,
   SavedAdventurer,
   SavedAdventurerV2,
   SavedAdventurerV3
@@ -17,6 +19,11 @@ const DISCOVERY_POINTS_BY_LEVEL: Record<AdventurerDiscoveryLevel, number> = {
   familiar: 4,
   trusted: 7
 };
+
+const GENERATED_VARIANCE = {
+  personality: 0.12,
+  capability: 8
+} as const;
 
 export function getDiscoveryLevelFromPoints(points: number): AdventurerDiscoveryLevel {
   if (points >= DISCOVERY_POINTS_BY_LEVEL.trusted) {
@@ -69,10 +76,48 @@ export function createHandcraftedAdventurerInstance(
 export function createGeneratedAdventurerInstance(
   template: AdventurerTemplate,
   day: number,
-  seedKey: string
+  seedKey: string,
+  namePools: NamePoolDefinition[]
 ): AdventurerInstance {
+  const generatedText = getGeneratedAdventurerText(template, seedKey);
+  const personality = Object.fromEntries(
+    Object.entries(template.personality).map(([axis, value]) => [
+      axis,
+      generateAxisValue(
+        value,
+        template.personalityRanges?.[axis as keyof typeof template.personalityRanges],
+        `${seedKey}:${axis}:p`,
+        GENERATED_VARIANCE.personality,
+        -1,
+        1
+      )
+    ])
+  ) as AdventurerTemplate["personality"];
+  const capabilities = Object.fromEntries(
+    Object.entries(template.capabilities).map(([axis, value]) => [
+      axis,
+      Math.round(
+        generateAxisValue(
+          value,
+          template.capabilityRanges?.[axis as keyof typeof template.capabilityRanges],
+          `${seedKey}:${axis}:c`,
+          GENERATED_VARIANCE.capability,
+          0,
+          100
+        )
+      )
+    ])
+  ) as AdventurerTemplate["capabilities"];
+
   return {
     ...createAdventurerInstanceFromTemplate(template, day, "generated"),
+    name: getGeneratedAdventurerName(template, seedKey, namePools),
+    title: generatedText.title,
+    motive: generatedText.motive,
+    impression: generatedText.impression,
+    rumor: generatedText.rumor,
+    personality,
+    capabilities,
     instanceId: createAdventurerInstanceId(seedKey, "generated")
   };
 }
@@ -81,7 +126,9 @@ export function createInitialAdventurerInstances(
   templates: AdventurerTemplate[],
   day = INITIAL_DAY
 ): AdventurerInstance[] {
-  return templates.map((template) => createHandcraftedAdventurerInstance(template, day));
+  return templates
+    .filter((template) => template.knownByDefault || getAdventurerRoleType(template) === "anchor")
+    .map((template) => createHandcraftedAdventurerInstance(template, day));
 }
 
 export function restoreAdventurerInstance(
@@ -169,6 +216,116 @@ function getSafeNullableInteger(value: number | null): number | null {
   }
 
   return Number.isInteger(value) ? value : null;
+}
+
+function getGeneratedAdventurerName(
+  template: AdventurerTemplate,
+  seedKey: string,
+  namePools: NamePoolDefinition[]
+): string {
+  const pool = template.namePoolId
+    ? namePools.find((namePool) => namePool.id === template.namePoolId) ?? null
+    : null;
+  if (!pool || pool.surnames.length === 0 || pool.givenNames.length === 0) {
+    return template.name;
+  }
+
+  const surname = pickSeeded(pool.surnames, `${seedKey}:surname`);
+  const givenName = pickSeeded(pool.givenNames, `${seedKey}:given`);
+  return `${surname}${givenName}`;
+}
+
+function getGeneratedAdventurerText(
+  template: AdventurerTemplate,
+  seedKey: string
+): Pick<AdventurerTemplate, "title" | "motive" | "impression" | "rumor"> {
+  const textPool = adventurerTextPoolsById[template.textId ?? template.id] ?? {};
+  return {
+    title: pickFlexibleTextValue(textPool.title, `${seedKey}:title`, template.title),
+    motive: pickFlexibleTextValue(textPool.motive, `${seedKey}:motive`, template.motive),
+    impression: pickFlexibleTextValue(textPool.impression, `${seedKey}:impression`, template.impression),
+    rumor: pickFlexibleTextValue(textPool.rumor, `${seedKey}:rumor`, template.rumor)
+  };
+}
+
+function getSeededOffset(seedKey: string, amplitude: number): number {
+  return normalizedSeed(seedKey) * amplitude;
+}
+
+function generateAxisValue(
+  baseValue: number,
+  range: {min: number; max: number} | undefined,
+  seedKey: string,
+  fallbackAmplitude: number,
+  minimum: number,
+  maximum: number
+): number {
+  const effectiveRange = range ?? {
+    min: baseValue - fallbackAmplitude,
+    max: baseValue + fallbackAmplitude
+  };
+
+  const safeMin = clamp(effectiveRange.min, minimum, maximum);
+  const safeMax = clamp(effectiveRange.max, minimum, maximum);
+  if (safeMax <= safeMin) {
+    return clamp(baseValue, minimum, maximum);
+  }
+
+  const center = clamp(baseValue, safeMin, safeMax);
+  const centeredRatio = getCenteredRatio(seedKey);
+  if (centeredRatio >= 0.5) {
+    const upperRatio = (centeredRatio - 0.5) / 0.5;
+    return lerp(center, safeMax, upperRatio);
+  }
+
+  const lowerRatio = centeredRatio / 0.5;
+  return lerp(safeMin, center, lowerRatio);
+}
+
+function getCenteredRatio(seedKey: string): number {
+  const first = (normalizedSeed(`${seedKey}:a`) + 1) / 2;
+  const second = (normalizedSeed(`${seedKey}:b`) + 1) / 2;
+  const third = (normalizedSeed(`${seedKey}:c`) + 1) / 2;
+  return (first + second + third) / 3;
+}
+
+function pickFlexibleTextValue(
+  value: string | string[] | undefined,
+  seedKey: string,
+  fallback: string
+): string {
+  if (Array.isArray(value)) {
+    if (value.length === 0) {
+      return fallback;
+    }
+
+    return pickSeeded(value, seedKey);
+  }
+
+  return value ?? fallback;
+}
+
+function pickSeeded<T>(items: T[], seedKey: string): T {
+  const normalized = (normalizedSeed(seedKey) + 1) / 2;
+  const index = Math.min(items.length - 1, Math.floor(normalized * items.length));
+  return items[index];
+}
+
+function normalizedSeed(seedKey: string): number {
+  let hash = 0;
+  for (let index = 0; index < seedKey.length; index += 1) {
+    hash = ((hash << 5) - hash + seedKey.charCodeAt(index)) | 0;
+  }
+
+  return ((hash >>> 0) / 0xffffffff) * 2 - 1;
+}
+
+function clamp(value: number, minimum: number, maximum: number): number {
+  return Math.min(maximum, Math.max(minimum, value));
+}
+
+function lerp(start: number, end: number, ratio: number): number {
+  return start + (end - start) * ratio;
 }
 
 function createAdventurerInstanceId(sourceKey: string, originType: AdventurerOriginType): string {

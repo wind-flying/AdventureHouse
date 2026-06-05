@@ -1,0 +1,14 @@
+{
+  "introductionTexts": {
+    "adventurer_introduced_at_inn": [
+      "第 {day} 天：店里今天多了个新面孔。有人把 {adventurerName} 带来吃饭，你目前只知道对方大概是个 {adventurerTitle}。",
+      "第 {day} 天：熟客吃饭时顺口提起了一个名字：{adventurerName}。对方似乎属于 {adventurerTitle} 这一类人。",
+      "第 {day} 天：饭桌边有人替你介绍了 {adventurerName}，眼下你对这个人的把握，还停留在 {adventurerTitle} 这层印象。"
+    ],
+    "adventurer_referred_for_quest": [
+      "第 {day} 天：有人提起 {adventurerName} 也许会对任务 {questDisplayId} · {questTitle} 感兴趣。现在你只知道，对方像是个 {adventurerTitle}。",
+      "第 {day} 天：路上有人把 {adventurerName} 推荐给了你，说不定这人适合接任务 {questDisplayId} · {questTitle}。你目前只摸到 {adventurerTitle} 这层印象。",
+      "第 {day} 天：围绕任务 {questDisplayId} · {questTitle} 的讨论里冒出了一个新名字：{adventurerName}。现阶段你只知道，这人大概属于 {adventurerTitle} 这一类。"
+    ]
+  }
+}

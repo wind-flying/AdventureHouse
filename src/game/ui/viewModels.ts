@@ -20,6 +20,7 @@ import {
   getQuestProgressText
 } from "../text/uiText";
 import type {Adventurer, GameData, IntelRecord, IntelStatus, Quest} from "../core/types";
+import {isAdventurerKnownToPlayer} from "../systems/adventurers/adventurerAppearance";
 import {getQuestDisplayIdByInternalId, getQuestPublishMode, getQuestTemplateById} from "../systems/quests/taskBoard";
 import {getFollowUpTemplatesForIntel} from "../systems/quests/questUnlocks";
 import {getQuestResultSummary, getQuestResultVisibleReasonTexts} from "../systems/quests/taskResult";
@@ -240,7 +241,7 @@ function getIntelStatus(gameData: GameData, record: IntelRecord): IntelStatus {
 }
 
 export function getKnownAdventurers(gameData: GameData): Adventurer[] {
-  return gameData.adventurers.filter((adventurer) => adventurer.knownByDefault || adventurer.lastSeenDay !== null);
+  return gameData.adventurers.filter((adventurer) => adventurer.knownByDefault || isAdventurerKnownToPlayer(adventurer));
 }
 
 function getActiveQuestCountFromData(gameData: GameData): number {

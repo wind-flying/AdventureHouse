@@ -1,5 +1,6 @@
 import {LOG_HISTORY_LIMIT} from "../state";
 import {createStoryEntry} from "../text/storyText";
+import {advanceAdventurerAppearance} from "./adventurers/adventurerAppearance";
 import {advanceQuestBoard} from "./quests/taskBoard";
 import type {GameData, StoryEntry} from "../core/types";
 
@@ -15,6 +16,7 @@ export function advanceDay(gameData: GameData): void {
   ];
 
   advanceQuestBoard(gameData, nextDayEntries);
+  advanceAdventurerAppearance(gameData, nextDayEntries);
 
   if (gameData.player.quests.length === 0) {
     nextDayEntries.push(
@@ -55,6 +57,8 @@ function getStoryEntryPriority(entry: StoryEntry): number {
       return 75;
     case "委托":
       return 65;
+    case "新面孔":
+      return 55;
     case "出发":
       return 40;
     case "推进":

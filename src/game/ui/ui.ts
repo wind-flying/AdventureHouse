@@ -83,6 +83,7 @@ export function createUI(container: HTMLDivElement, gameData: GameData, elements
         <div class="toolbar-actions">
           <button id="export-save-btn" class="secondary-button" type="button">${uiLabels.saveControls.export}</button>
           <button id="import-save-btn" class="secondary-button" type="button">${uiLabels.saveControls.import}</button>
+          <button id="reset-save-btn" class="secondary-button" type="button">${uiLabels.saveControls.reset}</button>
           <input id="import-save-input" type="file" accept="application/json,.json" hidden />
           <button id="next-day-btn" class="primary-button" type="button">${uiLabels.form.nextDay}</button>
         </div>
@@ -260,6 +261,7 @@ export function createUI(container: HTMLDivElement, gameData: GameData, elements
   elements.knownAdventurerDisplay = container.querySelector("#known-adventurer-display");
   elements.exportSaveBtn = container.querySelector("#export-save-btn");
   elements.importSaveBtn = container.querySelector("#import-save-btn");
+  elements.resetSaveBtn = container.querySelector("#reset-save-btn");
   elements.importSaveInput = container.querySelector("#import-save-input");
   elements.templateSelect = container.querySelector("#template-select");
   elements.questStatusFilterSelect = container.querySelector("#quest-status-filter");
@@ -594,16 +596,40 @@ function getFilteredQuests(gameData: GameData): Quest[] {
 
 function getVisibleQuestTemplates(gameData: GameData) {
   return gameData.questTemplates.filter((template) => {
-    const hasResolvedSameTemplate = gameData.player.quests.some((quest) => {
-      return quest.templateId === template.id && quest.completedDay !== null;
+    const hasHiddenSuccess = gameData.player.quests.some((quest) => {
+      return quest.templateId === template.id
+        && quest.completedDay !== null
+        && quest.result?.outcome === "success"
+        && getQuestTemplateOutcomeVisibility(template, "success") === "hide";
+    });
+    const hasHiddenFailure = gameData.player.quests.some((quest) => {
+      return quest.templateId === template.id
+        && quest.completedDay !== null
+        && quest.result?.outcome === "failure"
+        && getQuestTemplateOutcomeVisibility(template, "failure") === "hide";
     });
 
-    if ((template.resolutionVisibility ?? (template.followUpStageTag ? "hide" : "stay")) === "hide" && hasResolvedSameTemplate) {
+    if (hasHiddenSuccess || hasHiddenFailure) {
       return false;
     }
 
     return isQuestTemplateUnlocked(gameData, template);
   });
+}
+
+function getQuestTemplateOutcomeVisibility(
+  template: GameData["questTemplates"][number],
+  outcome: "success" | "failure"
+) {
+  if (outcome === "success") {
+    return template.successVisibility
+      ?? template.resolutionVisibility
+      ?? (template.followUpStageTag ? "hide" : "stay");
+  }
+
+  return template.failureVisibility
+    ?? template.resolutionVisibility
+    ?? (template.followUpStageTag ? "hide" : "stay");
 }
 
 function renderStock(gameData: GameData, elements: Elements): void {

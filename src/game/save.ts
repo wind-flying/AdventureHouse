@@ -20,6 +20,8 @@ import type {
 } from "./core/types";
 
 const SAVE_STORAGE_KEY = "adventure-house.save";
+// 只在持久化结构真正变化时才升级版本。
+// 开发阶段的内部重构、公式细调、文案修改不应机械地增加存档版本。
 const SAVE_FORMAT_VERSION = 4 as const;
 
 export function loadGameData(): GameData | null {
@@ -70,6 +72,18 @@ export function saveGameData(gameData: GameData): void {
 
 export function replaceSavedGameData(gameData: GameData): void {
   saveGameData(gameData);
+}
+
+export function clearSavedGameData(): void {
+  if (!canUseLocalStorage()) {
+    return;
+  }
+
+  try {
+    window.localStorage.removeItem(SAVE_STORAGE_KEY);
+  } catch {
+    // 本地存储不可用时静默降级，不阻断当前流程。
+  }
 }
 
 function createSaveData(gameData: GameData): SaveDataV4 {
