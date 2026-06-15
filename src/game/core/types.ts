@@ -1,6 +1,6 @@
 export type Difficulty = "easy" | "medium" | "hard";
 export type QuestStatus = "pending" | "active" | "completed";
-export type TabId = "overview" | "quests" | "adventurers" | "intel" | "stock" | "log";
+export type TabId = "overview" | "quests" | "adventurers" | "intel" | "stock" | "log" | "save";
 export type NotificationType = "info" | "success" | "error";
 export type QuestCategory = "daily" | "main";
 export type QuestTimingMode = "byDifficulty" | "fixed";

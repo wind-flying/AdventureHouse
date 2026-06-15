@@ -4,9 +4,7 @@
   line-height: 1.5;
   font-weight: 400;
   color: #1f2328;
-  background:
-    radial-gradient(circle at top left, rgba(208, 231, 202, 0.75), transparent 28%),
-    linear-gradient(180deg, #f6efdf 0%, #ece1ce 100%);
+  background: #eee5d5;
 }
 
 * {

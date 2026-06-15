@@ -1,7 +1,4 @@
 export const uiLabels = {
-  brandEyebrow: "Adventure House",
-  brandTitle: "村庄据点原型",
-  brandDescription: "单屏布局版本，优先让状态查看和决策切换更顺手。",
   summary: {
     day: "日期",
     money: "资金",
@@ -15,14 +12,13 @@ export const uiLabels = {
     reset: "清空存档"
   },
   navigation: {
-    title: "界面切换",
-    description: "核心状态固定显示，详细内容在中间切换。",
     overview: "总览",
     quests: "任务",
     adventurers: "冒险者",
     intel: "消息板",
     stock: "库存",
-    log: "日志"
+    log: "日志",
+    save: "存档"
   },
   panels: {
     overviewTitle: "总览",
@@ -46,7 +42,8 @@ export const uiLabels = {
     logTitle: "日志",
     logDescription: "完整记录最近一段时间的每日结果，方便回溯。",
     latestStoriesTitle: "今日动态",
-    latestStoriesDescription: "当天发生的事都放在这里；过去的记录再去日志中回看。"
+    saveTitle: "存档",
+    saveDescription: "管理当前进度的导出、导入与清空。"
   },
   overviewNotes: {
     income: "营业收入",
@@ -74,7 +71,6 @@ export const uiLabels = {
   },
   questCard: {
     prefix: "任务",
-    followUpBadge: "后续",
     collect: "目标",
     investigate: "关注",
     result: "结果",

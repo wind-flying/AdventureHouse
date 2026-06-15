@@ -108,9 +108,7 @@ export function getQuestCardViewModel(gameData: GameData, quest: Quest): QuestCa
     displayId: quest.displayId,
     titleText: quest.title,
     descriptionText: quest.description,
-    badgeText: quest.followUpStageTag
-      ? `${getQuestNatureText(quest.nature)} · ${uiLabels.questCard.followUpBadge}`
-      : getQuestNatureText(quest.nature),
+    badgeText: getQuestNatureText(quest.nature),
     statusClass: quest.status,
     statusText: getQuestStatusText(quest.status),
     bodyText,
