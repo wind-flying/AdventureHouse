@@ -26,7 +26,8 @@ export type QuestResultReasonTag =
   | "stability"
   | "intel"
   | "capability"
-  | "personality";
+  | "personality"
+  | "item";
 export type IntelKind = "lead" | "discovery";
 export type IntelStatus = "recorded" | "followable" | "triggered";
 export type QuestUnlockMode = "all" | "any";
@@ -119,6 +120,9 @@ export interface ItemDefinition {
   category: ItemCategory;
   sortOrder: number;
   stackable: true;
+  giftValue: number;
+  shelfLifeQuests: number;
+  uses: number;
   playerDescription: string;
   feedbackText?: string;
   effects: ItemEffectDefinition[];
@@ -147,6 +151,14 @@ export interface EquipmentInstance {
 export interface PlayerInventory {
   itemStacks: Partial<Record<string, number>>;
   equipments: EquipmentInstance[];
+}
+
+export interface AdventurerGiftItem {
+  giftId: string;
+  itemId: string;
+  giftedDay: number;
+  remainingShelfLife: number;
+  remainingUses: number;
 }
 
 export interface NamePoolDefinition {
@@ -323,6 +335,7 @@ export interface AdventurerInstance extends AdventurerTemplate {
   acquaintancePoints: number;
   lastSeenDay: number | null;
   currentQuestId: number | null;
+  giftedItems: AdventurerGiftItem[];
 }
 
 export type Adventurer = AdventurerInstance;
@@ -517,6 +530,27 @@ export interface SaveDataV6 {
   };
 }
 
+export interface SaveDataV7 {
+  version: 7;
+  game: {
+    day: number;
+    questIdCounter: number;
+    adventurerIdCounter: number;
+    pinnedAdventurerIds: string[];
+    player: {
+      money: number;
+      resultInsightLevel: ResultInsightLevel;
+      quests: SavedQuest[];
+      stock: Partial<Record<string, number>>;
+      inventory: PlayerInventory;
+      leads: IntelRecord[];
+      discoveries: IntelRecord[];
+    };
+    adventurers: SavedAdventurer[];
+    dayLog: StoryEntry[];
+  };
+}
+
 export interface Elements {
   container: HTMLDivElement | null;
   dayDisplay: HTMLSpanElement | null;
@@ -528,6 +562,10 @@ export interface Elements {
   encyclopediaCloseBtn: HTMLButtonElement | null;
   encyclopediaNavigation: HTMLElement | null;
   encyclopediaContent: HTMLElement | null;
+  giftModal: HTMLDivElement | null;
+  giftContent: HTMLElement | null;
+  giftCloseBtn: HTMLButtonElement | null;
+  giftConfirmBtn: HTMLButtonElement | null;
   exportSaveBtn: HTMLButtonElement | null;
   importSaveBtn: HTMLButtonElement | null;
   resetSaveBtn: HTMLButtonElement | null;

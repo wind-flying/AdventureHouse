@@ -120,6 +120,8 @@ export function getQuestResultReasonTagText(tag: QuestResultReasonTag): string {
       return "事情的发展没有按常规路数推进。";
     case "intel":
       return "先前掌握的信息这次确实帮上了忙。";
+    case "item":
+      return "随身带着的补给在关键时候改变了结果。";
     case "capability":
       return "这次的人选和委托性质是否贴合，影响很大。";
     case "personality":

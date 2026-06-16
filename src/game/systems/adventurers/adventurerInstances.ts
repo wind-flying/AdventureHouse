@@ -7,6 +7,7 @@ import type {
   AdventurerRoleType,
   AdventurerSpawnMode,
   AdventurerTemplate,
+  AdventurerGiftItem,
   GameData,
   NamePoolDefinition,
   SavedAdventurer,
@@ -66,7 +67,8 @@ export function createAdventurerInstanceFromTemplate(
       ? DISCOVERY_POINTS_BY_LEVEL[template.discoveryLevel]
       : DISCOVERY_POINTS_BY_LEVEL.heard,
     lastSeenDay: template.knownByDefault ? day : null,
-    currentQuestId: null
+    currentQuestId: null,
+    giftedItems: []
   };
 }
 
@@ -207,7 +209,8 @@ export function restoreAdventurerInstance(
     acquaintancePoints,
     knownLevel: getDiscoveryLevelFromPoints(acquaintancePoints),
     lastSeenDay: getSafeNullableInteger(savedAdventurer.lastSeenDay),
-    currentQuestId: getSafeNullableInteger(savedAdventurer.currentQuestId)
+    currentQuestId: getSafeNullableInteger(savedAdventurer.currentQuestId),
+    giftedItems: sanitizeGiftedItems(savedAdventurer.giftedItems)
   };
 }
 
@@ -249,8 +252,28 @@ export function restoreLegacyAdventurerState(
     acquaintancePoints,
     knownLevel: getDiscoveryLevelFromPoints(acquaintancePoints),
     lastSeenDay: getSafeNullableInteger(legacyState.lastSeenDay),
-    currentQuestId: getSafeNullableInteger(legacyState.currentQuestId)
+    currentQuestId: getSafeNullableInteger(legacyState.currentQuestId),
+    giftedItems: [...baseAdventurer.giftedItems]
   };
+}
+
+function sanitizeGiftedItems(giftedItems: AdventurerGiftItem[] | undefined): AdventurerGiftItem[] {
+  if (!Array.isArray(giftedItems)) {
+    return [];
+  }
+
+  return giftedItems
+    .filter((gift) => {
+      return typeof gift.giftId === "string"
+        && typeof gift.itemId === "string"
+        && Number.isInteger(gift.giftedDay)
+        && gift.giftedDay >= 1
+        && Number.isInteger(gift.remainingShelfLife)
+        && gift.remainingShelfLife > 0
+        && Number.isInteger(gift.remainingUses)
+        && gift.remainingUses > 0;
+    })
+    .map((gift) => ({...gift}));
 }
 
 function getSafeInteger(value: number, fallback: number): number {

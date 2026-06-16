@@ -113,6 +113,9 @@ function buildAdventurerMarkup(adventurer: AdventurerCardViewModel): string {
     <div class="adventurer-head">
       <strong>${adventurer.name}</strong>
       <div class="adventurer-head-actions">
+        ${adventurer.canReceiveGift
+          ? `<button class="ghost-button gift-adventurer" type="button" data-gift-adventurer-id="${adventurer.id}">${adventurer.giftActionText}</button>`
+          : ""}
         <button class="ghost-button pin-toggle" type="button" data-adventurer-id="${adventurer.id}">${adventurer.pinActionText}</button>
         <span class="status-pill ${adventurer.levelClass}">${adventurer.levelText}</span>
       </div>

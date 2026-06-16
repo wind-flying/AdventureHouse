@@ -31,6 +31,12 @@ import {
   openEncyclopedia,
   selectEncyclopediaEntry
 } from "./ui/encyclopedia";
+import {
+  closeGiftDialog,
+  confirmGiftDialog,
+  openGiftDialogForAdventurer,
+  openGiftDialogForItem
+} from "./ui/gifting";
 
 export function initApp(): void {
   const container = document.getElementById("game-container");
@@ -62,6 +68,25 @@ function bindEvents(gameData: GameData, elements: Elements): void {
       closeEncyclopedia(elements);
     }
   });
+  elements.giftCloseBtn?.addEventListener("click", () => {
+    closeGiftDialog(elements);
+  });
+  elements.giftModal?.addEventListener("click", (event) => {
+    if (event.target === elements.giftModal) {
+      closeGiftDialog(elements);
+    }
+  });
+  elements.giftConfirmBtn?.addEventListener("click", () => {
+    const result = confirmGiftDialog(gameData, elements);
+    if (!result) {
+      return;
+    }
+    if (result.ok) {
+      saveGameData(gameData);
+    }
+    render(gameData, elements);
+    showNotification(result.message, result.type);
+  });
   elements.encyclopediaNavigation?.addEventListener("click", (event) => {
     const target = event.target;
     if (!(target instanceof HTMLElement)) {
@@ -77,6 +102,7 @@ function bindEvents(gameData: GameData, elements: Elements): void {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeEncyclopedia(elements);
+      closeGiftDialog(elements);
     }
   });
   elements.templateSelect?.addEventListener("change", () => syncQuestForm(gameData, elements));
@@ -107,6 +133,12 @@ function bindEvents(gameData: GameData, elements: Elements): void {
       return;
     }
 
+    const giftButton = target.closest<HTMLButtonElement>(".gift-adventurer");
+    if (giftButton?.dataset.giftAdventurerId) {
+      openGiftDialogForAdventurer(gameData, elements, giftButton.dataset.giftAdventurerId);
+      return;
+    }
+
     const button = target.closest<HTMLButtonElement>(".pin-toggle");
     if (!button) {
       return;
@@ -120,6 +152,17 @@ function bindEvents(gameData: GameData, elements: Elements): void {
     togglePinnedAdventurer(gameData, adventurerId);
     saveGameData(gameData);
     render(gameData, elements);
+  });
+  elements.stockList?.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const giftButton = target.closest<HTMLButtonElement>(".gift-stock-item");
+    if (giftButton?.dataset.giftItemId) {
+      openGiftDialogForItem(gameData, elements, giftButton.dataset.giftItemId);
+    }
   });
   elements.createQuestBtn?.addEventListener("click", () => handleCreateQuest(gameData, elements));
   elements.exportSaveBtn?.addEventListener("click", () => handleExportSave(gameData, elements));

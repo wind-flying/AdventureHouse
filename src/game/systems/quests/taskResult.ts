@@ -1,5 +1,6 @@
 import {createStoryEntry} from "../../text/storyText";
 import {intelTextPoolsById} from "../../config";
+import {decayGiftedItemsAfterQuest, tryResolveFailureWithGiftedItems} from "../gifting";
 import {getQuestResourceLabel} from "../../ui/resourceDisplay";
 import {getUnlockedTemplatesFromQuestResolution} from "./questUnlocks";
 import {getQuestCapabilityWeights, getQuestResolutionInput, getQuestSuccessBreakdown, normalizeQuestFeatures} from "./taskResolution";
@@ -29,7 +30,12 @@ export function resolveQuestResult(gameData: GameData, quest: Quest): QuestResul
   if (outcome === "failure") {
     const failureIntel = getIntelDefinitionById(gameData, template?.failureIntelId);
     const failureKind = failureIntel?.kind ?? (resultMode === "discovery" ? "discovery" : "lead");
-    const reasonTags = getQuestResultReasonTags(template, outcomeDetails.successBreakdown, "failure");
+    const reasonTags = getQuestResultReasonTags(
+      template,
+      outcomeDetails.successBreakdown,
+      "failure",
+      outcomeDetails.usedGiftItemCount
+    );
     return restoreQuestResult(gameData, quest, {
       type: failureKind,
       outcome,
@@ -49,7 +55,12 @@ export function resolveQuestResult(gameData: GameData, quest: Quest): QuestResul
   if (resultMode === "lead") {
     const leadIntel = getRandomIntelDefinitionFromPool(gameData, template?.resultIntelPoolIds)
       ?? getIntelDefinitionById(gameData, template?.resultIntelId);
-    const reasonTags = getQuestResultReasonTags(template, outcomeDetails.successBreakdown, "lead");
+    const reasonTags = getQuestResultReasonTags(
+      template,
+      outcomeDetails.successBreakdown,
+      "lead",
+      outcomeDetails.usedGiftItemCount
+    );
     return restoreQuestResult(gameData, quest, {
       type: "lead",
       outcome,
@@ -68,7 +79,12 @@ export function resolveQuestResult(gameData: GameData, quest: Quest): QuestResul
 
   if (resultMode === "discovery") {
     const discoveryIntel = getIntelDefinitionById(gameData, template?.resultIntelId);
-    const reasonTags = getQuestResultReasonTags(template, outcomeDetails.successBreakdown, "discovery");
+    const reasonTags = getQuestResultReasonTags(
+      template,
+      outcomeDetails.successBreakdown,
+      "discovery",
+      outcomeDetails.usedGiftItemCount
+    );
     return restoreQuestResult(gameData, quest, {
       type: "discovery",
       outcome,
@@ -85,7 +101,12 @@ export function resolveQuestResult(gameData: GameData, quest: Quest): QuestResul
     });
   }
 
-  const reasonTags = getQuestResultReasonTags(template, outcomeDetails.successBreakdown, "resource");
+  const reasonTags = getQuestResultReasonTags(
+    template,
+    outcomeDetails.successBreakdown,
+    "resource",
+    outcomeDetails.usedGiftItemCount
+  );
   return restoreQuestResult(gameData, quest, {
     type: "resource",
     outcome,
@@ -227,32 +248,70 @@ export function applyQuestResult(
 
 function getQuestOutcomeDetails(gameData: GameData, quest: Quest, template: QuestTemplate | undefined) {
   if (!template || getQuestPublishMode(template) !== "intel") {
-    return {outcome: "success" as QuestResultOutcome, successChance: null, rolledChance: null, successBreakdown: null};
+    const adventurer = getQuestAdventurer(gameData, quest);
+    if (adventurer) {
+      decayGiftedItemsAfterQuest(adventurer, new Set());
+    }
+    return {
+      outcome: "success" as QuestResultOutcome,
+      successChance: null,
+      rolledChance: null,
+      successBreakdown: null,
+      usedGiftItemCount: 0
+    };
   }
 
   const matchingIntelCount = template.lineId ? getUniqueIntelCountForLine(gameData, template.lineId) : 0;
   const adventurer = getQuestAdventurer(gameData, quest);
+  const input = getQuestResolutionInput(quest, template);
   const successBreakdown = getQuestSuccessBreakdown(
-    getQuestResolutionInput(quest, template),
+    input,
     adventurer,
     matchingIntelCount
   );
   const rolledChance = Math.random();
+  if (rolledChance < successBreakdown.finalChance || !adventurer) {
+    if (adventurer) {
+      decayGiftedItemsAfterQuest(adventurer, new Set());
+    }
+    return {
+      outcome: rolledChance < successBreakdown.finalChance ? "success" as QuestResultOutcome : "failure" as QuestResultOutcome,
+      successChance: successBreakdown.finalChance,
+      rolledChance,
+      successBreakdown,
+      usedGiftItemCount: 0
+    };
+  }
+
+  const giftResolution = tryResolveFailureWithGiftedItems(
+    gameData,
+    adventurer,
+    input,
+    matchingIntelCount,
+    successBreakdown
+  );
+  decayGiftedItemsAfterQuest(adventurer, giftResolution.usedGiftItemIds);
 
   return {
-    outcome: rolledChance < successBreakdown.finalChance ? "success" as QuestResultOutcome : "failure" as QuestResultOutcome,
-    successChance: successBreakdown.finalChance,
-    rolledChance,
-    successBreakdown
+    outcome: giftResolution.outcome,
+    successChance: giftResolution.successChance,
+    rolledChance: giftResolution.rolledChance,
+    successBreakdown: giftResolution.successBreakdown,
+    usedGiftItemCount: giftResolution.usedGiftItemIds.size
   };
 }
 
 function getQuestResultReasonTags(
   template: QuestTemplate | undefined,
   successBreakdown: ReturnType<typeof getQuestSuccessBreakdown> | null,
-  fallbackTag: QuestResultReasonTag
+  fallbackTag: QuestResultReasonTag,
+  usedGiftItemCount = 0
 ): QuestResultReasonTag[] {
   const tags = new Set<QuestResultReasonTag>([fallbackTag]);
+
+  if (usedGiftItemCount > 0) {
+    tags.add("item");
+  }
 
   if (!template || !successBreakdown) {
     return [...tags];
@@ -339,6 +398,8 @@ function renderQuestResultReasonText(
       return "事情的发展没有按常规路数推进。";
     case "intel":
       return "先前掌握的信息这次确实帮上了忙。";
+    case "item":
+      return "随身带着的补给在关键时候改变了结果。";
     case "capability":
       return renderCapabilityReasonText(context.variant);
     case "personality":
@@ -362,6 +423,7 @@ function isVisibleQuestResultReasonTag(tag: QuestResultReasonTag) {
     case "reportDifficulty":
     case "stability":
     case "intel":
+    case "item":
     case "capability":
     case "personality":
       return true;
@@ -392,6 +454,8 @@ function getQuestResultReasonPriority(tag: QuestResultReasonTag) {
       return 70;
     case "intel":
       return 80;
+    case "item":
+      return 85;
     case "capability":
       return 90;
     case "personality":

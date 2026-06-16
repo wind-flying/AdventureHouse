@@ -69,6 +69,8 @@ export interface AdventurerCardViewModel {
   levelClass: string;
   isPinned: boolean;
   pinActionText: string;
+  canReceiveGift: boolean;
+  giftActionText: string;
   rumorText: string | null;
   impressionText: string | null;
   preferenceText: string | null;
@@ -79,9 +81,11 @@ export interface AdventurerCardViewModel {
 }
 
 export interface StockItemViewModel {
+  id: string;
   label: string;
   amount: string;
   description: string | null;
+  giftable: boolean;
 }
 
 export interface StockSubsectionViewModel {
@@ -171,6 +175,8 @@ export function getAdventurerCardViewModel(gameData: GameData, adventurer: Adven
       levelClass: "pending",
       isPinned,
       pinActionText,
+      canReceiveGift: false,
+      giftActionText: uiLabels.adventurerCard.gift,
       rumorText: adventurer.rumor,
       impressionText: null,
       preferenceText: null,
@@ -200,6 +206,8 @@ export function getAdventurerCardViewModel(gameData: GameData, adventurer: Adven
     levelClass: "active",
     isPinned,
     pinActionText,
+    canReceiveGift: adventurer.currentQuestId === null,
+    giftActionText: uiLabels.adventurerCard.gift,
     rumorText: null,
     impressionText: `${uiLabels.adventurerCard.impression}：${adventurer.impression}`,
     preferenceText: showPreference
@@ -221,9 +229,11 @@ export function getAdventurerCardViewModel(gameData: GameData, adventurer: Adven
 
 export function getStockItemViewModel(gameData: GameData, resourceId: string, amount: number): StockItemViewModel {
   return {
+    id: resourceId,
     label: getResourceLabel(gameData, resourceId),
     amount: String(amount),
-    description: null
+    description: null,
+    giftable: false
   };
 }
 
@@ -237,9 +247,11 @@ export function getStockSectionsViewModel(gameData: GameData): StockSectionViewM
       const category = resource.category ?? "misc";
       const section = getOrCreateStockSection(sections, category, getStockCategoryTitle(category));
       section.groups[0]?.items.push({
+        id: resource.id,
         label: `${resource.icon} ${resource.name}`,
         amount: String(gameData.player.stock[resource.id] ?? 0),
-        description: null
+        description: null,
+        giftable: false
       });
     });
 
@@ -249,9 +261,11 @@ export function getStockSectionsViewModel(gameData: GameData): StockSectionViewM
     .forEach((item) => {
       const section = getOrCreateStockSection(sections, item.category, getItemCategoryTitle(item.category));
       section.groups[0]?.items.push({
+        id: item.id,
         label: `${item.icon} ${item.name}`,
         amount: String(gameData.player.inventory.itemStacks[item.id] ?? 0),
-        description: item.playerDescription
+        description: item.playerDescription,
+        giftable: true
       });
     });
 
@@ -361,9 +375,11 @@ function getOwnedEquipmentSection(gameData: GameData): StockSectionViewModel | n
       items: []
     };
     group.items.push({
+      id: equipment.instanceId,
       label: `${definition.icon} ${definition.name}`,
       amount: "1",
-      description: `${definition.playerDescription} ${formatEquipmentEffects(equipment.effects)}`
+      description: `${definition.playerDescription} ${formatEquipmentEffects(equipment.effects)}`,
+      giftable: false
     });
     groups.set(definition.slot, group);
   });

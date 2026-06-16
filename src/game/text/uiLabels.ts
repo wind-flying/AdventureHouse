@@ -90,6 +90,7 @@ export const uiLabels = {
     motive: "动机",
     pin: "置顶",
     unpin: "取消置顶",
+    gift: "赠送",
     pinnedSection: "置顶人物",
     othersSection: "其他人物"
   },
@@ -146,5 +147,16 @@ export const uiLabels = {
     reportDifficulty: "报告难度",
     stability: "稳定",
     risk: "风险"
+  },
+  gifting: {
+    title: "赠送物品",
+    close: "关闭",
+    confirm: "确定赠送",
+    gift: "赠送",
+    noAvailableItem: "目前没有可赠送的物品。",
+    noAvailableAdventurer: "目前没有可赠送的城镇内冒险者。",
+    itemModeHelp: (name: string) => `选择要赠送给 ${name} 的物品。多选时会逐件判定是否接受。`,
+    adventurerModeHelp: (itemName: string, amount: number) => `选择要赠送 ${itemName} 的冒险者。当前可用 ${amount} 个，多选时会逐人判定。`,
+    carriedCount: (count: number) => `携带 ${count} 件`
   }
 } as const;

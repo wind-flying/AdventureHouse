@@ -103,6 +103,85 @@
   background: rgba(43, 33, 24, 0.58);
 }
 
+.gift-overlay {
+  position: fixed;
+  z-index: 110;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: rgba(43, 33, 24, 0.52);
+}
+
+.gift-overlay[hidden] {
+  display: none;
+}
+
+.gift-dialog {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(720px, 92vw);
+  max-height: min(620px, 86vh);
+  overflow: hidden;
+  border: 1px solid var(--divider-strong);
+  background: #fffaf1;
+  box-shadow: 0 24px 70px rgba(43, 33, 24, 0.3);
+}
+
+.gift-header,
+.gift-footer {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--divider-strong);
+}
+
+.gift-header h2 {
+  margin: 0;
+}
+
+.gift-content {
+  overflow: auto;
+}
+
+.gift-help {
+  margin: 0;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--divider-color);
+  color: var(--muted-text);
+}
+
+.gift-choice-list {
+  display: grid;
+}
+
+.gift-choice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--divider-color);
+}
+
+.gift-choice span {
+  display: grid;
+  gap: 4px;
+}
+
+.gift-choice small,
+.gift-choice em {
+  color: var(--muted-text);
+  font-size: 0.82rem;
+  font-style: normal;
+}
+
+.gift-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid var(--divider-strong);
+  border-bottom: 0;
+}
+
 .encyclopedia-overlay[hidden] {
   display: none;
 }
@@ -530,6 +609,13 @@ select:focus {
   color: var(--muted-text);
   font-size: 0.82rem;
   line-height: 1.45;
+}
+
+.stock-item-actions {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .quest-card {

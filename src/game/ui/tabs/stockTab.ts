@@ -49,7 +49,12 @@ export function renderStockTab(gameData: GameData, elements: Elements): void {
             <strong>${stockItem.label}</strong>
             ${stockItem.description ? `<small>${stockItem.description}</small>` : ""}
           </span>
-          <strong>${stockItem.amount}</strong>
+          <span class="stock-item-actions">
+            <strong>${stockItem.amount}</strong>
+            ${stockItem.giftable
+              ? `<button class="ghost-button gift-stock-item" type="button" data-gift-item-id="${stockItem.id}">${uiLabels.gifting.gift}</button>`
+              : ""}
+          </span>
         `;
         itemsElement.appendChild(item);
       });
