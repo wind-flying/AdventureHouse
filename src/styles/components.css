@@ -1,28 +1,85 @@
 .panel {
-  border: 1px solid rgba(76, 67, 47, 0.12);
-  border-radius: 8px;
-  background: rgba(255, 252, 245, 0.9);
-  box-shadow: 0 4px 14px rgba(95, 77, 41, 0.07);
+  border: 0;
+  border-radius: 0;
+  background: var(--surface-main);
+  box-shadow: none;
 }
 
 .status-panel {
   display: grid;
-  gap: 8px;
-  padding: 10px;
+  gap: 0;
+  padding: 0;
+  border-bottom: 1px solid var(--divider-strong);
+  position: relative;
+}
+
+.encyclopedia-button {
+  position: absolute;
+  z-index: 2;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 2px solid #725033;
+  border-radius: 4px;
+  background: #fffaf1;
+  color: #5b3c25;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.encyclopedia-button:hover,
+.encyclopedia-button:focus-visible {
+  background: #f0ddbd;
+  outline: 2px solid rgba(159, 108, 45, 0.28);
+  outline-offset: 2px;
+}
+
+.encyclopedia-button.has-new-entry {
+  color: #fffaf1;
+  background: #9a6031;
+  animation: encyclopedia-notice 1.1s ease-in-out infinite;
+}
+
+@keyframes encyclopedia-notice {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(154, 96, 49, 0.55);
+    transform: scale(1);
+  }
+
+  50% {
+    box-shadow: 0 0 0 7px rgba(154, 96, 49, 0);
+    transform: scale(1.08);
+  }
 }
 
 .toolbar-stats {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
+  gap: 0;
+  border-bottom: 1px solid var(--divider-color);
 }
 
 .summary-card {
   min-width: 0;
-  padding: 7px 8px;
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(88, 73, 52, 0.08);
+  padding: 10px;
+  border: 0;
+  border-right: 1px solid var(--divider-color);
+  border-bottom: 1px solid var(--divider-color);
+  border-radius: 0;
+  background: var(--surface-row);
+}
+
+.summary-card:nth-child(even),
+.summary-card:last-child {
+  border-right: 0;
+}
+
+.summary-card:last-child {
+  grid-column: 1 / -1;
+  border-bottom: 0;
 }
 
 .summary-card span {
@@ -30,6 +87,139 @@
   margin-bottom: 2px;
   font-size: 0.78rem;
   color: #7a6f63;
+}
+
+.summary-card:nth-child(2) {
+  padding-right: 46px;
+}
+
+.encyclopedia-overlay {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: rgba(43, 33, 24, 0.58);
+}
+
+.encyclopedia-overlay[hidden] {
+  display: none;
+}
+
+.encyclopedia-dialog {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(900px, 94vw);
+  height: min(680px, 88vh);
+  overflow: hidden;
+  border: 1px solid var(--divider-strong);
+  background: #fffaf1;
+  box-shadow: 0 24px 70px rgba(43, 33, 24, 0.34);
+}
+
+.encyclopedia-header,
+.encyclopedia-footer {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--divider-strong);
+}
+
+.encyclopedia-header h2 {
+  margin: 0;
+  color: #4c3824;
+}
+
+.encyclopedia-body {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  min-height: 0;
+}
+
+.encyclopedia-navigation {
+  overflow: auto;
+  border-right: 1px solid var(--divider-strong);
+  background: var(--surface-muted);
+}
+
+.encyclopedia-category {
+  width: 100%;
+}
+
+.encyclopedia-category-button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 0;
+  border-bottom: 1px solid var(--divider-color);
+  background: transparent;
+  color: #4c3824;
+  text-align: left;
+  cursor: pointer;
+}
+
+.encyclopedia-category-button span {
+  color: #7a6f63;
+  font-size: 0.82rem;
+}
+
+.encyclopedia-category-button:hover,
+.encyclopedia-category-button.active {
+  background: rgba(154, 96, 49, 0.14);
+}
+
+.encyclopedia-content {
+  overflow: auto;
+  padding: 30px 34px;
+}
+
+.encyclopedia-content h3 {
+  margin: 0 0 20px;
+  color: #4c3824;
+  font-size: 1.35rem;
+}
+
+.encyclopedia-entry-section {
+  max-width: 44rem;
+  padding: 20px 0;
+  border-top: 1px solid var(--divider-color);
+}
+
+.encyclopedia-entry-section:first-of-type {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.encyclopedia-entry-section h4 {
+  margin: 0 0 12px;
+  color: #5b3c25;
+  font-size: 1.02rem;
+}
+
+.encyclopedia-content p {
+  margin: 0 0 16px;
+  color: #54483c;
+  line-height: 1.8;
+}
+
+.encyclopedia-empty {
+  display: grid;
+  align-content: center;
+  min-height: 100%;
+  text-align: center;
+}
+
+.encyclopedia-empty p {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.encyclopedia-footer {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--divider-strong);
+  border-bottom: 0;
 }
 
 .summary-card strong {
@@ -40,11 +230,11 @@
 }
 
 .panel {
-  padding: 14px;
+  padding: 0;
 }
 
 .panel-head {
-  margin-bottom: 10px;
+  margin-bottom: 0;
 }
 
 .panel-head h2,
@@ -63,16 +253,17 @@
 
 .tab-list {
   display: grid;
-  gap: 2px;
-  padding: 8px 6px;
+  gap: 0;
+  padding: 0;
 }
 
 .tab-button {
   width: 100%;
   min-height: 42px;
-  padding: 0 12px;
+  padding: 0 14px;
   border: 0;
-  border-radius: 5px;
+  border-bottom: 1px solid var(--divider-color);
+  border-radius: 0;
   background: transparent;
   color: #4c3824;
   text-align: left;
@@ -87,37 +278,47 @@
 }
 
 .nav-sidebar {
-  background: rgba(250, 246, 237, 0.96);
-  border-right: 1px solid rgba(76, 67, 47, 0.12);
+  background: var(--surface-muted);
+  border-right: 1px solid var(--divider-strong);
 }
 
 .story-sidebar {
   overflow: auto;
+  background: var(--surface-muted);
 }
 
 .story-rail {
   display: grid;
   align-content: start;
-  gap: 10px;
+  gap: 0;
+}
+
+.story-rail > .panel-head,
+.tab-panel > .panel-head {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--divider-strong);
 }
 
 .inset-panel {
-  padding: 12px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.55);
-  box-shadow: none;
+  padding: 16px;
+  border-radius: 0;
+  background: transparent;
 }
 
 .overview-note-list {
   display: grid;
-  gap: 12px;
+  gap: 0;
+  border-top: 1px solid var(--divider-color);
+  border-left: 1px solid var(--divider-color);
+  border-right: 1px solid var(--divider-color);
 }
 
 .overview-note {
-  padding: 9px 10px;
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(88, 73, 52, 0.08);
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--divider-color);
+  border-radius: 0;
+  background: var(--surface-row);
 }
 
 .overview-note span {
@@ -144,14 +345,18 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 0;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--divider-color);
 }
 
 .adventurer-filter-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 0;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--divider-color);
 }
 
 .compact-field {
@@ -220,11 +425,11 @@ select:focus {
 .adventurer-list,
 .intel-board {
   display: grid;
-  gap: 12px;
+  gap: 0;
 }
 
 .compact-list {
-  gap: 7px;
+  gap: 0;
 }
 
 .stock-item,
@@ -233,9 +438,18 @@ select:focus {
 .adventurer-card,
 .intel-item {
   padding: 12px 14px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(88, 73, 52, 0.08);
+  border: 0;
+  border-bottom: 1px solid var(--divider-color);
+  border-radius: 0;
+  background: var(--surface-row);
+}
+
+.stock-item:last-child,
+.quest-card:last-child,
+.log-entry:last-child,
+.adventurer-card:last-child,
+.intel-item:last-child {
+  border-bottom: 0;
 }
 
 .stock-item,
@@ -245,6 +459,60 @@ select:focus {
   justify-content: space-between;
   gap: 12px;
   align-items: center;
+}
+
+.stock-section {
+  border-bottom: 1px solid var(--divider-strong);
+}
+
+.stock-section:last-child {
+  border-bottom: 0;
+}
+
+.stock-section-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--divider-color);
+  background: rgba(122, 82, 44, 0.06);
+}
+
+.stock-section-head h3,
+.stock-subsection h4 {
+  margin: 0;
+}
+
+.stock-section-head span {
+  color: var(--muted-text);
+  font-size: 0.86rem;
+}
+
+.stock-subsection + .stock-subsection {
+  border-top: 1px solid var(--divider-color);
+}
+
+.stock-subsection h4 {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--divider-color);
+  color: var(--muted-text);
+  font-size: 0.88rem;
+}
+
+.stock-items .stock-item:last-child {
+  border-bottom: 0;
+}
+
+.stock-item span {
+  display: grid;
+  gap: 4px;
+}
+
+.stock-item small {
+  color: var(--muted-text);
+  font-size: 0.82rem;
+  line-height: 1.45;
 }
 
 .quest-card {
@@ -294,7 +562,19 @@ select:focus {
 
 .intel-section {
   display: grid;
-  gap: 12px;
+  gap: 0;
+  padding: 0;
+}
+
+.intel-section + .intel-section,
+.overview-grid > .inset-panel + .inset-panel,
+.tasks-grid > .inset-panel + .inset-panel {
+  border-left: 1px solid var(--divider-strong);
+}
+
+.intel-section > .panel-head {
+  padding: 16px;
+  border-bottom: 1px solid var(--divider-color);
 }
 
 .intel-item {
@@ -321,7 +601,14 @@ select:focus {
 
 .adventurer-section {
   display: grid;
-  gap: 12px;
+  gap: 0;
+  border-bottom: 1px solid var(--divider-strong);
+}
+
+.adventurer-section > .mini-title {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--divider-color);
+  background: var(--surface-muted);
 }
 
 .ghost-button {
@@ -412,12 +699,15 @@ select:focus {
 
 .next-day-button {
   width: 100%;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .save-actions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 180px));
   gap: 8px;
+  padding: 18px;
 }
 
 .danger-button {
@@ -491,6 +781,14 @@ select:focus {
 @media (max-width: 1100px) {
   .status-panel {
     align-content: start;
+    border-right: 1px solid var(--divider-strong);
+    border-bottom: 0;
+  }
+
+  .overview-grid > .inset-panel + .inset-panel,
+  .tasks-grid > .inset-panel + .inset-panel {
+    border-top: 1px solid var(--divider-strong);
+    border-left: 0;
   }
 }
 
@@ -499,12 +797,14 @@ select:focus {
     display: flex;
     width: max-content;
     min-width: 100%;
-    padding: 6px;
+    padding: 0;
   }
 
   .tab-button {
     width: auto;
     min-width: 78px;
+    border-right: 1px solid var(--divider-color);
+    border-bottom: 0;
     text-align: center;
   }
 
@@ -513,7 +813,65 @@ select:focus {
     overflow-x: auto;
   }
 
+  .summary-card,
+  .summary-card:nth-child(even),
+  .summary-card:last-child {
+    grid-column: auto;
+    border-right: 1px solid var(--divider-color);
+    border-bottom: 0;
+  }
+
+  .status-panel {
+    border-right: 0;
+    border-bottom: 1px solid var(--divider-strong);
+  }
+
+  .intel-section + .intel-section {
+    border-top: 1px solid var(--divider-strong);
+    border-left: 0;
+  }
+
   .save-actions {
     grid-template-columns: 1fr;
+  }
+
+  .encyclopedia-overlay {
+    padding: 12px;
+  }
+
+  .encyclopedia-dialog {
+    width: 100%;
+    height: min(760px, 94vh);
+  }
+
+  .encyclopedia-body {
+    grid-template-columns: minmax(112px, 30vw) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .encyclopedia-navigation {
+    display: block;
+    overflow: auto;
+    border-right: 1px solid var(--divider-strong);
+    border-bottom: 0;
+  }
+
+  .encyclopedia-category-button {
+    width: 100%;
+    min-width: 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--divider-color);
+    white-space: normal;
+  }
+
+  .encyclopedia-content {
+    padding: 24px 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .encyclopedia-button.has-new-entry {
+    animation: none;
+    box-shadow: 0 0 0 4px rgba(154, 96, 49, 0.3);
   }
 }

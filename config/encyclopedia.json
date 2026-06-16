@@ -1,0 +1,50 @@
+{
+  "categories": [
+    {
+      "id": "quests",
+      "textId": "quests"
+    }
+  ],
+  "entries": [
+    {
+      "id": "quest-kinds",
+      "categoryId": "quests",
+      "textId": "questKinds",
+      "unlockConditions": [
+        {
+          "type": "firstQuestPublished"
+        }
+      ]
+    },
+    {
+      "id": "quest-completion",
+      "categoryId": "quests",
+      "textId": "questCompletion",
+      "unlockConditions": [
+        {
+          "type": "firstQuestPublished"
+        }
+      ]
+    },
+    {
+      "id": "quest-failure",
+      "categoryId": "quests",
+      "textId": "questFailure",
+      "unlockConditions": [
+        {
+          "type": "firstQuestPublished"
+        }
+      ]
+    },
+    {
+      "id": "quest-repeatability",
+      "categoryId": "quests",
+      "textId": "questRepeatability",
+      "unlockConditions": [
+        {
+          "type": "firstQuestPublished"
+        }
+      ]
+    }
+  ]
+}

@@ -131,10 +131,6 @@ export function chooseAdventurerForQuest(
     return null;
   }
 
-  if (template?.forcedAdventurerId) {
-    return availableAdventurers.find((adventurer) => adventurer.id === template.forcedAdventurerId) ?? null;
-  }
-
   const acceptanceProfile = getQuestAcceptanceProfile(quest, template);
   const randomVariance = interpolateByTaskOpenness(
     QUEST_ACCEPTANCE_TUNING.randomVariance.selectiveTask,

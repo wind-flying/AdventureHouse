@@ -5,6 +5,11 @@
   font-weight: 400;
   color: #1f2328;
   background: #eee5d5;
+  --divider-color: rgba(76, 67, 47, 0.18);
+  --divider-strong: rgba(76, 67, 47, 0.28);
+  --surface-main: rgba(255, 252, 245, 0.94);
+  --surface-muted: rgba(250, 246, 237, 0.96);
+  --surface-row: rgba(255, 255, 255, 0.48);
 }
 
 * {

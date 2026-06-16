@@ -9,6 +9,7 @@ import {getOverviewTabMarkup} from "./tabs/overviewTab";
 import {getQuestsTabMarkup} from "./tabs/questsTab";
 import {getSaveTabMarkup} from "./tabs/saveTab";
 import {getStockTabMarkup} from "./tabs/stockTab";
+import {getEncyclopediaMarkup} from "./encyclopedia";
 
 export function createAppShell(container: HTMLDivElement, gameData: GameData, elements: Elements): void {
   elements.container = container;
@@ -30,13 +31,18 @@ export function createAppShell(container: HTMLDivElement, gameData: GameData, el
         ${getStoryRailMarkup()}
       </aside>
     </main>
+    ${getEncyclopediaMarkup()}
   `;
 
   elements.dayDisplay = container.querySelector("#day-display");
   elements.moneyDisplay = container.querySelector("#money-display");
   elements.activeQuestDisplay = container.querySelector("#active-quest-display");
-  elements.stockSummaryDisplay = container.querySelector("#stock-summary-display");
   elements.knownAdventurerDisplay = container.querySelector("#known-adventurer-display");
+  elements.encyclopediaButton = container.querySelector("#encyclopedia-button");
+  elements.encyclopediaModal = container.querySelector("#encyclopedia-modal");
+  elements.encyclopediaCloseBtn = container.querySelector("#encyclopedia-close-btn");
+  elements.encyclopediaNavigation = container.querySelector("#encyclopedia-navigation");
+  elements.encyclopediaContent = container.querySelector("#encyclopedia-content");
   elements.exportSaveBtn = container.querySelector("#export-save-btn");
   elements.importSaveBtn = container.querySelector("#import-save-btn");
   elements.resetSaveBtn = container.querySelector("#reset-save-btn");

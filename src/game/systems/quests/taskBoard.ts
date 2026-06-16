@@ -4,11 +4,12 @@ import {getQuestResourceLabel, getQuestTemplateFocusLabel} from "../../ui/resour
 import {createStoryEntry} from "../../text/storyText";
 import {getQuestActionFeedback, getQuestPublishModeText} from "../../text/uiText";
 import {
+  createAdventurerCandidatePreview,
   getAvailableOrdinaryGenerationTemplates,
   getAvailableKnownAdventurers,
+  hasAdventurerContactEntry,
   triggerAdventurerContactEvent
 } from "../adventurers/adventurerAppearance";
-import {createGeneratedAdventurerInstance} from "../adventurers/adventurerInstances";
 import {getDiscoveryLevelFromPoints} from "../adventurers/adventurerInstances";
 import {
   chooseAdventurerForQuest as chooseAdventurerForQuestByAcceptance,
@@ -194,9 +195,6 @@ export function createQuest(gameData: GameData, input: CreateQuestInput): Action
     templateId: template.id,
     title: generatedTemplateText.title,
     description: generatedTemplateText.description,
-    contentStageTag: template.contentStageTag,
-    designerNote: template.designerNote,
-    followUpStageTag: template.followUpStageTag,
     risk: template.risk,
     nature: template.nature,
     displayId,
@@ -237,14 +235,12 @@ function getGeneratedQuestTemplateText(
   title: string;
   description: string;
   focusText: string | null;
-  lineTitle: string;
 } {
   const textPool = questTextPoolsById[template.textId ?? template.id] ?? {};
   return {
     title: pickFlexibleTextValue(textPool.title, `${seedKey}:title`, template.title),
     description: pickFlexibleTextValue(textPool.description, `${seedKey}:description`, template.description),
-    focusText: pickFlexibleTextValue(textPool.focusText, `${seedKey}:focusText`, template.focusText ?? "") || null,
-    lineTitle: pickFlexibleTextValue(textPool.lineTitle, `${seedKey}:lineTitle`, template.lineTitle ?? "")
+    focusText: pickFlexibleTextValue(textPool.focusText, `${seedKey}:focusText`, template.focusText ?? "") || null
   };
 }
 
@@ -261,14 +257,29 @@ export function advanceQuestBoard(gameData: GameData, nextDayEntries: StoryEntry
     }
 
     if (quest.status === "pending") {
-      const questTaker = chooseQuestTaker(gameData, quest);
+      const questTaker = chooseQuestTaker(gameData, quest, nextDayEntries);
       if (!questTaker) {
         return;
       }
 
-      const {adventurer, source} = questTaker;
+      let {adventurer} = questTaker;
+      const {source} = questTaker;
       if (source === "hidden") {
-        triggerAdventurerContactEvent(gameData, adventurer, nextDayEntries, "quest_referral", quest);
+        const templateId = adventurer.templateId;
+        const generatedTemplate = templateId
+          ? gameData.adventurerTemplates.find((template) => template.id === templateId)
+          : null;
+        if (!generatedTemplate) {
+          return;
+        }
+
+        adventurer = triggerAdventurerContactEvent(
+          gameData,
+          generatedTemplate,
+          nextDayEntries,
+          "quest_referral",
+          quest
+        );
       }
 
       quest.status = "active";
@@ -349,19 +360,20 @@ function chooseAdventurerForQuest(gameData: GameData, quest: Quest): Adventurer 
 
 function chooseQuestTaker(
   gameData: GameData,
-  quest: Quest
+  quest: Quest,
+  nextDayEntries: StoryEntry[]
 ): {adventurer: Adventurer; source: "known" | "hidden"} | null {
   const template = getQuestTemplateById(gameData, quest.templateId);
   const visibleAdventurers = getAvailableKnownAdventurers(gameData);
-  const hiddenCandidateTemplates = template?.allowGeneratedTaker === false
+  const hiddenCandidateTemplates = template?.allowGeneratedTaker === false || hasAdventurerContactEntry(nextDayEntries)
     ? []
     : getAvailableOrdinaryGenerationTemplates(gameData);
   const hiddenAdventurers = hiddenCandidateTemplates.map((adventurerTemplate) => {
-    return createGeneratedAdventurerInstance(
+    return createAdventurerCandidatePreview(
+      gameData,
       adventurerTemplate,
-      gameData.day,
-      `${adventurerTemplate.id}:quest_referral:${gameData.day}:${quest.templateId}:${quest.createdDay}`,
-      gameData.namePools
+      "quest_referral",
+      quest
     );
   });
   const knownCandidate = chooseAdventurerForQuestByAcceptance(gameData, quest, template, visibleAdventurers);

@@ -1,6 +1,8 @@
 import resourcesData from "../../config/resourcesType.json";
 import type {
   AdventurerTemplate,
+  EquipmentDefinition,
+  ItemDefinition,
   IntelDefinition,
   NamePoolDefinition,
   QuestTemplate,
@@ -17,6 +19,7 @@ type WorldContentTextData = {
   }>;
   quests?: Record<string, {
     title?: string | string[];
+    shortTitle?: string | string[];
     description?: string | string[];
     lineTitle?: string | string[];
     focusText?: string | string[];
@@ -31,6 +34,8 @@ type WorldContentTextData = {
 type FlexibleTextValue = string | string[] | undefined;
 
 export const resources = resourcesData.resources as ResourceDefinition[];
+const itemModuleMap = import.meta.glob("../../config/items/*.json", {eager: true});
+const equipmentModuleMap = import.meta.glob("../../config/equipment/*.json", {eager: true});
 const adventurerModuleMap = import.meta.glob("../../config/adventurers/*.json", {eager: true});
 const nameModuleMap = import.meta.glob("../../config/names/*.json", {eager: true});
 const adventurerTextModuleMap = import.meta.glob("../../config/text/adventurers/*.json", {eager: true});
@@ -53,6 +58,16 @@ const worldContentText: WorldContentTextData = {
 export const adventurerTextPoolsById = worldContentText.adventurers ?? {};
 export const questTextPoolsById = worldContentText.quests ?? {};
 export const intelTextPoolsById = worldContentText.intel ?? {};
+export const itemDefinitions = Object.values(itemModuleMap)
+  .flatMap((module) => {
+    const itemFile = module as {default?: {items?: ItemDefinition[]}; items?: ItemDefinition[]};
+    return itemFile.default?.items ?? itemFile.items ?? [];
+  }) as ItemDefinition[];
+export const equipmentDefinitions = Object.values(equipmentModuleMap)
+  .flatMap((module) => {
+    const equipmentFile = module as {default?: {equipment?: EquipmentDefinition[]}; equipment?: EquipmentDefinition[]};
+    return equipmentFile.default?.equipment ?? equipmentFile.equipment ?? [];
+  }) as EquipmentDefinition[];
 export const adventurerTemplates = Object.values(adventurerModuleMap)
   .flatMap((module) => {
     const adventurerFile = module as {default?: {adventurers?: AdventurerTemplate[]}; adventurers?: AdventurerTemplate[]};
@@ -85,9 +100,11 @@ export const questTemplates = Object.values(questModuleMap)
   })
   .map((template) => {
     const text = questTextPoolsById[template.textId ?? template.id] ?? {};
+    const title = getDefaultTextValue(text.title, template.title);
     return {
       ...template,
-      title: getDefaultTextValue(text.title, template.title),
+      title,
+      shortTitle: getDefaultTextValue(text.shortTitle, template.shortTitle ?? title),
       description: getDefaultTextValue(text.description, template.description),
       lineTitle: getDefaultTextValue(text.lineTitle, template.lineTitle ?? ""),
       focusText: getDefaultTextValue(text.focusText, template.focusText ?? "")

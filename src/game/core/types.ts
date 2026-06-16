@@ -10,7 +10,6 @@ export type QuestRisk = "safe" | "risky" | "dangerous";
 export type QuestNature = "routine" | "supply" | "investigation" | "mysterious";
 export type QuestResultMode = "resource" | "lead" | "discovery";
 export type QuestResultOutcome = "success" | "failure";
-export type QuestTestOutcomeMode = "normal" | "success" | "failure";
 export type QuestPublishMode = "stock" | "intel";
 export type ResultInsightLevel = "basic" | "aware" | "trained" | "expert";
 export type QuestResultReasonTag =
@@ -31,14 +30,13 @@ export type QuestResultReasonTag =
 export type IntelKind = "lead" | "discovery";
 export type IntelStatus = "recorded" | "followable" | "triggered";
 export type QuestUnlockMode = "all" | "any";
-export type ContentStageTag = "test";
-export type FollowUpStageTag = "test-chain";
 export type AdventurerDiscoveryLevel = "heard" | "seen" | "acquainted" | "familiar" | "trusted";
 export type AdventurerStatusFilter = "all" | "idle" | "away";
 export type AdventurerPinnedFilter = "all" | "pinned" | "unpinned";
 export type StoryEntryTone = "neutral" | "quest" | "reward";
 export type AdventurerOriginType = "handcrafted" | "generated";
 export type AdventurerRoleType = "anchor" | "adventurer";
+export type AdventurerSpawnMode = "unique" | "repeatable";
 export type AdventurerPersonalityAxis =
   | "diligence"
   | "courage"
@@ -57,6 +55,13 @@ export type QuestFeatureAxis =
   | "investigationComplexity"
   | "reportDifficulty"
   | "stability";
+export type EncyclopediaUnlockCondition =
+  | {
+    type: "firstQuestPublished";
+  }
+  | {
+    type: "firstAdventurerItemGifted";
+  };
 
 export type AdventurerPersonality = Record<AdventurerPersonalityAxis, number>;
 export type AdventurerCapabilities = Record<AdventurerCapabilityAxis, number>;
@@ -69,11 +74,79 @@ export interface AdventurerAxisRange {
 
 export type AdventurerPersonalityRanges = Partial<Record<AdventurerPersonalityAxis, AdventurerAxisRange>>;
 export type AdventurerCapabilityRanges = Partial<Record<AdventurerCapabilityAxis, AdventurerAxisRange>>;
+export type ResourceCategory = "material" | "food" | "product" | "equipment" | "treasure" | "misc";
+export type ItemCategory = "food" | "consumable" | "product" | "misc";
+export type EquipmentSlot = "weapon" | "shield" | "helmet" | "armor" | "legArmor" | "boots" | "accessory" | "tool";
+export type ItemEffectType = "capability" | "questFeature" | "safety";
+export type ItemEffectOperation = "add" | "multiply";
+export type ItemEffectDuration = "nextQuest" | "instant" | "passive";
+export type ItemEffectTarget = AdventurerCapabilityAxis | QuestFeatureAxis | "risk";
+export type EquipmentStatRoll =
+  | {
+    mode: "fixed";
+    effect: ItemEffectDefinition;
+  }
+  | {
+    mode: "randomRange";
+    effect: Omit<ItemEffectDefinition, "value">;
+    min: number;
+    max: number;
+    precision?: 0 | 1 | 2;
+  };
 
 export interface ResourceDefinition {
   id: string;
   name: string;
   icon: string;
+  category?: ResourceCategory;
+  sortOrder?: number;
+  basePrice?: number;
+  rarity?: "common" | "uncommon" | "rare";
+}
+
+export interface ItemEffectDefinition {
+  type: ItemEffectType;
+  target: ItemEffectTarget;
+  operation: ItemEffectOperation;
+  value: number;
+  duration: ItemEffectDuration;
+}
+
+export interface ItemDefinition {
+  id: string;
+  name: string;
+  icon: string;
+  category: ItemCategory;
+  sortOrder: number;
+  stackable: true;
+  playerDescription: string;
+  feedbackText?: string;
+  effects: ItemEffectDefinition[];
+}
+
+export interface EquipmentDefinition {
+  id: string;
+  name: string;
+  icon: string;
+  slot: EquipmentSlot;
+  sortOrder: number;
+  playerDescription: string;
+  acquisitionType: "fixed" | "random";
+  statRolls: EquipmentStatRoll[];
+}
+
+export interface EquipmentInstance {
+  instanceId: string;
+  definitionId: string;
+  slot: EquipmentSlot;
+  effects: ItemEffectDefinition[];
+  acquiredDay: number;
+  equippedByAdventurerId: string | null;
+}
+
+export interface PlayerInventory {
+  itemStacks: Partial<Record<string, number>>;
+  equipments: EquipmentInstance[];
 }
 
 export interface NamePoolDefinition {
@@ -85,30 +158,20 @@ export interface NamePoolDefinition {
 export interface QuestTemplate {
   id: string;
   title: string;
+  shortTitle?: string;
   description: string;
   textId?: string;
   focusText?: string;
   lineId?: string;
   lineTitle?: string;
-  entryPoint?: boolean;
-  contentStageTag?: ContentStageTag;
   designerNote?: string;
-  forcedAdventurerId?: string;
-  disabledForCurrentTesting?: boolean;
-  unlockedByDefault?: boolean;
   unlockMode?: QuestUnlockMode;
   unlockConditions?: QuestUnlockCondition[];
-  followUpStageTag?: FollowUpStageTag;
-  testOutcomeMode?: QuestTestOutcomeMode;
   resultIntelId?: string;
   resultIntelPoolIds?: string[];
   failureIntelId?: string;
-  resolutionVisibility?: QuestResolutionVisibility;
   successVisibility?: QuestResolutionVisibility;
   failureVisibility?: QuestResolutionVisibility;
-  prerequisiteTemplateId?: string;
-  prerequisiteOutcome?: QuestResultOutcome;
-  failureIntelSummary?: string;
   resultMode: QuestResultMode;
   publicationMode: QuestPublicationMode;
   publishMode?: QuestPublishMode;
@@ -148,9 +211,6 @@ export interface Quest {
   templateId: string;
   title: string;
   description: string;
-  contentStageTag?: ContentStageTag;
-  designerNote?: string;
-  followUpStageTag?: FollowUpStageTag;
   risk: QuestRisk;
   nature: QuestNature;
   displayId: string;
@@ -228,7 +288,6 @@ export interface IntelDefinition {
   textId?: string;
   lineId?: string;
   lineTitle?: string;
-  contentStageTag?: ContentStageTag;
   designerNote?: string;
 }
 
@@ -239,10 +298,10 @@ export interface AdventurerTemplate {
   motive: string;
   textId?: string;
   roleType?: AdventurerRoleType;
+  spawnMode?: AdventurerSpawnMode;
   namePoolId?: string;
   archetypeTags?: string[];
   introductionTags?: string[];
-  contentStageTag?: ContentStageTag;
   designerNote?: string;
   knownByDefault: boolean;
   discoveryLevel: AdventurerDiscoveryLevel;
@@ -286,12 +345,16 @@ export interface GameData {
     resultInsightLevel: ResultInsightLevel;
     quests: Quest[];
     stock: Record<string, number>;
+    inventory: PlayerInventory;
     leads: IntelRecord[];
     discoveries: IntelRecord[];
   };
   questIdCounter: number;
+  adventurerIdCounter: number;
   dailyShopIncome: number;
   resources: ResourceDefinition[];
+  itemDefinitions: ItemDefinition[];
+  equipmentDefinitions: EquipmentDefinition[];
   namePools: NamePoolDefinition[];
   questTemplates: QuestTemplate[];
   intelDefinitions: IntelDefinition[];
@@ -306,9 +369,6 @@ export interface SavedQuest {
   templateId: string;
   title: string;
   description: string;
-  contentStageTag?: ContentStageTag;
-  designerNote?: string;
-  followUpStageTag?: FollowUpStageTag;
   risk: QuestRisk;
   nature: QuestNature;
   displayId: string;
@@ -416,13 +476,58 @@ export interface SaveDataV4 {
   };
 }
 
+export interface SaveDataV5 {
+  version: 5;
+  game: {
+    day: number;
+    questIdCounter: number;
+    adventurerIdCounter: number;
+    pinnedAdventurerIds: string[];
+    player: {
+      money: number;
+      resultInsightLevel: ResultInsightLevel;
+      quests: SavedQuest[];
+      stock: Partial<Record<string, number>>;
+      leads: IntelRecord[];
+      discoveries: IntelRecord[];
+    };
+    adventurers: SavedAdventurer[];
+    dayLog: StoryEntry[];
+  };
+}
+
+export interface SaveDataV6 {
+  version: 6;
+  game: {
+    day: number;
+    questIdCounter: number;
+    adventurerIdCounter: number;
+    pinnedAdventurerIds: string[];
+    player: {
+      money: number;
+      resultInsightLevel: ResultInsightLevel;
+      quests: SavedQuest[];
+      stock: Partial<Record<string, number>>;
+      inventory: PlayerInventory;
+      leads: IntelRecord[];
+      discoveries: IntelRecord[];
+    };
+    adventurers: SavedAdventurer[];
+    dayLog: StoryEntry[];
+  };
+}
+
 export interface Elements {
   container: HTMLDivElement | null;
   dayDisplay: HTMLSpanElement | null;
   moneyDisplay: HTMLSpanElement | null;
   activeQuestDisplay: HTMLSpanElement | null;
-  stockSummaryDisplay: HTMLSpanElement | null;
   knownAdventurerDisplay: HTMLSpanElement | null;
+  encyclopediaButton: HTMLButtonElement | null;
+  encyclopediaModal: HTMLDivElement | null;
+  encyclopediaCloseBtn: HTMLButtonElement | null;
+  encyclopediaNavigation: HTMLElement | null;
+  encyclopediaContent: HTMLElement | null;
   exportSaveBtn: HTMLButtonElement | null;
   importSaveBtn: HTMLButtonElement | null;
   resetSaveBtn: HTMLButtonElement | null;

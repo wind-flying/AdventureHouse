@@ -4,6 +4,8 @@
       "id": "wood",
       "name": "木材",
       "icon": "🌲",
+      "category": "material",
+      "sortOrder": 10,
       "basePrice": 1,
       "rarity": "common"
     },
@@ -11,6 +13,8 @@
       "id": "food",
       "name": "食物",
       "icon": "🍞",
+      "category": "food",
+      "sortOrder": 10,
       "basePrice": 2,
       "rarity": "common"
     },
@@ -18,6 +22,8 @@
       "id": "stone",
       "name": "石头",
       "icon": "🪨",
+      "category": "material",
+      "sortOrder": 20,
       "basePrice": 3,
       "rarity": "common"
     },
@@ -25,6 +31,8 @@
       "id": "treasure",
       "name": "宝藏",
       "icon": "💰",
+      "category": "treasure",
+      "sortOrder": 10,
       "basePrice": 20,
       "rarity": "rare"
     }

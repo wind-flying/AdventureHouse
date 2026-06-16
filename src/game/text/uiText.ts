@@ -36,10 +36,6 @@ export function getBlockedQuestTemplateSummary(baseSummary: string): string {
   return `${baseSummary} 当前已有同类委托在外，需等待结果返回后才能再次发布。`;
 }
 
-export function getDesignerNoteText(designerNote: string): string {
-  return `备注：${designerNote}`;
-}
-
 export function formatDaySummary(day: number): string {
   return `第 ${day} 天`;
 }

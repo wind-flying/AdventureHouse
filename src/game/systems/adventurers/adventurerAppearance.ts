@@ -3,7 +3,9 @@ import {getQuestAcceptanceBreakdown, getQuestInterestBreakdown} from "../quests/
 import {getQuestTemplateById} from "../quests/taskBoard";
 import {
   createGeneratedAdventurerInstance,
-  getDiscoveryLevelFromPoints
+  getAvailableGenerationTemplates,
+  getDiscoveryLevelFromPoints,
+  instantiateGeneratedAdventurer
 } from "./adventurerInstances";
 import type {Adventurer, AdventurerTemplate, GameData, Quest, StoryEntry} from "../../core/types";
 
@@ -46,38 +48,8 @@ export function advanceAdventurerAppearance(gameData: GameData, nextDayEntries: 
   triggerAdventurerContactEvent(gameData, appearingTemplate, nextDayEntries, "inn_introduction");
 }
 
-export function tryQuestReferralAppearance(
-  gameData: GameData,
-  quest: Quest,
-  nextDayEntries: StoryEntry[]
-): Adventurer | null {
-  if (hasAdventurerContactEntry(nextDayEntries)) {
-    return null;
-  }
-
-  const hiddenTemplates = getAvailableOrdinaryGenerationTemplates(gameData);
-  if (hiddenTemplates.length === 0) {
-    return null;
-  }
-
-  const appearanceChance = getQuestReferralChance(gameData);
-  if (Math.random() > appearanceChance) {
-    return null;
-  }
-
-  const referredTemplate = chooseBestQuestCandidateTemplate(gameData, hiddenTemplates, quest);
-  if (!referredTemplate) {
-    return null;
-  }
-
-  return triggerAdventurerContactEvent(gameData, referredTemplate, nextDayEntries, "quest_referral", quest);
-}
-
 export function getAvailableOrdinaryGenerationTemplates(gameData: GameData): AdventurerTemplate[] {
-  return gameData.adventurerTemplates.filter((template) => {
-    const alreadyInstanced = gameData.adventurers.some((adventurer) => adventurer.templateId === template.id);
-    return !alreadyInstanced && (template.roleType ?? "adventurer") === "adventurer" && !template.knownByDefault;
-  });
+  return getAvailableGenerationTemplates(gameData);
 }
 
 export function getAvailableKnownAdventurers(gameData: GameData): Adventurer[] {
@@ -139,7 +111,7 @@ function chooseAppearingTemplate(gameData: GameData, hiddenTemplates: Adventurer
     .map((template) => ({
       template,
       fitScore:
-        getBestQuestFitScore(gameData, createCandidatePreview(gameData, template, "inn_introduction"))
+        getBestQuestFitScore(gameData, createAdventurerCandidatePreview(gameData, template, "inn_introduction"))
         + getIntroductionScore(template, "inn_introduction")
         + getPendingQuestDemandScore(gameData, template, "inn_introduction")
     }))
@@ -158,7 +130,13 @@ export function triggerAdventurerContactEvent(
   source: AdventurerContactSource,
   quest: Quest | null = null
 ): Adventurer {
-  const adventurer = ensureGeneratedAdventurerInstance(gameData, template, source, quest);
+  const adventurer = instantiateGeneratedAdventurer(gameData, {
+    template,
+    seedKey: createGenerationSeedKey(gameData, template, source, quest)
+  });
+  if (!adventurer) {
+    throw new Error(`Unable to instantiate adventurer from template: ${template.id}`);
+  }
   revealAdventurer(adventurer, gameData.day);
   nextDayEntries.push(createContactStoryEntry(gameData.day, adventurer, source, quest));
   return adventurer;
@@ -177,49 +155,6 @@ function getBestQuestFitScore(gameData: GameData, adventurer: Adventurer): numbe
     const fitScore = acceptance.finalScore - interest.finalThreshold;
     return Math.max(bestScore, fitScore);
   }, Number.NEGATIVE_INFINITY);
-}
-
-function getQuestReferralChance(gameData: GameData): number {
-  const pendingQuests = gameData.player.quests.filter((quest) => quest.status === "pending");
-  const pendingQuestCount = pendingQuests.length;
-  const visibleOrdinaryCount = gameData.adventurers.filter((adventurer) => {
-    return adventurer.roleType === "adventurer" && adventurer.lastSeenDay !== null;
-  }).length;
-  const oldestResponsivePendingAge = pendingQuests.reduce((oldestAge, quest) => {
-    const bestFitScore = getBestHiddenQuestFitScore(gameData, quest);
-    if (bestFitScore < APPEARANCE_TUNING.responsiveMarginFloor) {
-      return oldestAge;
-    }
-
-    return Math.max(oldestAge, Math.max(0, gameData.day - quest.createdDay));
-  }, 0);
-  const comfortBand = getComfortBandTarget(pendingQuestCount);
-  const deficit = Math.max(0, comfortBand - visibleOrdinaryCount);
-  const chance = 0.22 + deficit * 0.14 + oldestResponsivePendingAge * 0.1;
-
-  return clamp(chance, 0.12, 0.68);
-}
-
-function chooseBestQuestCandidateTemplate(
-  gameData: GameData,
-  hiddenTemplates: AdventurerTemplate[],
-  quest: Quest
-): AdventurerTemplate | null {
-  const rankedTemplates = hiddenTemplates
-    .map((template) => ({
-      template,
-      fitScore:
-        getQuestFitScore(gameData, createCandidatePreview(gameData, template, "quest_referral", quest), quest)
-        + getIntroductionScore(template, "quest_referral")
-        + getQuestTemplateArchetypeScore(gameData, quest, template)
-        + getQuestTemplateGeneratedPullScore(gameData, quest, template)
-    }))
-    .sort((left, right) => right.fitScore - left.fitScore);
-  const bestFitScore = rankedTemplates[0]?.fitScore ?? Number.NEGATIVE_INFINITY;
-  const candidates = rankedTemplates.filter(({fitScore}) => fitScore >= bestFitScore - 0.18);
-  const index = Math.floor(Math.random() * candidates.length);
-
-  return candidates[index]?.template ?? rankedTemplates[0]?.template ?? null;
 }
 
 function revealAdventurer(adventurer: Adventurer, day: number): void {
@@ -271,35 +206,37 @@ function getBestHiddenQuestFitScore(gameData: GameData, quest: Quest): number {
   }
 
   return hiddenTemplates.reduce((bestScore, template) => {
-    return Math.max(bestScore, getQuestFitScore(gameData, createCandidatePreview(gameData, template, "quest_referral", quest), quest));
+    return Math.max(
+      bestScore,
+      getQuestFitScore(gameData, createAdventurerCandidatePreview(gameData, template, "quest_referral", quest), quest)
+    );
   }, Number.NEGATIVE_INFINITY);
 }
 
-function ensureGeneratedAdventurerInstance(
-  gameData: GameData,
-  template: AdventurerTemplate,
-  source: AdventurerContactSource,
-  quest: Quest | null
-): Adventurer {
-  const existingAdventurer = gameData.adventurers.find((adventurer) => adventurer.templateId === template.id);
-  if (existingAdventurer) {
-    return existingAdventurer;
-  }
-
-  const generatedAdventurer = createCandidatePreview(gameData, template, source, quest);
-  gameData.adventurers.unshift(generatedAdventurer);
-  return generatedAdventurer;
-}
-
-function createCandidatePreview(
+export function createAdventurerCandidatePreview(
   gameData: GameData,
   template: AdventurerTemplate,
   source: AdventurerContactSource,
   quest: Quest | null = null
 ): Adventurer {
+  const seedKey = createGenerationSeedKey(gameData, template, source, quest);
+  return createGeneratedAdventurerInstance(
+    template,
+    gameData.day,
+    seedKey,
+    gameData.namePools,
+    `preview:${template.id}`
+  );
+}
+
+function createGenerationSeedKey(
+  gameData: GameData,
+  template: AdventurerTemplate,
+  source: AdventurerContactSource,
+  quest: Quest | null
+): string {
   const questKey = quest ? `${quest.templateId}:${quest.createdDay}` : "none";
-  const seedKey = `${template.id}:${source}:${gameData.day}:${questKey}`;
-  return createGeneratedAdventurerInstance(template, gameData.day, seedKey, gameData.namePools);
+  return `${template.id}:${source}:${gameData.day}:${questKey}:instance-${gameData.adventurerIdCounter}`;
 }
 
 function getIntroductionScore(template: AdventurerTemplate, source: AdventurerContactSource): number {

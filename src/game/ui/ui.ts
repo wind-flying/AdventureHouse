@@ -17,6 +17,7 @@ import {
   syncQuestForm
 } from "./tabs/questsTab";
 import {renderStockTab} from "./tabs/stockTab";
+import {renderEncyclopedia} from "./encyclopedia";
 
 export {showNotification} from "./shared/notification";
 export {
@@ -42,4 +43,5 @@ export function render(gameData: GameData, elements: Elements): void {
   renderStockTab(gameData, elements);
   renderLogTab(gameData, elements);
   renderStoryRail(gameData, elements);
+  renderEncyclopedia(gameData, elements);
 }

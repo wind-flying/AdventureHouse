@@ -17,6 +17,7 @@ import {
   getQuestTemplateSummary,
   uiText
 } from "../../text/uiText";
+import {sortQuestsForDisplay} from "../questSorting";
 import {getQuestTemplateFocusLabel} from "../resourceDisplay";
 import {renderQuestCollection} from "../shared/questCards";
 
@@ -70,7 +71,7 @@ export function populateQuestTemplateOptions(gameData: GameData, elements: Eleme
     const isBlocked = isQuestTemplatePublicationBlocked(gameData, template.id);
     option.value = template.id;
     option.disabled = isBlocked;
-    option.textContent = `${getQuestNatureText(template.nature)} · ${template.title} · ${getQuestTemplateFocusLabel(gameData, template)}${isBlocked ? " · 推进中" : ""}`;
+    option.textContent = `${template.shortTitle ?? template.title}${isBlocked ? " · 推进中" : ""}`;
     elements.templateSelect?.appendChild(option);
   });
 
@@ -160,11 +161,12 @@ function populateSelect(
 }
 
 function getFilteredQuests(gameData: GameData): Quest[] {
-  return gameData.player.quests.filter((quest) => {
+  const filteredQuests = gameData.player.quests.filter((quest) => {
     const matchStatus = gameData.questFilters.status === "all" || quest.status === gameData.questFilters.status;
     const matchNature = gameData.questFilters.nature === "all" || quest.nature === gameData.questFilters.nature;
     return matchStatus && matchNature;
   });
+  return sortQuestsForDisplay(filteredQuests, gameData.day);
 }
 
 function getVisibleQuestTemplates(gameData: GameData) {

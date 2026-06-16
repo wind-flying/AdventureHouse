@@ -1,27 +1,7 @@
-import type {GameData, IntelRecord, Quest, QuestResultOutcome, QuestTemplate, QuestUnlockCondition} from "../../core/types";
+import type {GameData, IntelRecord, Quest, QuestTemplate, QuestUnlockCondition} from "../../core/types";
 
 export function getQuestUnlockConditions(template: QuestTemplate): QuestUnlockCondition[] {
-  if (template.disabledForCurrentTesting) {
-    return [];
-  }
-
-  if (template.unlockConditions && template.unlockConditions.length > 0) {
-    return template.unlockConditions;
-  }
-
-  if (template.unlockedByDefault) {
-    return [{type: "default"}];
-  }
-
-  if (template.prerequisiteTemplateId) {
-    return [{
-      type: "questResult",
-      templateId: template.prerequisiteTemplateId,
-      outcome: template.prerequisiteOutcome
-    }];
-  }
-
-  return [];
+  return template.unlockConditions ?? [];
 }
 
 export function isQuestTemplateUnlocked(gameData: GameData, template: QuestTemplate): boolean {
@@ -38,22 +18,8 @@ export function isQuestTemplateUnlocked(gameData: GameData, template: QuestTempl
 export function getFollowUpTemplatesForIntel(gameData: GameData, record: IntelRecord): QuestTemplate[] {
   return gameData.questTemplates.filter((template) => {
     const conditions = getQuestUnlockConditions(template);
-    return conditions.some((condition) => isUnlockConditionSatisfiedByIntelRecord(record, condition));
-  });
-}
-
-export function getUnlockedTemplatesFromQuestResult(
-  gameData: GameData,
-  templateId: string,
-  outcome: QuestResultOutcome
-): QuestTemplate[] {
-  return gameData.questTemplates.filter((template) => {
-    const conditions = getQuestUnlockConditions(template);
-    return conditions.some((condition) => {
-      return condition.type === "questResult"
-        && condition.templateId === templateId
-        && (condition.outcome === undefined || condition.outcome === outcome);
-    });
+    return conditions.some((condition) => isUnlockConditionSatisfiedByIntelRecord(record, condition))
+      && isQuestTemplateUnlocked(gameData, template);
   });
 }
 
@@ -75,7 +41,7 @@ export function getUnlockedTemplatesFromQuestResolution(
       }
 
       return false;
-    });
+    }) && isQuestTemplateUnlocked(gameData, template);
   });
 }
 

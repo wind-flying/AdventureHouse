@@ -5,7 +5,9 @@ import type {
   AdventurerInstance,
   AdventurerOriginType,
   AdventurerRoleType,
+  AdventurerSpawnMode,
   AdventurerTemplate,
+  GameData,
   NamePoolDefinition,
   SavedAdventurer,
   SavedAdventurerV2,
@@ -48,12 +50,14 @@ export function getDiscoveryLevelFromPoints(points: number): AdventurerDiscovery
 export function createAdventurerInstanceFromTemplate(
   template: AdventurerTemplate,
   day: number,
-  originType: AdventurerOriginType = "handcrafted"
+  originType: AdventurerOriginType = "handcrafted",
+  instanceId = createAdventurerInstanceId(template.id, originType)
 ): AdventurerInstance {
   const roleType = getAdventurerRoleType(template);
   return {
     ...template,
-    instanceId: createAdventurerInstanceId(template.id, originType),
+    id: instanceId,
+    instanceId,
     templateId: template.id,
     originType,
     roleType,
@@ -77,7 +81,8 @@ export function createGeneratedAdventurerInstance(
   template: AdventurerTemplate,
   day: number,
   seedKey: string,
-  namePools: NamePoolDefinition[]
+  namePools: NamePoolDefinition[],
+  instanceId = createAdventurerInstanceId(seedKey, "generated")
 ): AdventurerInstance {
   const generatedText = getGeneratedAdventurerText(template, seedKey);
   const personality = Object.fromEntries(
@@ -110,16 +115,61 @@ export function createGeneratedAdventurerInstance(
   ) as AdventurerTemplate["capabilities"];
 
   return {
-    ...createAdventurerInstanceFromTemplate(template, day, "generated"),
+    ...createAdventurerInstanceFromTemplate(template, day, "generated", instanceId),
     name: getGeneratedAdventurerName(template, seedKey, namePools),
     title: generatedText.title,
     motive: generatedText.motive,
     impression: generatedText.impression,
     rumor: generatedText.rumor,
     personality,
-    capabilities,
-    instanceId: createAdventurerInstanceId(seedKey, "generated")
+    capabilities
   };
+}
+
+export interface InstantiateGeneratedAdventurerOptions {
+  template?: AdventurerTemplate;
+  templateId?: string;
+  seedKey?: string;
+}
+
+export function instantiateGeneratedAdventurer(
+  gameData: GameData,
+  options: InstantiateGeneratedAdventurerOptions = {}
+): AdventurerInstance | null {
+  const templates = getAvailableGenerationTemplates(gameData);
+  const template = options.template
+    ?? (options.templateId ? templates.find((candidate) => candidate.id === options.templateId) : undefined)
+    ?? templates[Math.floor(Math.random() * templates.length)];
+  if (!template || !templates.some((candidate) => candidate.id === template.id)) {
+    return null;
+  }
+
+  const instanceId = createGeneratedInstanceId(gameData.adventurerIdCounter);
+  gameData.adventurerIdCounter += 1;
+  const seedKey = options.seedKey ?? `${instanceId}:${template.id}:day-${gameData.day}`;
+  const adventurer = createGeneratedAdventurerInstance(
+    template,
+    gameData.day,
+    seedKey,
+    gameData.namePools,
+    instanceId
+  );
+  gameData.adventurers.unshift(adventurer);
+  return adventurer;
+}
+
+export function getAvailableGenerationTemplates(gameData: GameData): AdventurerTemplate[] {
+  return gameData.adventurerTemplates.filter((template) => {
+    if (getAdventurerRoleType(template) !== "adventurer" || template.knownByDefault) {
+      return false;
+    }
+
+    if (getAdventurerSpawnMode(template) === "repeatable") {
+      return true;
+    }
+
+    return !gameData.adventurers.some((adventurer) => adventurer.templateId === template.id);
+  });
 }
 
 export function createInitialAdventurerInstances(
@@ -149,6 +199,7 @@ export function restoreAdventurerInstance(
   return {
     ...(baseAdventurer ?? savedAdventurer),
     ...savedAdventurer,
+    id: savedAdventurer.instanceId,
     instanceId: savedAdventurer.instanceId,
     templateId: savedAdventurer.templateId ?? null,
     originType: savedAdventurer.originType,
@@ -248,10 +299,6 @@ function getGeneratedAdventurerText(
   };
 }
 
-function getSeededOffset(seedKey: string, amplitude: number): number {
-  return normalizedSeed(seedKey) * amplitude;
-}
-
 function generateAxisValue(
   baseValue: number,
   range: {min: number; max: number} | undefined,
@@ -283,10 +330,8 @@ function generateAxisValue(
 }
 
 function getCenteredRatio(seedKey: string): number {
-  const first = (normalizedSeed(`${seedKey}:a`) + 1) / 2;
-  const second = (normalizedSeed(`${seedKey}:b`) + 1) / 2;
-  const third = (normalizedSeed(`${seedKey}:c`) + 1) / 2;
-  return (first + second + third) / 3;
+  const random = createSeededRandom(seedKey);
+  return (random() + random() + random()) / 3;
 }
 
 function pickFlexibleTextValue(
@@ -312,12 +357,33 @@ function pickSeeded<T>(items: T[], seedKey: string): T {
 }
 
 function normalizedSeed(seedKey: string): number {
-  let hash = 0;
+  return (hashSeed(seedKey) / 0xffffffff) * 2 - 1;
+}
+
+function hashSeed(seedKey: string): number {
+  let hash = 2166136261;
   for (let index = 0; index < seedKey.length; index += 1) {
-    hash = ((hash << 5) - hash + seedKey.charCodeAt(index)) | 0;
+    hash ^= seedKey.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
   }
 
-  return ((hash >>> 0) / 0xffffffff) * 2 - 1;
+  hash += hash << 13;
+  hash ^= hash >>> 7;
+  hash += hash << 3;
+  hash ^= hash >>> 17;
+  hash += hash << 5;
+  return hash >>> 0;
+}
+
+function createSeededRandom(seedKey: string): () => number {
+  let state = hashSeed(seedKey);
+  return () => {
+    state += 0x6d2b79f5;
+    let value = state;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 0x100000000;
+  };
 }
 
 function clamp(value: number, minimum: number, maximum: number): number {
@@ -334,6 +400,14 @@ function createAdventurerInstanceId(sourceKey: string, originType: AdventurerOri
     : `handcrafted:${sourceKey}`;
 }
 
+function createGeneratedInstanceId(counter: number): string {
+  return `generated:${counter}`;
+}
+
 function getAdventurerRoleType(template: AdventurerTemplate): AdventurerRoleType {
   return template.roleType ?? "adventurer";
+}
+
+function getAdventurerSpawnMode(template: AdventurerTemplate): AdventurerSpawnMode {
+  return template.spawnMode ?? (getAdventurerRoleType(template) === "anchor" ? "unique" : "repeatable");
 }

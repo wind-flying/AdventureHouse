@@ -1,5 +1,14 @@
-import {adventurerTemplates, intelDefinitions, namePools, questTemplates, resources} from "./config";
+import {
+  adventurerTemplates,
+  equipmentDefinitions,
+  intelDefinitions,
+  itemDefinitions,
+  namePools,
+  questTemplates,
+  resources
+} from "./config";
 import {createInitialAdventurerInstances} from "./systems/adventurers/adventurerInstances";
+import {createInitialInventory} from "./systems/inventory";
 import {createStoryEntry} from "./text/storyText";
 import type {Elements, GameData} from "./core/types";
 
@@ -9,6 +18,7 @@ export const LOG_HISTORY_LIMIT = 30;
 export const INITIAL_DAY = 1;
 export const INITIAL_PLAYER_MONEY = 120;
 export const INITIAL_QUEST_ID = 1;
+export const INITIAL_ADVENTURER_ID = 1;
 export const DAILY_SHOP_INCOME = 6;
 export const INITIAL_RESULT_INSIGHT_LEVEL = "basic" as const;
 
@@ -31,12 +41,16 @@ export function createInitialGameData(): GameData {
       resultInsightLevel: INITIAL_RESULT_INSIGHT_LEVEL,
       quests: [],
       stock: Object.fromEntries(resources.map((resource) => [resource.id, 0])),
+      inventory: createInitialInventory(equipmentDefinitions),
       leads: [],
       discoveries: []
     },
     questIdCounter: INITIAL_QUEST_ID,
+    adventurerIdCounter: INITIAL_ADVENTURER_ID,
     dailyShopIncome: DAILY_SHOP_INCOME,
     resources,
+    itemDefinitions,
+    equipmentDefinitions,
     namePools,
     questTemplates,
     intelDefinitions,
@@ -54,8 +68,12 @@ export function createEmptyElements(): Elements {
     dayDisplay: null,
     moneyDisplay: null,
     activeQuestDisplay: null,
-    stockSummaryDisplay: null,
     knownAdventurerDisplay: null,
+    encyclopediaButton: null,
+    encyclopediaModal: null,
+    encyclopediaCloseBtn: null,
+    encyclopediaNavigation: null,
+    encyclopediaContent: null,
     exportSaveBtn: null,
     importSaveBtn: null,
     resetSaveBtn: null,

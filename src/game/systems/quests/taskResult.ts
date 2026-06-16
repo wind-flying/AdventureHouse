@@ -226,16 +226,6 @@ export function applyQuestResult(
 }
 
 function getQuestOutcomeDetails(gameData: GameData, quest: Quest, template: QuestTemplate | undefined) {
-  switch (template?.testOutcomeMode) {
-    case "failure":
-      return {outcome: "failure" as QuestResultOutcome, successChance: null, rolledChance: null, successBreakdown: null};
-    case "success":
-      return {outcome: "success" as QuestResultOutcome, successChance: null, rolledChance: null, successBreakdown: null};
-    case "normal":
-    default:
-      break;
-  }
-
   if (!template || getQuestPublishMode(template) !== "intel") {
     return {outcome: "success" as QuestResultOutcome, successChance: null, rolledChance: null, successBreakdown: null};
   }
@@ -683,7 +673,7 @@ function buildQuestResultDisplay(
   if (savedResult.outcome === "failure") {
     return {
       intelTitleOverride: generatedIntelText.title ?? intelDefinition?.title ?? getFallbackIntelTitle(quest, kind, true),
-      intelSummaryOverride: generatedIntelText.content ?? intelDefinition?.content ?? template?.failureIntelSummary ?? `${quest.title} 这次没有带回稳定成果`
+      intelSummaryOverride: generatedIntelText.content ?? intelDefinition?.content ?? `${quest.title} 这次没有带回稳定成果`
     };
   }
 

@@ -1,6 +1,6 @@
 import type {Elements, GameData} from "../../core/types";
 import {uiLabels} from "../../text/uiLabels";
-import {getStockItemViewModel} from "../viewModels";
+import {getStockSectionsViewModel} from "../viewModels";
 
 export function getStockTabMarkup(): string {
   return `
@@ -17,11 +17,46 @@ export function renderStockTab(gameData: GameData, elements: Elements): void {
   }
 
   elements.stockList.innerHTML = "";
-  gameData.resources.forEach((resource) => {
-    const item = document.createElement("div");
-    const stockItem = getStockItemViewModel(gameData, resource.id, gameData.player.stock[resource.id] ?? 0);
-    item.className = "stock-item";
-    item.innerHTML = `<span>${stockItem.label}</span><strong>${stockItem.amount}</strong>`;
-    elements.stockList?.appendChild(item);
+  const sections = getStockSectionsViewModel(gameData);
+  if (sections.length === 0) {
+    elements.stockList.innerHTML = `<p class="empty-state">${uiLabels.stock.empty}</p>`;
+    return;
+  }
+
+  sections.forEach((section) => {
+    const sectionElement = document.createElement("section");
+    sectionElement.className = "stock-section";
+    sectionElement.innerHTML = `
+      <header class="stock-section-head">
+        <h3>${section.title}</h3>
+        <span>${section.summary}</span>
+      </header>
+    `;
+
+    section.groups.forEach((group) => {
+      const groupElement = document.createElement("section");
+      groupElement.className = "stock-subsection";
+      groupElement.innerHTML = group.title ? `<h4>${group.title}</h4>` : "";
+      const itemsElement = document.createElement("div");
+      itemsElement.className = "stock-items";
+
+      group.items.forEach((stockItem) => {
+        const item = document.createElement("div");
+        item.className = "stock-item";
+        item.innerHTML = `
+          <span>
+            <strong>${stockItem.label}</strong>
+            ${stockItem.description ? `<small>${stockItem.description}</small>` : ""}
+          </span>
+          <strong>${stockItem.amount}</strong>
+        `;
+        itemsElement.appendChild(item);
+      });
+
+      groupElement.appendChild(itemsElement);
+      sectionElement.appendChild(groupElement);
+    });
+
+    elements.stockList?.appendChild(sectionElement);
   });
 }

@@ -19,7 +19,16 @@ import {
   getQuestPublishModeText,
   getQuestProgressText
 } from "../text/uiText";
-import type {Adventurer, GameData, IntelRecord, IntelStatus, Quest} from "../core/types";
+import type {
+  Adventurer,
+  EquipmentSlot,
+  GameData,
+  IntelRecord,
+  IntelStatus,
+  ItemCategory,
+  Quest,
+  ResourceCategory
+} from "../core/types";
 import {isAdventurerKnownToPlayer} from "../systems/adventurers/adventurerAppearance";
 import {getQuestDisplayIdByInternalId, getQuestPublishMode, getQuestTemplateById} from "../systems/quests/taskBoard";
 import {getFollowUpTemplatesForIntel} from "../systems/quests/questUnlocks";
@@ -30,7 +39,6 @@ export interface HeaderSummaryViewModel {
   dayText: string;
   moneyText: string;
   activeQuestText: string;
-  stockTotalText: string;
   knownAdventurerText: string;
 }
 
@@ -73,6 +81,20 @@ export interface AdventurerCardViewModel {
 export interface StockItemViewModel {
   label: string;
   amount: string;
+  description: string | null;
+}
+
+export interface StockSubsectionViewModel {
+  id: string;
+  title: string | null;
+  items: StockItemViewModel[];
+}
+
+export interface StockSectionViewModel {
+  id: string;
+  title: string;
+  summary: string;
+  groups: StockSubsectionViewModel[];
 }
 
 export interface IntelItemViewModel {
@@ -92,7 +114,6 @@ export function getHeaderSummaryViewModel(gameData: GameData): HeaderSummaryView
     dayText: formatDaySummary(gameData.day),
     moneyText: formatMoneySummary(gameData.player.money),
     activeQuestText: formatCountSummary(getActiveQuestCountFromData(gameData), "项"),
-    stockTotalText: formatCountSummary(getTotalStockFromData(gameData), "件"),
     knownAdventurerText: formatCountSummary(getKnownAdventurers(gameData).length, "人")
   };
 }
@@ -201,8 +222,50 @@ export function getAdventurerCardViewModel(gameData: GameData, adventurer: Adven
 export function getStockItemViewModel(gameData: GameData, resourceId: string, amount: number): StockItemViewModel {
   return {
     label: getResourceLabel(gameData, resourceId),
-    amount: String(amount)
+    amount: String(amount),
+    description: null
   };
+}
+
+export function getStockSectionsViewModel(gameData: GameData): StockSectionViewModel[] {
+  const sections = new Map<string, StockSectionViewModel>();
+
+  gameData.resources
+    .filter((resource) => (gameData.player.stock[resource.id] ?? 0) > 0)
+    .sort((left, right) => compareStockSort(left.category ?? "misc", right.category ?? "misc", left.sortOrder, right.sortOrder))
+    .forEach((resource) => {
+      const category = resource.category ?? "misc";
+      const section = getOrCreateStockSection(sections, category, getStockCategoryTitle(category));
+      section.groups[0]?.items.push({
+        label: `${resource.icon} ${resource.name}`,
+        amount: String(gameData.player.stock[resource.id] ?? 0),
+        description: null
+      });
+    });
+
+  gameData.itemDefinitions
+    .filter((item) => (gameData.player.inventory.itemStacks[item.id] ?? 0) > 0)
+    .sort((left, right) => compareStockSort(left.category, right.category, left.sortOrder, right.sortOrder))
+    .forEach((item) => {
+      const section = getOrCreateStockSection(sections, item.category, getItemCategoryTitle(item.category));
+      section.groups[0]?.items.push({
+        label: `${item.icon} ${item.name}`,
+        amount: String(gameData.player.inventory.itemStacks[item.id] ?? 0),
+        description: item.playerDescription
+      });
+    });
+
+  const equipmentSection = getOwnedEquipmentSection(gameData);
+  if (equipmentSection) {
+    sections.set(equipmentSection.id, equipmentSection);
+  }
+
+  return Array.from(sections.values())
+    .sort((left, right) => getCategoryOrder(left.id) - getCategoryOrder(right.id))
+    .map((section) => ({
+      ...section,
+      summary: formatCountSummary(section.groups.reduce((sum, group) => sum + group.items.length, 0), "类")
+    }));
 }
 
 export function getIntelItemViewModel(gameData: GameData, record: IntelRecord): IntelItemViewModel {
@@ -246,8 +309,121 @@ function getActiveQuestCountFromData(gameData: GameData): number {
   return gameData.player.quests.filter((quest) => quest.status === "active").length;
 }
 
-function getTotalStockFromData(gameData: GameData): number {
-  return Object.values(gameData.player.stock).reduce((sum, value) => sum + value, 0);
+function getOrCreateStockSection(
+  sections: Map<string, StockSectionViewModel>,
+  id: string,
+  title: string
+): StockSectionViewModel {
+  const existing = sections.get(id);
+  if (existing) {
+    return existing;
+  }
+
+  const section: StockSectionViewModel = {
+    id,
+    title,
+    summary: "",
+    groups: [
+      {
+        id,
+        title: null,
+        items: []
+      }
+    ]
+  };
+  sections.set(id, section);
+  return section;
+}
+
+function getOwnedEquipmentSection(gameData: GameData): StockSectionViewModel | null {
+  const ownedEquipment = gameData.player.inventory.equipments
+    .map((equipment) => {
+      const definition = gameData.equipmentDefinitions.find((candidate) => candidate.id === equipment.definitionId);
+      return definition ? {equipment, definition} : null;
+    })
+    .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
+    .sort((left, right) => {
+      const slotDifference = getEquipmentSlotOrder(left.definition.slot) - getEquipmentSlotOrder(right.definition.slot);
+      return slotDifference !== 0
+        ? slotDifference
+        : left.definition.sortOrder - right.definition.sortOrder;
+    });
+
+  if (ownedEquipment.length === 0) {
+    return null;
+  }
+
+  const groups = new Map<EquipmentSlot, StockSubsectionViewModel>();
+  ownedEquipment.forEach(({equipment, definition}) => {
+    const group = groups.get(definition.slot) ?? {
+      id: definition.slot,
+      title: getEquipmentSlotTitle(definition.slot),
+      items: []
+    };
+    group.items.push({
+      label: `${definition.icon} ${definition.name}`,
+      amount: "1",
+      description: `${definition.playerDescription} ${formatEquipmentEffects(equipment.effects)}`
+    });
+    groups.set(definition.slot, group);
+  });
+
+  return {
+    id: "equipment",
+    title: uiLabels.stockCategories.equipment,
+    summary: "",
+    groups: Array.from(groups.values())
+  };
+}
+
+function compareStockSort(
+  leftCategory: ResourceCategory | ItemCategory,
+  rightCategory: ResourceCategory | ItemCategory,
+  leftSortOrder = 0,
+  rightSortOrder = 0
+): number {
+  const categoryDifference = getCategoryOrder(leftCategory) - getCategoryOrder(rightCategory);
+  return categoryDifference !== 0 ? categoryDifference : leftSortOrder - rightSortOrder;
+}
+
+function getCategoryOrder(category: string): number {
+  const categoryOrder = ["material", "food", "product", "consumable", "equipment", "treasure", "misc"];
+  const index = categoryOrder.indexOf(category);
+  return index >= 0 ? index : categoryOrder.length;
+}
+
+function getEquipmentSlotOrder(slot: EquipmentSlot): number {
+  const slotOrder: EquipmentSlot[] = ["weapon", "shield", "helmet", "armor", "legArmor", "boots", "accessory", "tool"];
+  const index = slotOrder.indexOf(slot);
+  return index >= 0 ? index : slotOrder.length;
+}
+
+function getStockCategoryTitle(category: ResourceCategory): string {
+  return uiLabels.stockCategories[category] ?? uiLabels.stockCategories.misc;
+}
+
+function getItemCategoryTitle(category: ItemCategory): string {
+  return uiLabels.itemCategories[category] ?? uiLabels.itemCategories.misc;
+}
+
+function getEquipmentSlotTitle(slot: EquipmentSlot): string {
+  return uiLabels.equipmentSlots[slot] ?? slot;
+}
+
+function formatEquipmentEffects(effects: Array<{target: string; value: number}>): string {
+  if (effects.length === 0) {
+    return "";
+  }
+
+  const effectText = effects.map((effect) => {
+    const sign = effect.value > 0 ? "+" : "";
+    return `${getEffectTargetTitle(effect.target)} ${sign}${effect.value}`;
+  });
+  return `效果：${effectText.join(" / ")}`;
+}
+
+function getEffectTargetTitle(target: string): string {
+  return uiLabels.effectTargets[target as keyof typeof uiLabels.effectTargets] ?? target;
 }
 
 function getPersonalityTagLimit(level: Adventurer["knownLevel"]): number {

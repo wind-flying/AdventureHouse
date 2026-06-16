@@ -7,7 +7,6 @@
       "description": "",
       "lineId": "adventure-house-opening",
       "lineTitle": "",
-      "entryPoint": true,
       "unlockConditions": [
         {
           "type": "default"
@@ -89,7 +88,6 @@
       "description": "",
       "lineId": "old-road-night-lantern",
       "lineTitle": "",
-      "entryPoint": true,
       "unlockConditions": [
         {
           "type": "default"

@@ -4,6 +4,7 @@ import {
   importSaveData,
   loadGameData,
   replaceSavedGameData,
+  SAVE_FORMAT_VERSION,
   saveGameData
 } from "./save";
 import {advanceDay} from "./systems/dayLoop";
@@ -25,6 +26,11 @@ import {
   syncQuestForm
 } from "./ui/ui";
 import type {Elements, GameData, TabId} from "./core/types";
+import {
+  closeEncyclopedia,
+  openEncyclopedia,
+  selectEncyclopediaEntry
+} from "./ui/encyclopedia";
 
 export function initApp(): void {
   const container = document.getElementById("game-container");
@@ -45,6 +51,34 @@ export function initApp(): void {
 }
 
 function bindEvents(gameData: GameData, elements: Elements): void {
+  elements.encyclopediaButton?.addEventListener("click", () => {
+    openEncyclopedia(gameData, elements);
+  });
+  elements.encyclopediaCloseBtn?.addEventListener("click", () => {
+    closeEncyclopedia(elements);
+  });
+  elements.encyclopediaModal?.addEventListener("click", (event) => {
+    if (event.target === elements.encyclopediaModal) {
+      closeEncyclopedia(elements);
+    }
+  });
+  elements.encyclopediaNavigation?.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const button = target.closest<HTMLButtonElement>("[data-encyclopedia-category-id]");
+    const categoryId = button?.dataset.encyclopediaCategoryId;
+    if (categoryId) {
+      selectEncyclopediaEntry(gameData, elements, categoryId);
+    }
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeEncyclopedia(elements);
+    }
+  });
   elements.templateSelect?.addEventListener("change", () => syncQuestForm(gameData, elements));
   elements.questStatusFilterSelect?.addEventListener("change", () => {
     gameData.questFilters.status = elements.questStatusFilterSelect?.value as QuestStatusFilter;
@@ -146,7 +180,7 @@ function handleExportSave(gameData: GameData, _elements: Elements): void {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `adventure-house-save-v1-day-${gameData.day}.json`;
+  link.download = `adventure-house-save-format-${SAVE_FORMAT_VERSION}-day-${gameData.day}.json`;
   document.body.appendChild(link);
   link.click();
   link.remove();

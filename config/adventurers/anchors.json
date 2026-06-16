@@ -7,6 +7,7 @@
       "title": "",
       "motive": "",
       "roleType": "anchor",
+      "spawnMode": "unique",
       "designerNote": "世界观固定角色：开场锚点，不属于普通随机人池。",
       "knownByDefault": true,
       "discoveryLevel": "trusted",

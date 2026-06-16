@@ -1,6 +1,7 @@
 import type {Elements, GameData} from "../../core/types";
 import {uiLabels} from "../../text/uiLabels";
 import {uiText} from "../../text/uiText";
+import {sortQuestsForDisplay} from "../questSorting";
 import {renderQuestCollection} from "../shared/questCards";
 
 const OVERVIEW_QUEST_COUNT = 3;
@@ -49,7 +50,7 @@ export function renderOverviewTab(gameData: GameData, elements: Elements): void 
   renderQuestCollection(
     gameData,
     elements.overviewQuestList,
-    gameData.player.quests.slice(0, OVERVIEW_QUEST_COUNT),
+    sortQuestsForDisplay(gameData.player.quests, gameData.day).slice(0, OVERVIEW_QUEST_COUNT),
     uiText.emptyOverviewQuests
   );
 }
