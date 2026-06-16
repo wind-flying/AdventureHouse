@@ -24,13 +24,14 @@ export function renderStockTab(gameData: GameData, elements: Elements): void {
   }
 
   sections.forEach((section) => {
-    const sectionElement = document.createElement("section");
+    const sectionElement = document.createElement("details");
     sectionElement.className = "stock-section";
+    sectionElement.open = true;
     sectionElement.innerHTML = `
-      <header class="stock-section-head">
+      <summary class="stock-section-head">
         <h3>${section.title}</h3>
-        <span>${section.summary}</span>
-      </header>
+        <span><span class="stock-section-toggle" aria-hidden="true"></span>${section.summary}</span>
+      </summary>
     `;
 
     section.groups.forEach((group) => {

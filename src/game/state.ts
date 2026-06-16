@@ -8,7 +8,7 @@ import {
   resources
 } from "./config";
 import {createInitialAdventurerInstances} from "./systems/adventurers/adventurerInstances";
-import {createInitialInventory} from "./systems/inventory";
+import {createInitialInventoryWithItems} from "./systems/inventory";
 import {createStoryEntry} from "./text/storyText";
 import type {Elements, GameData} from "./core/types";
 
@@ -41,7 +41,7 @@ export function createInitialGameData(): GameData {
       resultInsightLevel: INITIAL_RESULT_INSIGHT_LEVEL,
       quests: [],
       stock: Object.fromEntries(resources.map((resource) => [resource.id, 0])),
-      inventory: createInitialInventory(equipmentDefinitions),
+      inventory: createInitialInventoryWithItems(itemDefinitions, equipmentDefinitions),
       leads: [],
       discoveries: []
     },

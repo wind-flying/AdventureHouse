@@ -16,12 +16,16 @@ export function createEmptyInventory(): PlayerInventory {
 }
 
 export function createInitialInventory(equipmentDefinitions: EquipmentDefinition[]): PlayerInventory {
+  return createInitialInventoryWithItems([], equipmentDefinitions);
+}
+
+export function createInitialInventoryWithItems(
+  itemDefinitions: ItemDefinition[],
+  equipmentDefinitions: EquipmentDefinition[]
+): PlayerInventory {
   const starterSword = equipmentDefinitions.find((definition) => definition.id === "starter-training-sword");
   return {
-    itemStacks: {
-      "stone-tower-cake": 1,
-      "healing-potion": 1
-    },
+    itemStacks: Object.fromEntries(itemDefinitions.map((definition) => [definition.id, 5])),
     equipments: starterSword
       ? [createEquipmentInstance(starterSword, "equipment:starter-training-sword:initial", 1)]
       : []

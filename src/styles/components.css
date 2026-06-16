@@ -477,6 +477,12 @@ select:focus {
   padding: 10px 14px;
   border-bottom: 1px solid var(--divider-color);
   background: rgba(122, 82, 44, 0.06);
+  cursor: pointer;
+  list-style: none;
+}
+
+.stock-section-head::-webkit-details-marker {
+  display: none;
 }
 
 .stock-section-head h3,
@@ -485,8 +491,19 @@ select:focus {
 }
 
 .stock-section-head span {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
   color: var(--muted-text);
   font-size: 0.86rem;
+}
+
+.stock-section-toggle::before {
+  content: "收起";
+}
+
+.stock-section:not([open]) .stock-section-toggle::before {
+  content: "展开";
 }
 
 .stock-subsection + .stock-subsection {
