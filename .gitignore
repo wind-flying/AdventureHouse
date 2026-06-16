@@ -2,4 +2,5 @@ node_modules/
 dist/
 
 .conda-node/
-docs/notes/
+docs/notes/attribute-screening-matrix.zh-CN.md
+docs/notes/task-resolution-formula-guide.zh-CN.md
