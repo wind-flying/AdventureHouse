@@ -13,6 +13,7 @@ import {
 import {getDiscoveryLevelFromPoints} from "../adventurers/adventurerInstances";
 import {
   chooseAdventurerForQuest as chooseAdventurerForQuestByAcceptance,
+  filterAdventurersForQuestTemplate,
   getQuestAcceptanceBreakdown,
   getQuestInterestBreakdown
 } from "./taskAcceptance";
@@ -364,8 +365,18 @@ function chooseQuestTaker(
   nextDayEntries: StoryEntry[]
 ): {adventurer: Adventurer; source: "known" | "hidden"} | null {
   const template = getQuestTemplateById(gameData, quest.templateId);
-  const visibleAdventurers = getAvailableKnownAdventurers(gameData);
-  const hiddenCandidateTemplates = template?.allowGeneratedTaker === false || hasAdventurerContactEntry(nextDayEntries)
+  const visibleAdventurers = filterAdventurersForQuestTemplate(
+    template,
+    getAvailableKnownAdventurers(gameData)
+  );
+  if (template?.exclusiveTakerTemplateId) {
+    const exclusiveTaker = visibleAdventurers[0] ?? null;
+    return exclusiveTaker ? {adventurer: exclusiveTaker, source: "known"} : null;
+  }
+
+  const hiddenCandidateTemplates = template?.exclusiveTakerTemplateId
+    || template?.allowGeneratedTaker === false
+    || hasAdventurerContactEntry(nextDayEntries)
     ? []
     : getAvailableOrdinaryGenerationTemplates(gameData);
   const hiddenAdventurers = hiddenCandidateTemplates.map((adventurerTemplate) => {

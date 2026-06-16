@@ -47,6 +47,8 @@ export interface QuestResolutionInput {
   nature: QuestNature;
   totalDays: number;
   difficulty: Difficulty;
+  successChanceModifier?: number;
+  minSuccessChance?: number;
 }
 
 export interface QuestSuccessBreakdown {
@@ -73,7 +75,9 @@ export function getQuestResolutionInput(quest: Quest, template: QuestTemplate): 
     risk: quest.risk,
     nature: quest.nature,
     totalDays: quest.totalDays,
-    difficulty: template.difficulty
+    difficulty: template.difficulty,
+    successChanceModifier: template.successChanceModifier,
+    minSuccessChance: template.minSuccessChance
   };
 }
 
@@ -118,10 +122,11 @@ export function getQuestSuccessBreakdown(
     + stabilityBonus
     + intelBonus
     + capabilityBonus
-    + personalityBonus;
+    + personalityBonus
+    + (input.successChanceModifier ?? 0);
   const finalChance = clamp(
     rawFinalChance,
-    QUEST_RESOLUTION_TUNING.minSuccessChance,
+    input.minSuccessChance ?? QUEST_RESOLUTION_TUNING.minSuccessChance,
     QUEST_RESOLUTION_TUNING.maxSuccessChance
   );
 

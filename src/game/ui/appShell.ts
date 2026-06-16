@@ -11,6 +11,7 @@ import {getSaveTabMarkup} from "./tabs/saveTab";
 import {getStockTabMarkup} from "./tabs/stockTab";
 import {getEncyclopediaMarkup} from "./encyclopedia";
 import {getGiftingMarkup} from "./gifting";
+import {getLoadoutMarkup} from "./loadout";
 
 export function createAppShell(container: HTMLDivElement, gameData: GameData, elements: Elements): void {
   elements.container = container;
@@ -34,6 +35,7 @@ export function createAppShell(container: HTMLDivElement, gameData: GameData, el
     </main>
     ${getEncyclopediaMarkup()}
     ${getGiftingMarkup()}
+    ${getLoadoutMarkup()}
   `;
 
   elements.dayDisplay = container.querySelector("#day-display");
@@ -49,6 +51,9 @@ export function createAppShell(container: HTMLDivElement, gameData: GameData, el
   elements.giftContent = container.querySelector("#gift-content");
   elements.giftCloseBtn = container.querySelector("#gift-close-btn");
   elements.giftConfirmBtn = container.querySelector("#gift-confirm-btn");
+  elements.loadoutModal = container.querySelector("#loadout-modal");
+  elements.loadoutContent = container.querySelector("#loadout-content");
+  elements.loadoutCloseBtn = container.querySelector("#loadout-close-btn");
   elements.exportSaveBtn = container.querySelector("#export-save-btn");
   elements.importSaveBtn = container.querySelector("#import-save-btn");
   elements.resetSaveBtn = container.querySelector("#reset-save-btn");

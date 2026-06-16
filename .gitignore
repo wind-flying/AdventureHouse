@@ -2,3 +2,4 @@ node_modules/
 dist/
 
 .conda-node/
+docs/notes/

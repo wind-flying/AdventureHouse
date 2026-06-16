@@ -15,6 +15,7 @@ import type {
   QuestResult,
   QuestResultOutcome,
   QuestResultReasonTag,
+  QuestResultUsedItem,
   SavedQuestResult,
   QuestTemplate,
   StoryEntry
@@ -47,7 +48,8 @@ export function resolveQuestResult(gameData: GameData, quest: Quest): QuestResul
         matchingIntelCount: matchingIntelCount || null,
         successChance: outcomeDetails.successChance,
         rolledChance: outcomeDetails.rolledChance,
-        reasonTags
+        reasonTags,
+        usedGiftItems: outcomeDetails.usedGiftItems
       }
     });
   }
@@ -72,7 +74,8 @@ export function resolveQuestResult(gameData: GameData, quest: Quest): QuestResul
         matchingIntelCount,
         successChance: outcomeDetails.successChance,
         rolledChance: outcomeDetails.rolledChance,
-        reasonTags
+        reasonTags,
+        usedGiftItems: outcomeDetails.usedGiftItems
       }
     });
   }
@@ -96,7 +99,8 @@ export function resolveQuestResult(gameData: GameData, quest: Quest): QuestResul
         matchingIntelCount,
         successChance: outcomeDetails.successChance,
         rolledChance: outcomeDetails.rolledChance,
-        reasonTags
+        reasonTags,
+        usedGiftItems: outcomeDetails.usedGiftItems
       }
     });
   }
@@ -118,7 +122,8 @@ export function resolveQuestResult(gameData: GameData, quest: Quest): QuestResul
       matchingIntelCount: null,
       successChance: outcomeDetails.successChance,
       rolledChance: outcomeDetails.rolledChance,
-      reasonTags
+      reasonTags,
+      usedGiftItems: outcomeDetails.usedGiftItems
     }
   });
 }
@@ -135,7 +140,8 @@ export function toSavedQuestResult(result: QuestResult): SavedQuestResult {
       matchingIntelCount: result.details.matchingIntelCount,
       successChance: result.details.successChance,
       rolledChance: result.details.rolledChance,
-      reasonTags: [...result.details.reasonTags]
+      reasonTags: [...result.details.reasonTags],
+      usedGiftItems: result.details.usedGiftItems.map((item) => ({...item}))
     }
   };
 }
@@ -145,6 +151,7 @@ export function restoreQuestResult(gameData: GameData, quest: Quest, savedResult
   const details = {
     ...savedResult.details,
     reasonTags: [...savedResult.details.reasonTags],
+    usedGiftItems: sanitizeQuestResultUsedItems(savedResult.details.usedGiftItems),
     visibleReasonTags: getVisibleQuestResultReasonTags(savedResult.details.reasonTags),
     display
   };
@@ -158,20 +165,21 @@ export function restoreQuestResult(gameData: GameData, quest: Quest, savedResult
 }
 
 export function getQuestResultSummary(gameData: GameData, quest: Quest, result: QuestResult): string {
+  const itemEffectText = result.details.reasonTags.includes("item") ? "（随身道具起效）" : "";
   if (result.type === "resource") {
-    return `获得 ${result.details.quantity ?? quest.quantity} 个 ${getQuestResourceLabel(gameData, quest)}`;
+    return `获得 ${result.details.quantity ?? quest.quantity} 个 ${getQuestResourceLabel(gameData, quest)}${itemEffectText}`;
   }
 
   const intelSummary = getQuestResultIntelSummary(quest, result);
   if (result.type === "lead") {
-    return `获得线索：${intelSummary}`;
+    return `获得线索：${intelSummary}${itemEffectText}`;
   }
 
   if (result.type === "discovery") {
-    return `获得发现：${intelSummary}`;
+    return `获得发现：${intelSummary}${itemEffectText}`;
   }
 
-  return intelSummary;
+  return `${intelSummary}${itemEffectText}`;
 }
 
 export function applyQuestResult(
@@ -257,7 +265,8 @@ function getQuestOutcomeDetails(gameData: GameData, quest: Quest, template: Ques
       successChance: null,
       rolledChance: null,
       successBreakdown: null,
-      usedGiftItemCount: 0
+      usedGiftItemCount: 0,
+      usedGiftItems: []
     };
   }
 
@@ -279,7 +288,8 @@ function getQuestOutcomeDetails(gameData: GameData, quest: Quest, template: Ques
       successChance: successBreakdown.finalChance,
       rolledChance,
       successBreakdown,
-      usedGiftItemCount: 0
+      usedGiftItemCount: 0,
+      usedGiftItems: []
     };
   }
 
@@ -288,7 +298,8 @@ function getQuestOutcomeDetails(gameData: GameData, quest: Quest, template: Ques
     adventurer,
     input,
     matchingIntelCount,
-    successBreakdown
+    successBreakdown,
+    {forceAttempt: template.contentStageTag === "test"}
   );
   decayGiftedItemsAfterQuest(adventurer, giftResolution.usedGiftItemIds);
 
@@ -297,8 +308,23 @@ function getQuestOutcomeDetails(gameData: GameData, quest: Quest, template: Ques
     successChance: giftResolution.successChance,
     rolledChance: giftResolution.rolledChance,
     successBreakdown: giftResolution.successBreakdown,
-    usedGiftItemCount: giftResolution.usedGiftItemIds.size
+    usedGiftItemCount: giftResolution.usedGiftItems.length,
+    usedGiftItems: giftResolution.usedGiftItems
   };
+}
+
+function sanitizeQuestResultUsedItems(items: SavedQuestResult["details"]["usedGiftItems"]): QuestResultUsedItem[] {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
+  return items
+    .filter((item) => {
+      return typeof item.giftId === "string"
+        && typeof item.itemId === "string"
+        && typeof item.itemName === "string";
+    })
+    .map((item) => ({...item}));
 }
 
 function getQuestResultReasonTags(

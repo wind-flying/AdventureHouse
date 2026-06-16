@@ -3,6 +3,10 @@
     {
       "id": "quests",
       "textId": "quests"
+    },
+    {
+      "id": "growth",
+      "textId": "growth"
     }
   ],
   "entries": [
@@ -43,6 +47,36 @@
       "unlockConditions": [
         {
           "type": "firstQuestPublished"
+        }
+      ]
+    },
+    {
+      "id": "growth-gift-basics",
+      "categoryId": "growth",
+      "textId": "giftBasics",
+      "unlockConditions": [
+        {
+          "type": "firstAdventurerItemGifted"
+        }
+      ]
+    },
+    {
+      "id": "growth-gift-acceptance",
+      "categoryId": "growth",
+      "textId": "giftAcceptance",
+      "unlockConditions": [
+        {
+          "type": "firstAdventurerItemGifted"
+        }
+      ]
+    },
+    {
+      "id": "growth-gift-quest-carry",
+      "categoryId": "growth",
+      "textId": "giftQuestCarry",
+      "unlockConditions": [
+        {
+          "type": "firstAdventurerItemGifted"
         }
       ]
     }

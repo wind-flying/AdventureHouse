@@ -7,6 +7,7 @@ import type {
   AdventurerRoleType,
   AdventurerSpawnMode,
   AdventurerTemplate,
+  AdventurerCarriedItem,
   AdventurerGiftItem,
   GameData,
   NamePoolDefinition,
@@ -68,7 +69,9 @@ export function createAdventurerInstanceFromTemplate(
       : DISCOVERY_POINTS_BY_LEVEL.heard,
     lastSeenDay: template.knownByDefault ? day : null,
     currentQuestId: null,
-    giftedItems: []
+    giftedItems: [],
+    carriedItems: sanitizeCarriedItems(template.startingCarriedItems),
+    carriedMoney: getSafeNonNegativeInteger(template.startingMoney, 0)
   };
 }
 
@@ -179,7 +182,13 @@ export function createInitialAdventurerInstances(
   day = INITIAL_DAY
 ): AdventurerInstance[] {
   return templates
-    .filter((template) => template.knownByDefault || getAdventurerRoleType(template) === "anchor")
+    .filter((template) => {
+      if (template.startsInRoster === false) {
+        return false;
+      }
+
+      return template.knownByDefault || getAdventurerRoleType(template) === "anchor";
+    })
     .map((template) => createHandcraftedAdventurerInstance(template, day));
 }
 
@@ -210,7 +219,9 @@ export function restoreAdventurerInstance(
     knownLevel: getDiscoveryLevelFromPoints(acquaintancePoints),
     lastSeenDay: getSafeNullableInteger(savedAdventurer.lastSeenDay),
     currentQuestId: getSafeNullableInteger(savedAdventurer.currentQuestId),
-    giftedItems: sanitizeGiftedItems(savedAdventurer.giftedItems)
+    giftedItems: sanitizeGiftedItems(savedAdventurer.giftedItems),
+    carriedItems: sanitizeCarriedItems(savedAdventurer.carriedItems),
+    carriedMoney: getSafeNonNegativeInteger(savedAdventurer.carriedMoney, baseAdventurer?.carriedMoney ?? 0)
   };
 }
 
@@ -230,7 +241,9 @@ export function restoreLegacySavedAdventurer(
   return restoreAdventurerInstance(templates, {
     ...savedAdventurer,
     roleType,
-    instanceId: createAdventurerInstanceId(fallbackKey, originType)
+    instanceId: createAdventurerInstanceId(fallbackKey, originType),
+    carriedItems: "carriedItems" in savedAdventurer ? savedAdventurer.carriedItems : [],
+    carriedMoney: "carriedMoney" in savedAdventurer ? savedAdventurer.carriedMoney : 0
   });
 }
 
@@ -253,7 +266,9 @@ export function restoreLegacyAdventurerState(
     knownLevel: getDiscoveryLevelFromPoints(acquaintancePoints),
     lastSeenDay: getSafeNullableInteger(legacyState.lastSeenDay),
     currentQuestId: getSafeNullableInteger(legacyState.currentQuestId),
-    giftedItems: [...baseAdventurer.giftedItems]
+    giftedItems: [...baseAdventurer.giftedItems],
+    carriedItems: [...baseAdventurer.carriedItems],
+    carriedMoney: baseAdventurer.carriedMoney
   };
 }
 
@@ -276,8 +291,35 @@ function sanitizeGiftedItems(giftedItems: AdventurerGiftItem[] | undefined): Adv
     .map((gift) => ({...gift}));
 }
 
+function sanitizeCarriedItems(carriedItems: AdventurerCarriedItem[] | undefined): AdventurerCarriedItem[] {
+  if (!Array.isArray(carriedItems)) {
+    return [];
+  }
+
+  return carriedItems
+    .filter((item) => {
+      return typeof item.carryId === "string"
+        && typeof item.itemId === "string"
+        && Number.isInteger(item.amount)
+        && item.amount > 0
+        && Number.isInteger(item.remainingShelfLife)
+        && item.remainingShelfLife > 0
+        && Number.isInteger(item.remainingUses)
+        && item.remainingUses > 0;
+    })
+    .map((item) => ({...item}));
+}
+
 function getSafeInteger(value: number, fallback: number): number {
   if (!Number.isInteger(value)) {
+    return fallback;
+  }
+
+  return value;
+}
+
+function getSafeNonNegativeInteger(value: number | undefined, fallback: number): number {
+  if (!Number.isInteger(value) || value < 0) {
     return fallback;
   }
 

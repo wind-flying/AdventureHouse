@@ -1,3 +1,4 @@
+import {escapeHtml, getEquipmentPrimaryLabel} from "./equipmentDisplay";
 import {uiLabels} from "../text/uiLabels";
 import {getPersonalityTags} from "../text/personalityText";
 import {
@@ -47,6 +48,7 @@ export interface QuestCardViewModel {
   titleText: string;
   descriptionText: string;
   badgeText: string;
+  cardClass: string;
   statusClass: string;
   statusText: string;
   bodyText: string;
@@ -59,6 +61,7 @@ export interface QuestCardViewModel {
   adventurerText: string;
   resultText: string | null;
   resultReasonText: string | null;
+  resultUsedItemsText: string | null;
 }
 
 export interface AdventurerCardViewModel {
@@ -71,6 +74,8 @@ export interface AdventurerCardViewModel {
   pinActionText: string;
   canReceiveGift: boolean;
   giftActionText: string;
+  canInspectLoadout: boolean;
+  loadoutActionText: string;
   rumorText: string | null;
   impressionText: string | null;
   preferenceText: string | null;
@@ -125,6 +130,7 @@ export function getHeaderSummaryViewModel(gameData: GameData): HeaderSummaryView
 export function getQuestCardViewModel(gameData: GameData, quest: Quest): QuestCardViewModel {
   const template = getQuestTemplateById(gameData, quest.templateId);
   const publishMode = getQuestPublishMode(template);
+  const statusDisplay = getQuestStatusDisplay(quest);
   const bodyText = publishMode === "intel"
     ? `${uiLabels.questCard.investigate} ${getQuestResourceLabel(gameData, quest)} 相关线索`
     : `${uiLabels.questCard.collect} ${quest.quantity} 个 ${getQuestResourceLabel(gameData, quest)}`;
@@ -134,8 +140,9 @@ export function getQuestCardViewModel(gameData: GameData, quest: Quest): QuestCa
     titleText: quest.title,
     descriptionText: quest.description,
     badgeText: getQuestNatureText(quest.nature),
-    statusClass: quest.status,
-    statusText: getQuestStatusText(quest.status),
+    cardClass: statusDisplay.className,
+    statusClass: statusDisplay.className,
+    statusText: statusDisplay.text,
     bodyText,
     riskText: `${uiLabels.questCard.risk} ${getQuestRiskText(quest.risk)}`,
     natureText: `${uiLabels.questCard.nature} ${getQuestNatureText(quest.nature)}`,
@@ -145,10 +152,43 @@ export function getQuestCardViewModel(gameData: GameData, quest: Quest): QuestCa
     progressText: getQuestProgressText(quest),
     adventurerText: getQuestAdventurerText(quest.adventurerName),
     resultText: quest.result ? `${uiLabels.questCard.result} ${getQuestResultSummary(gameData, quest, quest.result)}` : null,
+    resultUsedItemsText: quest.result ? formatQuestResultUsedItemsText(quest) : null,
     resultReasonText: quest.result
       ? formatQuestResultReasonText(gameData, quest)
       : null
   };
+}
+
+function getQuestStatusDisplay(quest: Quest): {className: string; text: string} {
+  if (quest.status === "completed") {
+    if (quest.result?.outcome === "success") {
+      return {
+        className: "completed-success",
+        text: "成功"
+      };
+    }
+
+    if (quest.result?.outcome === "failure") {
+      return {
+        className: "completed-failure",
+        text: "失败"
+      };
+    }
+  }
+
+  return {
+    className: quest.status,
+    text: getQuestStatusText(quest.status)
+  };
+}
+
+function formatQuestResultUsedItemsText(quest: Quest): string | null {
+  const usedGiftItems = quest.result?.details.usedGiftItems ?? [];
+  if (usedGiftItems.length === 0) {
+    return null;
+  }
+
+  return `${uiLabels.questCard.usedItems} ${usedGiftItems.map((item) => item.itemName).join(" → ")}`;
 }
 
 function formatQuestResultReasonText(gameData: GameData, quest: Quest) {
@@ -177,6 +217,8 @@ export function getAdventurerCardViewModel(gameData: GameData, adventurer: Adven
       pinActionText,
       canReceiveGift: false,
       giftActionText: uiLabels.adventurerCard.gift,
+      canInspectLoadout: false,
+      loadoutActionText: uiLabels.adventurerCard.askLoadout,
       rumorText: adventurer.rumor,
       impressionText: null,
       preferenceText: null,
@@ -208,6 +250,8 @@ export function getAdventurerCardViewModel(gameData: GameData, adventurer: Adven
     pinActionText,
     canReceiveGift: adventurer.currentQuestId === null,
     giftActionText: uiLabels.adventurerCard.gift,
+    canInspectLoadout: true,
+    loadoutActionText: uiLabels.adventurerCard.askLoadout,
     rumorText: null,
     impressionText: `${uiLabels.adventurerCard.impression}：${adventurer.impression}`,
     preferenceText: showPreference
@@ -376,7 +420,7 @@ function getOwnedEquipmentSection(gameData: GameData): StockSectionViewModel | n
     };
     group.items.push({
       id: equipment.instanceId,
-      label: `${definition.icon} ${definition.name}`,
+      label: `${definition.icon} ${formatEquipmentInventoryName(definition, equipment)}`,
       amount: "1",
       description: `${definition.playerDescription} ${formatEquipmentEffects(equipment.effects)}`,
       giftable: false
@@ -390,6 +434,13 @@ function getOwnedEquipmentSection(gameData: GameData): StockSectionViewModel | n
     summary: "",
     groups: Array.from(groups.values())
   };
+}
+
+function formatEquipmentInventoryName(
+  definition: {name: string; shortName?: string},
+  equipment: {customName: string | null; effects: Array<{target: string; value: number}>}
+): string {
+  return escapeHtml(getEquipmentPrimaryLabel(equipment, definition));
 }
 
 function compareStockSort(

@@ -28,32 +28,44 @@
 
 `/home/windflying/Code/AdventureHouse/.conda-node`
 
-这样做的原因是当前 WSL 环境里没有可直接使用的 Linux `node`，所以先用 `conda` 在项目内放一套独立 Node 运行时，避免依赖系统环境。
+这样做的原因是当前 WSL 环境里没有可直接使用的 Linux `node`，所以先在项目内放一套独立 Node 运行时，避免依赖系统环境。
 
 ## 启动开发服务器
 
 在项目根目录执行：
 
 ```bash
-conda run -p /home/windflying/Code/AdventureHouse/.conda-node npm run dev -- --host 0.0.0.0 --port 4173
+PATH="$PWD/.conda-node/bin:$PATH" ./.conda-node/bin/npm run dev:local
 ```
 
 如果启动成功，终端会保持运行，不要关掉这个进程。
 
+`dev:local` 与 `dev` 相同，均读取 [vite.config.ts](/home/windflying/Code/AdventureHouse/vite.config.ts) 中的开发服务器设置：
+
+- 仅监听本机回环地址 `127.0.0.1`，局域网内其他设备无法访问
+- 固定使用 `5173` 端口，并启用严格端口模式
+
+如果 `5173` 已经被旧开发服务器占用，命令会直接失败，而不是自动换到 `5174`、`5175` 等端口。这样浏览器访问地址和实际监听地址不会错位。
+
 ## 本地访问地址
 
-启动后，在浏览器中打开：
+启动后，在本机浏览器中打开：
 
-`http://localhost:4173/`
+- `http://127.0.0.1:5173/`
+- 或 `http://localhost:5173/`
 
-如果是在 Windows 浏览器中访问 WSL 里的服务，也优先先试这个地址。
+两者等价，都指向本机回环地址。
+
+如果是在 Windows 浏览器中访问 WSL 里启动的服务，也优先使用上述地址。WSL2 会把本机 `localhost` 转发到 WSL 内的服务，这仍然只是本机访问，不会把开发服务器暴露到局域网。
+
+**不要**尝试用局域网 IP（例如 `http://192.168.x.x:5173/`）访问；当前配置下这些地址不可用，这是预期行为。
 
 ## 构建生产版本
 
 在项目根目录执行：
 
 ```bash
-conda run -p /home/windflying/Code/AdventureHouse/.conda-node npm run build
+PATH="$PWD/.conda-node/bin:$PATH" ./.conda-node/bin/npm run build
 ```
 
 构建完成后会生成：
@@ -69,44 +81,26 @@ conda run -p /home/windflying/Code/AdventureHouse/.conda-node npm run build
 - `npm install` 可以正常执行
 - `npm run build` 可以通过
 - `Vite` 开发服务器可以启动
-- 本地访问 `http://127.0.0.1:4173` 返回 `HTTP 200`
+- 本地访问 `http://127.0.0.1:5173` 返回 `HTTP 200`
 
 ## 常用命令汇总
 
 安装依赖：
 
 ```bash
-conda run -p /home/windflying/Code/AdventureHouse/.conda-node npm install
+PATH="$PWD/.conda-node/bin:$PATH" ./.conda-node/bin/npm install
 ```
 
 启动开发服务器：
 
 ```bash
-conda run -p /home/windflying/Code/AdventureHouse/.conda-node npm run dev -- --host 0.0.0.0 --port 4173
+PATH="$PWD/.conda-node/bin:$PATH" ./.conda-node/bin/npm run dev:local
 ```
 
 构建：
 
 ```bash
-conda run -p /home/windflying/Code/AdventureHouse/.conda-node npm run build
-```
-
-结算模拟脚本：
-
-```bash
-conda run -p /home/windflying/Code/AdventureHouse/.conda-node npm run simulate:resolution
-```
-
-指定样本次数与线索数量：
-
-```bash
-conda run -p /home/windflying/Code/AdventureHouse/.conda-node npm run simulate:resolution -- --runs 5000 --intel-count 2
-```
-
-只看某条测试任务：
-
-```bash
-conda run -p /home/windflying/Code/AdventureHouse/.conda-node npm run simulate:resolution -- --quest resolution-danger-match
+PATH="$PWD/.conda-node/bin:$PATH" ./.conda-node/bin/npm run build
 ```
 
 ## 关于 Windows / WSL 混跑
@@ -126,19 +120,18 @@ conda run -p /home/windflying/Code/AdventureHouse/.conda-node npm run simulate:r
 当前项目最稳的做法是：
 
 - 在 WSL bash 里执行命令
-- 并统一走 `conda run -p /home/windflying/Code/AdventureHouse/.conda-node ...`
+- 并统一走项目内运行时，例如 `PATH="$PWD/.conda-node/bin:$PATH" ./.conda-node/bin/npm run dev:local`
 
 如果必须从 Windows 侧发起，也应该显式包一层 `wsl`，例如：
 
 ```powershell
-wsl bash -lc "cd /home/windflying/Code/AdventureHouse && conda run -p /home/windflying/Code/AdventureHouse/.conda-node npm run simulate:resolution -- --runs 5000 --intel-count 2"
+wsl bash -lc "cd /home/windflying/Code/AdventureHouse && PATH=\"\$PWD/.conda-node/bin:\$PATH\" ./.conda-node/bin/npm run build"
 ```
 
 ## 后续可优化项
 
 现在这套方式已经能跑，但还不是最终形态。后面可以考虑：
 
-- 给 `conda` 运行命令再包一层脚本，减少命令长度
 - 如果 WSL 的系统级 Node 环境恢复正常，可以改回更常规的 `npm run dev`
-- 补齐浏览器自动截图依赖，方便开发时自动检查界面结果
 - GitHub Pages 部署说明见 [github-pages.zh-CN.md](/home/windflying/Code/AdventureHouse/docs/iterations/github-pages.zh-CN.md)
+

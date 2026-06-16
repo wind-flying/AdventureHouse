@@ -6,7 +6,7 @@ import {
   restoreLegacyAdventurerState,
 } from "./systems/adventurers/adventurerInstances";
 import {restoreQuestResult, toSavedQuestResult} from "./systems/quests/taskResult";
-import {createEmptyInventory, sanitizeInventory} from "./systems/inventory";
+import {createEmptyInventory, createEquipmentInstance, sanitizeInventory} from "./systems/inventory";
 import type {
   GameData,
   PlayerInventory,
@@ -102,6 +102,7 @@ function createSaveData(gameData: GameData): SaveDataV7 {
       player: {
         money: gameData.player.money,
         resultInsightLevel: gameData.player.resultInsightLevel,
+        hasGiftedAdventurerItem: gameData.player.hasGiftedAdventurerItem,
         quests: gameData.player.quests.map((quest) => createSavedQuest(quest)),
         stock: Object.fromEntries(
           Object.entries(gameData.player.stock).filter(([, amount]) => amount > 0)
@@ -123,8 +124,52 @@ function createSavedQuest(quest: Quest): SavedQuest {
   };
 }
 
+function ensureConfiguredStartingEquipment(gameData: GameData): void {
+  const existingEquipmentIds = new Set(gameData.player.inventory.equipments.map((equipment) => equipment.instanceId));
+  gameData.adventurers.forEach((adventurer) => {
+    adventurer.startingEquipmentDefinitionIds?.forEach((definitionId, index) => {
+      const instanceId = `equipment:${adventurer.id}:${definitionId}:${index + 1}`;
+      if (existingEquipmentIds.has(instanceId)) {
+        return;
+      }
+
+      const definition = gameData.equipmentDefinitions.find((candidate) => candidate.id === definitionId);
+      if (!definition) {
+        return;
+      }
+
+      const equipment = createEquipmentInstance(definition, instanceId, INITIAL_DAY);
+      equipment.equippedByAdventurerId = adventurer.id;
+      equipment.customName = getStartingEquipmentCustomName(adventurer.id, definitionId);
+      gameData.player.inventory.equipments.push(equipment);
+      existingEquipmentIds.add(instanceId);
+    });
+  });
+}
+
+function getStartingEquipmentCustomName(adventurerId: string, definitionId: string): string | null {
+  const customNames: Record<string, Record<string, string>> = {
+    "handcrafted:demo-full-loadout": {
+      "demo-short-sword": "&6&l灰河&7旧誓&c&l短剑",
+      "demo-guard-shield": "&9&l旧城&b巡夜&3圆盾",
+      "demo-scout-helm": "&5&l有裂纹的&d斥候盔",
+      "demo-field-armor": "&e&l褪色的&6远行胸甲",
+      "demo-knee-guards": "&a&l补过三次的&2护膝",
+      "demo-travel-boots": "&4走过&c北坡&4泥地的&l靴子",
+      "demo-copper-ring": "&6&l刻着&e小字的&n铜戒",
+      "demo-utility-hook": "&3&l磨亮&b的多用挂钩"
+    },
+    "handcrafted:demo-trusted-pack": {
+      "demo-scout-helm": "借来的轻斥候盔"
+    }
+  };
+
+  return customNames[adventurerId]?.[definitionId] ?? null;
+}
+
 function restoreGameDataFromSave(saveData: SaveDataV7): GameData {
   const gameData = createInitialGameData();
+  const configuredInitialAdventurers = gameData.adventurers.map((adventurer) => ({...adventurer}));
 
   gameData.day = getSafePositiveInteger(saveData.game.day, INITIAL_DAY);
   gameData.questIdCounter = getSafePositiveInteger(saveData.game.questIdCounter, gameData.questIdCounter);
@@ -135,6 +180,7 @@ function restoreGameDataFromSave(saveData: SaveDataV7): GameData {
 
   gameData.player.money = getSafeInteger(saveData.game.player.money, gameData.player.money);
   gameData.player.resultInsightLevel = sanitizeResultInsightLevel(saveData.game.player.resultInsightLevel);
+  gameData.player.hasGiftedAdventurerItem = saveData.game.player.hasGiftedAdventurerItem === true;
   const restoredStock: Record<string, number> = {...gameData.player.stock};
   Object.entries(saveData.game.player.stock).forEach(([resourceId, amount]) => {
     if (resourceId in restoredStock && typeof amount === "number" && amount >= 0) {
@@ -150,6 +196,11 @@ function restoreGameDataFromSave(saveData: SaveDataV7): GameData {
   gameData.adventurers = saveData.game.adventurers.map((savedAdventurer) => {
     return restoreAdventurerInstance(gameData.adventurerTemplates, savedAdventurer);
   });
+  gameData.adventurers = appendMissingConfiguredInitialAdventurers(
+    gameData.adventurers,
+    configuredInitialAdventurers
+  );
+  ensureConfiguredStartingEquipment(gameData);
   gameData.pinnedAdventurerIds = saveData.game.pinnedAdventurerIds.filter((id) => {
     return gameData.adventurers.some((adventurer) => adventurer.instanceId === id);
   });
@@ -464,7 +515,9 @@ function migrateSaveDataV6ToV7(saveData: SaveDataV6): SaveDataV7 {
       ...saveData.game,
       adventurers: saveData.game.adventurers.map((adventurer) => ({
         ...adventurer,
-        giftedItems: adventurer.giftedItems ?? []
+        giftedItems: adventurer.giftedItems ?? [],
+        carriedItems: adventurer.carriedItems ?? [],
+        carriedMoney: adventurer.carriedMoney ?? 0
       }))
     }
   };
@@ -478,6 +531,20 @@ function cloneInventory(inventory: PlayerInventory): PlayerInventory {
       effects: equipment.effects.map((effect) => ({...effect}))
     }))
   };
+}
+
+function appendMissingConfiguredInitialAdventurers(
+  savedAdventurers: SavedAdventurer[],
+  configuredInitialAdventurers: SavedAdventurer[]
+): SavedAdventurer[] {
+  const existingTemplateIds = new Set(savedAdventurers.map((adventurer) => adventurer.templateId ?? adventurer.id));
+  const existingInstanceIds = new Set(savedAdventurers.map((adventurer) => adventurer.instanceId));
+  const missingAdventurers = configuredInitialAdventurers.filter((adventurer) => {
+    const templateId = adventurer.templateId ?? adventurer.id;
+    return !existingTemplateIds.has(templateId) && !existingInstanceIds.has(adventurer.instanceId);
+  });
+
+  return [...savedAdventurers, ...missingAdventurers];
 }
 
 function getNextGeneratedAdventurerCounter(instanceIds: string[]): number {

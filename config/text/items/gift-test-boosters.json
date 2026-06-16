@@ -1,0 +1,79 @@
+{
+  "items": {
+    "test-boost-physique-small": {
+      "name": "【测试】体魄丹·小幅",
+      "playerDescription": "试验用的健体药丸，据说能让人短时更有力气。",
+      "feedbackText": "药劲不大，但总算没那么容易半路脱力了。"
+    },
+    "test-boost-physique-medium": {
+      "name": "【测试】体魄丹·中幅",
+      "playerDescription": "试验用的健体药丸，效果比小幅装明显一些。",
+      "feedbackText": "肩上的分量还在，但至少能稳稳走完全程。"
+    },
+    "test-boost-physique-large": {
+      "name": "【测试】体魄丹·大幅",
+      "playerDescription": "试验用的健体药丸，专门给扛重活的人准备。",
+      "feedbackText": "这一趟下来，她居然还有余力把木料码整齐。"
+    },
+    "test-boost-survival-small": {
+      "name": "【测试】生存符·小幅",
+      "playerDescription": "试验用的护符，据说能稍微提高野外自保能力。",
+      "feedbackText": "风还是很大，但至少没在第一阵风里就乱了阵脚。"
+    },
+    "test-boost-survival-medium": {
+      "name": "【测试】生存符·中幅",
+      "playerDescription": "试验用的护符，对荒径上的意外更有帮助。",
+      "feedbackText": "回程路上几次险情，都被她硬生生撑过去了。"
+    },
+    "test-boost-survival-large": {
+      "name": "【测试】生存符·大幅",
+      "playerDescription": "试验用的护符，适合长时间暴露在恶劣环境里。",
+      "feedbackText": "她回来时虽然狼狈，但人没事，粮也带回来了。"
+    },
+    "test-boost-exploration-small": {
+      "name": "【测试】探路册·小幅",
+      "playerDescription": "试验用的简图与标记说明，能稍微帮助认路。",
+      "feedbackText": "旧道虽然绕，但她至少没再走回已经查过的地方。"
+    },
+    "test-boost-exploration-medium": {
+      "name": "【测试】探路册·中幅",
+      "playerDescription": "试验用的简图与标记说明，对补全断线更有用。",
+      "feedbackText": "几处容易走岔的路口，都被她重新标明白了。"
+    },
+    "test-boost-exploration-large": {
+      "name": "【测试】探路册·大幅",
+      "playerDescription": "试验用的详图与标记说明，适合复杂旧道。",
+      "feedbackText": "整条旧道的标记链，被她一项项补全了回来。"
+    },
+    "test-boost-observation-small": {
+      "name": "【测试】观察镜·小幅",
+      "playerDescription": "试验用的观察工具，能稍微帮助发现细节。",
+      "feedbackText": "她多看出了一点线索，但离真正核对清楚还差一截。"
+    },
+    "test-boost-observation-medium": {
+      "name": "【测试】观察镜·中幅",
+      "playerDescription": "试验用的观察工具，对货栈这类现场更有帮助。",
+      "feedbackText": "她把几处关键细节对上了，少箱货的去向终于清楚些。"
+    },
+    "test-boost-observation-large": {
+      "name": "【测试】观察镜·大幅",
+      "playerDescription": "试验用的精细观察工具，适合复杂核对。",
+      "feedbackText": "现场那些零碎痕迹，被她一条条串成了完整说法。"
+    },
+    "test-boost-combat-small": {
+      "name": "【测试】练手短刃·小幅",
+      "playerDescription": "试验用的轻便短刃，略增一点防身把握。",
+      "feedbackText": "真遇上动静时，她至少没有第一时间慌了神。"
+    },
+    "test-boost-combat-medium": {
+      "name": "【测试】练手短刃·中幅",
+      "playerDescription": "试验用的短刃，刃口与配重都更适合夜巡。",
+      "feedbackText": "夜里那阵骚动，被她硬生生顶了回去。"
+    },
+    "test-boost-combat-large": {
+      "name": "【测试】练手短刃·大幅",
+      "playerDescription": "试验用的制式短刃，适合需要硬顶的局面。",
+      "feedbackText": "整晚守下来，仓口再没出第二次麻烦。"
+    }
+  }
+}

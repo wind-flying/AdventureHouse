@@ -2,11 +2,12 @@
   "equipment": [
     {
       "id": "starter-training-sword",
-      "name": "新手练习剑",
+      "name": "",
+      "shortName": "",
       "icon": "🗡",
       "slot": "weapon",
       "sortOrder": 10,
-      "playerDescription": "镇上附赠的旧剑，至少能让新手知道剑尖该朝哪边。",
+      "playerDescription": "",
       "acquisitionType": "fixed",
       "statRolls": [
         {
@@ -23,11 +24,12 @@
     },
     {
       "id": "iron-sword",
-      "name": "铁剑",
+      "name": "",
+      "shortName": "",
       "icon": "⚔",
       "slot": "weapon",
       "sortOrder": 20,
-      "playerDescription": "普通铁剑，适合需要正面对抗的委托。",
+      "playerDescription": "",
       "acquisitionType": "random",
       "statRolls": [
         {
@@ -46,11 +48,12 @@
     },
     {
       "id": "round-shield",
-      "name": "圆盾",
+      "name": "",
+      "shortName": "",
       "icon": "🛡",
       "slot": "shield",
       "sortOrder": 30,
-      "playerDescription": "木芯包铁的圆盾，不让人更快解决麻烦，但能少吃亏。",
+      "playerDescription": "",
       "acquisitionType": "random",
       "statRolls": [
         {
@@ -79,11 +82,12 @@
     },
     {
       "id": "travel-armor",
-      "name": "旅行护甲",
+      "name": "",
+      "shortName": "",
       "icon": "🥋",
       "slot": "armor",
       "sortOrder": 40,
-      "playerDescription": "不算厚重，但能挡掉路上的磕碰和小伤。",
+      "playerDescription": "",
       "acquisitionType": "random",
       "statRolls": [
         {
@@ -102,11 +106,12 @@
     },
     {
       "id": "sturdy-leg-guards",
-      "name": "结实腿甲",
+      "name": "",
+      "shortName": "",
       "icon": "🥾",
       "slot": "legArmor",
       "sortOrder": 50,
-      "playerDescription": "保护膝腿，适合需要走远路的委托。",
+      "playerDescription": "",
       "acquisitionType": "random",
       "statRolls": [
         {
@@ -120,6 +125,182 @@
           "min": 2,
           "max": 5,
           "precision": 0
+        }
+      ]
+    },
+    {
+      "id": "demo-short-sword",
+      "name": "",
+      "shortName": "",
+      "icon": "⚔",
+      "slot": "weapon",
+      "sortOrder": 110,
+      "playerDescription": "",
+      "acquisitionType": "fixed",
+      "statRolls": [
+        {
+          "mode": "fixed",
+          "effect": {
+            "type": "capability",
+            "target": "combat",
+            "operation": "add",
+            "value": 5,
+            "duration": "passive"
+          }
+        }
+      ]
+    },
+    {
+      "id": "demo-guard-shield",
+      "name": "",
+      "shortName": "",
+      "icon": "🛡",
+      "slot": "shield",
+      "sortOrder": 120,
+      "playerDescription": "",
+      "acquisitionType": "fixed",
+      "statRolls": [
+        {
+          "mode": "fixed",
+          "effect": {
+            "type": "capability",
+            "target": "survival",
+            "operation": "add",
+            "value": 4,
+            "duration": "passive"
+          }
+        }
+      ]
+    },
+    {
+      "id": "demo-scout-helm",
+      "name": "",
+      "shortName": "",
+      "icon": "⛑",
+      "slot": "helmet",
+      "sortOrder": 130,
+      "playerDescription": "",
+      "acquisitionType": "fixed",
+      "statRolls": [
+        {
+          "mode": "fixed",
+          "effect": {
+            "type": "capability",
+            "target": "observation",
+            "operation": "add",
+            "value": 3,
+            "duration": "passive"
+          }
+        }
+      ]
+    },
+    {
+      "id": "demo-field-armor",
+      "name": "",
+      "shortName": "",
+      "icon": "🥋",
+      "slot": "armor",
+      "sortOrder": 140,
+      "playerDescription": "",
+      "acquisitionType": "fixed",
+      "statRolls": [
+        {
+          "mode": "fixed",
+          "effect": {
+            "type": "capability",
+            "target": "physique",
+            "operation": "add",
+            "value": 4,
+            "duration": "passive"
+          }
+        }
+      ]
+    },
+    {
+      "id": "demo-knee-guards",
+      "name": "",
+      "shortName": "",
+      "icon": "🥾",
+      "slot": "legArmor",
+      "sortOrder": 150,
+      "playerDescription": "",
+      "acquisitionType": "fixed",
+      "statRolls": [
+        {
+          "mode": "fixed",
+          "effect": {
+            "type": "capability",
+            "target": "exploration",
+            "operation": "add",
+            "value": 3,
+            "duration": "passive"
+          }
+        }
+      ]
+    },
+    {
+      "id": "demo-travel-boots",
+      "name": "",
+      "shortName": "",
+      "icon": "👢",
+      "slot": "boots",
+      "sortOrder": 160,
+      "playerDescription": "",
+      "acquisitionType": "fixed",
+      "statRolls": [
+        {
+          "mode": "fixed",
+          "effect": {
+            "type": "capability",
+            "target": "survival",
+            "operation": "add",
+            "value": 2,
+            "duration": "passive"
+          }
+        }
+      ]
+    },
+    {
+      "id": "demo-copper-ring",
+      "name": "",
+      "shortName": "",
+      "icon": "💍",
+      "slot": "accessory",
+      "sortOrder": 170,
+      "playerDescription": "",
+      "acquisitionType": "fixed",
+      "statRolls": [
+        {
+          "mode": "fixed",
+          "effect": {
+            "type": "capability",
+            "target": "observation",
+            "operation": "add",
+            "value": 2,
+            "duration": "passive"
+          }
+        }
+      ]
+    },
+    {
+      "id": "demo-utility-hook",
+      "name": "",
+      "shortName": "",
+      "icon": "🪝",
+      "slot": "tool",
+      "sortOrder": 180,
+      "playerDescription": "",
+      "acquisitionType": "fixed",
+      "statRolls": [
+        {
+          "mode": "fixed",
+          "effect": {
+            "type": "capability",
+            "target": "exploration",
+            "operation": "add",
+            "value": 2,
+            "duration": "passive"
+          }
         }
       ]
     }

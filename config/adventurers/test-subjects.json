@@ -1,0 +1,175 @@
+{
+  "adventurers": [
+    {
+      "id": "test-novice",
+      "textId": "test-novice",
+      "name": "",
+      "title": "",
+      "motive": "",
+      "roleType": "adventurer",
+      "spawnMode": "unique",
+      "contentStageTag": "test",
+      "designerNote": "赠礼与能力测试专用：全属性极低，需依赖赠送物品才能完成对应测试任务。",
+      "knownByDefault": true,
+      "discoveryLevel": "acquainted",
+      "preferences": ["food", "wood"],
+      "personality": {
+        "diligence": 0.35,
+        "courage": 0.02,
+        "greed": 0.08,
+        "sociability": 0.28,
+        "caution": 0.18,
+        "curiosity": 0.12,
+        "discipline": 0.2,
+        "resilience": 0.05
+      },
+      "capabilities": {
+        "physique": 6,
+        "survival": 6,
+        "exploration": 6,
+        "observation": 6,
+        "combat": 6
+      },
+      "impression": "",
+      "rumor": ""
+    },
+    {
+      "id": "demo-full-loadout",
+      "textId": "demo-full-loadout",
+      "name": "",
+      "title": "",
+      "motive": "",
+      "roleType": "adventurer",
+      "spawnMode": "unique",
+      "contentStageTag": "test",
+      "designerNote": "行装界面演示：全身装备满槽，装备有短名和自定义全称。",
+      "startsInRoster": true,
+      "startingEquipmentDefinitionIds": [
+        "demo-short-sword",
+        "demo-guard-shield",
+        "demo-scout-helm",
+        "demo-field-armor",
+        "demo-knee-guards",
+        "demo-travel-boots",
+        "demo-copper-ring",
+        "demo-utility-hook"
+      ],
+      "knownByDefault": true,
+      "discoveryLevel": "acquainted",
+      "preferences": ["wood", "stone"],
+      "personality": {
+        "diligence": 0.72,
+        "courage": 0.42,
+        "greed": 0.18,
+        "sociability": 0.22,
+        "caution": 0.48,
+        "curiosity": 0.24,
+        "discipline": 0.82,
+        "resilience": 0.56
+      },
+      "capabilities": {
+        "physique": 48,
+        "survival": 52,
+        "exploration": 46,
+        "observation": 44,
+        "combat": 50
+      },
+      "impression": "",
+      "rumor": ""
+    },
+    {
+      "id": "demo-money-visible",
+      "textId": "demo-money-visible",
+      "name": "",
+      "title": "",
+      "motive": "",
+      "roleType": "adventurer",
+      "spawnMode": "unique",
+      "contentStageTag": "test",
+      "designerNote": "行装界面演示：好感达到可见携带金钱的水平，携带 20 钱。",
+      "startsInRoster": true,
+      "startingMoney": 20,
+      "knownByDefault": true,
+      "discoveryLevel": "familiar",
+      "preferences": ["treasure", "wood"],
+      "personality": {
+        "diligence": 0.28,
+        "courage": 0.24,
+        "greed": 0.72,
+        "sociability": 0.46,
+        "caution": 0.38,
+        "curiosity": 0.2,
+        "discipline": 0.3,
+        "resilience": 0.42
+      },
+      "capabilities": {
+        "physique": 36,
+        "survival": 42,
+        "exploration": 38,
+        "observation": 40,
+        "combat": 34
+      },
+      "impression": "",
+      "rumor": ""
+    },
+    {
+      "id": "demo-trusted-pack",
+      "textId": "demo-trusted-pack",
+      "name": "",
+      "title": "",
+      "motive": "",
+      "roleType": "adventurer",
+      "spawnMode": "unique",
+      "contentStageTag": "test",
+      "designerNote": "行装界面演示：好感达到可见全部携带物的水平，有头盔、蛋糕、随机物品和 10 钱。",
+      "startsInRoster": true,
+      "startingMoney": 10,
+      "startingEquipmentDefinitionIds": ["demo-scout-helm"],
+      "startingCarriedItems": [
+        {
+          "carryId": "demo-trusted-pack:stone-tower-cake",
+          "itemId": "stone-tower-cake",
+          "amount": 3,
+          "remainingShelfLife": 2,
+          "remainingUses": 1
+        },
+        {
+          "carryId": "demo-trusted-pack:healing-potion",
+          "itemId": "healing-potion",
+          "amount": 1,
+          "remainingShelfLife": 3,
+          "remainingUses": 1
+        },
+        {
+          "carryId": "demo-trusted-pack:observation-tool",
+          "itemId": "test-boost-observation-small",
+          "amount": 2,
+          "remainingShelfLife": 3,
+          "remainingUses": 2
+        }
+      ],
+      "knownByDefault": true,
+      "discoveryLevel": "trusted",
+      "preferences": ["food", "treasure", "stone"],
+      "personality": {
+        "diligence": 0.42,
+        "courage": 0.36,
+        "greed": 0.2,
+        "sociability": 0.62,
+        "caution": 0.34,
+        "curiosity": 0.74,
+        "discipline": 0.4,
+        "resilience": 0.46
+      },
+      "capabilities": {
+        "physique": 40,
+        "survival": 44,
+        "exploration": 52,
+        "observation": 56,
+        "combat": 32
+      },
+      "impression": "",
+      "rumor": ""
+    }
+  ]
+}

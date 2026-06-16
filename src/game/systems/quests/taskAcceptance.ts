@@ -121,13 +121,26 @@ export interface QuestInterestBreakdown {
   finalThreshold: number;
 }
 
+export function filterAdventurersForQuestTemplate(
+  template: QuestTemplate | undefined,
+  adventurers: Adventurer[]
+): Adventurer[] {
+  const exclusiveTemplateId = template?.exclusiveTakerTemplateId;
+  if (!exclusiveTemplateId) {
+    return adventurers;
+  }
+
+  return adventurers.filter((adventurer) => adventurer.templateId === exclusiveTemplateId);
+}
+
 export function chooseAdventurerForQuest(
   gameData: GameData,
   quest: Quest,
   template: QuestTemplate | undefined,
   availableAdventurers: Adventurer[]
 ): Adventurer | null {
-  if (availableAdventurers.length === 0) {
+  const eligibleAdventurers = filterAdventurersForQuestTemplate(template, availableAdventurers);
+  if (eligibleAdventurers.length === 0) {
     return null;
   }
 
@@ -137,7 +150,7 @@ export function chooseAdventurerForQuest(
     QUEST_ACCEPTANCE_TUNING.randomVariance.publicTask,
     acceptanceProfile.publicOpenness
   );
-  const weightedAdventurers = availableAdventurers
+  const weightedAdventurers = eligibleAdventurers
     .map((adventurer) => {
       const score = getQuestAcceptanceBreakdown(
         gameData,

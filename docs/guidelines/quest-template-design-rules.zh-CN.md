@@ -235,7 +235,7 @@
 
 - 如果你想让同任务重复做时回报不完全一样，优先用 `resultIntelPoolIds`
 
-#### `failureIntelId` / `failureIntelSummary`
+#### `failureIntelId`
 
 作用：
 
@@ -243,9 +243,8 @@
 
 优先级：
 
-- 有 `failureIntelId` 时，优先用失败线索定义和失败正文
-- 没有时，才回退到 `failureIntelSummary`
-- 两者都没有时，程序会给默认失败文本
+- 有 `failureIntelId` 时，使用失败线索定义和失败正文
+- 没有时，程序会给默认失败文本
 
 设计建议：
 

@@ -37,6 +37,12 @@ import {
   openGiftDialogForAdventurer,
   openGiftDialogForItem
 } from "./ui/gifting";
+import {
+  bindLoadoutDialogEvents,
+  dismissLoadoutOverlay,
+  ensureLoadoutElements,
+  openLoadoutDialog
+} from "./ui/loadout";
 
 export function initApp(): void {
   const container = document.getElementById("game-container");
@@ -51,9 +57,24 @@ export function initApp(): void {
   populateQuestTemplateOptions(gameData, elements);
   populateQuestFilterOptions(gameData, elements);
   populateAdventurerFilterOptions(gameData, elements);
+  ensureLoadoutElements(container, elements);
+  bindLoadoutDialogEvents(gameData, elements);
   bindEvents(gameData, elements);
   syncQuestForm(gameData, elements);
   render(gameData, elements);
+}
+
+function getClickElement(event: Event): Element | null {
+  const target = event.target;
+  if (target instanceof Element) {
+    return target;
+  }
+
+  if (target instanceof Text) {
+    return target.parentElement;
+  }
+
+  return null;
 }
 
 function bindEvents(gameData: GameData, elements: Elements): void {
@@ -87,6 +108,38 @@ function bindEvents(gameData: GameData, elements: Elements): void {
     render(gameData, elements);
     showNotification(result.message, result.type);
   });
+  elements.container?.addEventListener("click", (event) => {
+    const origin = getClickElement(event);
+    if (!origin) {
+      return;
+    }
+
+    const loadoutButton = origin.closest<HTMLButtonElement>(".inspect-loadout");
+    if (loadoutButton?.dataset.loadoutAdventurerId) {
+      openLoadoutDialog(gameData, elements, loadoutButton.dataset.loadoutAdventurerId);
+      return;
+    }
+
+    const giftAdventurerButton = origin.closest<HTMLButtonElement>(".gift-adventurer");
+    if (giftAdventurerButton?.dataset.giftAdventurerId) {
+      openGiftDialogForAdventurer(gameData, elements, giftAdventurerButton.dataset.giftAdventurerId);
+      return;
+    }
+
+    const giftStockButton = origin.closest<HTMLButtonElement>(".gift-stock-item");
+    if (giftStockButton?.dataset.giftItemId) {
+      openGiftDialogForItem(gameData, elements, giftStockButton.dataset.giftItemId);
+      return;
+    }
+
+    const pinButton = origin.closest<HTMLButtonElement>(".pin-toggle");
+    const adventurerId = pinButton?.dataset.adventurerId;
+    if (pinButton && adventurerId) {
+      togglePinnedAdventurer(gameData, adventurerId);
+      saveGameData(gameData);
+      render(gameData, elements);
+    }
+  });
   elements.encyclopediaNavigation?.addEventListener("click", (event) => {
     const target = event.target;
     if (!(target instanceof HTMLElement)) {
@@ -103,6 +156,7 @@ function bindEvents(gameData: GameData, elements: Elements): void {
     if (event.key === "Escape") {
       closeEncyclopedia(elements);
       closeGiftDialog(elements);
+      dismissLoadoutOverlay(elements);
     }
   });
   elements.templateSelect?.addEventListener("change", () => syncQuestForm(gameData, elements));
@@ -127,43 +181,6 @@ function bindEvents(gameData: GameData, elements: Elements): void {
     render(gameData, elements);
   });
   elements.quantityInput?.addEventListener("input", () => syncQuestForm(gameData, elements));
-  elements.adventurerList?.addEventListener("click", (event) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) {
-      return;
-    }
-
-    const giftButton = target.closest<HTMLButtonElement>(".gift-adventurer");
-    if (giftButton?.dataset.giftAdventurerId) {
-      openGiftDialogForAdventurer(gameData, elements, giftButton.dataset.giftAdventurerId);
-      return;
-    }
-
-    const button = target.closest<HTMLButtonElement>(".pin-toggle");
-    if (!button) {
-      return;
-    }
-
-    const adventurerId = button.dataset.adventurerId;
-    if (!adventurerId) {
-      return;
-    }
-
-    togglePinnedAdventurer(gameData, adventurerId);
-    saveGameData(gameData);
-    render(gameData, elements);
-  });
-  elements.stockList?.addEventListener("click", (event) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) {
-      return;
-    }
-
-    const giftButton = target.closest<HTMLButtonElement>(".gift-stock-item");
-    if (giftButton?.dataset.giftItemId) {
-      openGiftDialogForItem(gameData, elements, giftButton.dataset.giftItemId);
-    }
-  });
   elements.createQuestBtn?.addEventListener("click", () => handleCreateQuest(gameData, elements));
   elements.exportSaveBtn?.addEventListener("click", () => handleExportSave(gameData, elements));
   elements.importSaveBtn?.addEventListener("click", () => {

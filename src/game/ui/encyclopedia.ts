@@ -119,8 +119,7 @@ function getUnlockedEncyclopediaEntries(gameData: GameData): EncyclopediaEntryCo
 function getEncyclopediaFacts(gameData: GameData): EncyclopediaFacts {
   return {
     hasPublishedQuest: gameData.player.quests.length > 0,
-    // Gifting is not available yet; this fact can be wired to gifting history later.
-    hasGiftedAdventurerItem: false
+    hasGiftedAdventurerItem: gameData.player.hasGiftedAdventurerItem
   };
 }
 

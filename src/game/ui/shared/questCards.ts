@@ -24,8 +24,9 @@ export function renderQuestCollection(
 
   quests.forEach((quest) => {
     const questElement = document.createElement("article");
-    questElement.className = `quest-card ${quest.status}`;
-    questElement.innerHTML = buildQuestCardMarkup(getQuestCardViewModel(gameData, quest));
+    const questViewModel = getQuestCardViewModel(gameData, quest);
+    questElement.className = `quest-card ${questViewModel.cardClass}`;
+    questElement.innerHTML = buildQuestCardMarkup(questViewModel);
     target.appendChild(questElement);
   });
 }
@@ -55,6 +56,7 @@ function buildQuestCardMarkup(quest: QuestCardViewModel): string {
     </div>
     ${quest.adventurerText ? `<div class="adventurer-meta">${quest.adventurerText}</div>` : ""}
     ${quest.resultText ? `<div class="adventurer-meta">${quest.resultText}</div>` : ""}
+    ${quest.resultUsedItemsText ? `<div class="adventurer-meta">${quest.resultUsedItemsText}</div>` : ""}
     ${quest.resultReasonText ? `<div class="adventurer-meta">${quest.resultReasonText}</div>` : ""}
   `;
 }

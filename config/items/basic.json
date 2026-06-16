@@ -2,7 +2,7 @@
   "items": [
     {
       "id": "stone-tower-cake",
-      "name": "石塔蛋糕",
+      "name": "",
       "icon": "🍰",
       "category": "food",
       "sortOrder": 10,
@@ -10,8 +10,8 @@
       "giftValue": 6,
       "shelfLifeQuests": 2,
       "uses": 1,
-      "playerDescription": "用石塔镇的粗粮、蜂蜜和坚果烤成的结实蛋糕。吃起来顶饱，适合出门前塞进包里。",
-      "feedbackText": "吃了你的蛋糕感觉力气更足了，不过这种劲头好像只能撑一阵。",
+      "playerDescription": "",
+      "feedbackText": "",
       "effects": [
         {
           "type": "capability",
@@ -31,7 +31,7 @@
     },
     {
       "id": "healing-potion",
-      "name": "回血药",
+      "name": "",
       "icon": "🧪",
       "category": "consumable",
       "sortOrder": 20,
@@ -39,8 +39,8 @@
       "giftValue": 8,
       "shelfLifeQuests": 3,
       "uses": 1,
-      "playerDescription": "苦味很重的急救药，能让受伤的人撑到回镇。",
-      "feedbackText": "那瓶药帮了大忙，至少遇到危险时不至于马上倒下。",
+      "playerDescription": "",
+      "feedbackText": "",
       "effects": [
         {
           "type": "capability",

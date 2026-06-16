@@ -120,6 +120,8 @@ export interface ItemDefinition {
   category: ItemCategory;
   sortOrder: number;
   stackable: true;
+  starterStack?: number;
+  contentStageTag?: string;
   giftValue: number;
   shelfLifeQuests: number;
   uses: number;
@@ -131,6 +133,7 @@ export interface ItemDefinition {
 export interface EquipmentDefinition {
   id: string;
   name: string;
+  shortName?: string;
   icon: string;
   slot: EquipmentSlot;
   sortOrder: number;
@@ -146,6 +149,7 @@ export interface EquipmentInstance {
   effects: ItemEffectDefinition[];
   acquiredDay: number;
   equippedByAdventurerId: string | null;
+  customName: string | null;
 }
 
 export interface PlayerInventory {
@@ -157,6 +161,14 @@ export interface AdventurerGiftItem {
   giftId: string;
   itemId: string;
   giftedDay: number;
+  remainingShelfLife: number;
+  remainingUses: number;
+}
+
+export interface AdventurerCarriedItem {
+  carryId: string;
+  itemId: string;
+  amount: number;
   remainingShelfLife: number;
   remainingUses: number;
 }
@@ -196,9 +208,13 @@ export interface QuestTemplate {
   difficulty: Difficulty;
   timingMode: QuestTimingMode;
   fixedDurationDays?: number;
+  successChanceModifier?: number;
+  minSuccessChance?: number;
   preferredArchetypeTags?: string[];
   allowGeneratedTaker?: boolean;
   generatedTakerWeight?: number;
+  exclusiveTakerTemplateId?: string;
+  contentStageTag?: string;
 }
 
 export type QuestUnlockCondition =
@@ -256,6 +272,7 @@ export interface QuestResult {
     rolledChance: number | null;
     visibleReasonTags: QuestResultReasonTag[];
     reasonTags: QuestResultReasonTag[];
+    usedGiftItems: QuestResultUsedItem[];
     display: {
       intelTitleOverride: string | null;
       intelSummaryOverride: string | null;
@@ -275,7 +292,14 @@ export interface SavedQuestResult {
     successChance: number | null;
     rolledChance: number | null;
     reasonTags: QuestResultReasonTag[];
+    usedGiftItems?: QuestResultUsedItem[];
   };
+}
+
+export interface QuestResultUsedItem {
+  giftId: string;
+  itemId: string;
+  itemName: string;
 }
 
 export interface IntelRecord {
@@ -315,6 +339,11 @@ export interface AdventurerTemplate {
   archetypeTags?: string[];
   introductionTags?: string[];
   designerNote?: string;
+  contentStageTag?: string;
+  startsInRoster?: boolean;
+  startingMoney?: number;
+  startingCarriedItems?: AdventurerCarriedItem[];
+  startingEquipmentDefinitionIds?: string[];
   knownByDefault: boolean;
   discoveryLevel: AdventurerDiscoveryLevel;
   preferences: string[];
@@ -336,6 +365,8 @@ export interface AdventurerInstance extends AdventurerTemplate {
   lastSeenDay: number | null;
   currentQuestId: number | null;
   giftedItems: AdventurerGiftItem[];
+  carriedItems: AdventurerCarriedItem[];
+  carriedMoney: number;
 }
 
 export type Adventurer = AdventurerInstance;
@@ -356,6 +387,7 @@ export interface GameData {
   player: {
     money: number;
     resultInsightLevel: ResultInsightLevel;
+    hasGiftedAdventurerItem: boolean;
     quests: Quest[];
     stock: Record<string, number>;
     inventory: PlayerInventory;
@@ -540,6 +572,7 @@ export interface SaveDataV7 {
     player: {
       money: number;
       resultInsightLevel: ResultInsightLevel;
+      hasGiftedAdventurerItem?: boolean;
       quests: SavedQuest[];
       stock: Partial<Record<string, number>>;
       inventory: PlayerInventory;
@@ -566,6 +599,9 @@ export interface Elements {
   giftContent: HTMLElement | null;
   giftCloseBtn: HTMLButtonElement | null;
   giftConfirmBtn: HTMLButtonElement | null;
+  loadoutModal: HTMLDivElement | null;
+  loadoutContent: HTMLElement | null;
+  loadoutCloseBtn: HTMLButtonElement | null;
   exportSaveBtn: HTMLButtonElement | null;
   importSaveBtn: HTMLButtonElement | null;
   resetSaveBtn: HTMLButtonElement | null;

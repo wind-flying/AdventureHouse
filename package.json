@@ -5,14 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:local": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview",
-    "simulate:resolution": "tsc -p tsconfig.scripts.json && node .tmp-scripts/scripts/simulate-resolution.js",
-    "simulate:acceptance": "tsc -p tsconfig.scripts.json && node .tmp-scripts/scripts/simulate-acceptance.js"
+    "preview": "vite preview"
   },
   "devDependencies": {
     "@types/node": "^22.13.14",
-    "playwright": "^1.58.2",
     "typescript": "^5.6.3",
     "vite": "^6.2.0"
   }

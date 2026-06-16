@@ -116,6 +116,9 @@ function buildAdventurerMarkup(adventurer: AdventurerCardViewModel): string {
         ${adventurer.canReceiveGift
           ? `<button class="ghost-button gift-adventurer" type="button" data-gift-adventurer-id="${adventurer.id}">${adventurer.giftActionText}</button>`
           : ""}
+        ${adventurer.canInspectLoadout
+          ? `<button class="ghost-button inspect-loadout" type="button" data-loadout-adventurer-id="${adventurer.id}">${adventurer.loadoutActionText}</button>`
+          : ""}
         <button class="ghost-button pin-toggle" type="button" data-adventurer-id="${adventurer.id}">${adventurer.pinActionText}</button>
         <span class="status-pill ${adventurer.levelClass}">${adventurer.levelText}</span>
       </div>

@@ -1,5 +1,7 @@
 # 测试专用项登记
 
+> 当前状态：历史归档。本文保留过去各迭代曾使用的测试字段、测试主题和旧文件路径，不代表这些文件当前仍存在。自 `v0.13` 收口后，不再维护与正式内容并行的技术测试矩阵或模拟脚本；公式问题优先直接审查正式公式、参数和边界。
+
 ## 文档用途
 
 这份文档用于集中记录当前项目中“只为了原型验证、测试方便、临时区分内容”而引入的字段、标签、备注和行为控制项。
@@ -22,7 +24,7 @@
 - 不应为了“以后也许会用”先行增加额外模式
 - 测试内容的价值在于缩短验证路径，而不是扩充一套与正式系统并行的临时机制
 
-## 当前登记项
+## 历史登记项
 
 ### 1. `contentStageTag: "test"`
 
@@ -250,6 +252,25 @@
   - `hasFollowUp`
   - 临时 UI 测试标签
   这类字段，也应第一时间补入本表
+
+### 8. 赠礼测试内容包（`gift-test` / `test-novice`）
+
+- 类型：配置内容与少量程序字段
+- 当前用途：
+  - 验证赠送物品、携带出任务与能力增益是否按预期工作
+  - 提供五类能力各三档（小幅 / 中幅 / 大幅）测试道具，开局各 20 个
+  - 提供仅 `test-novice` 可接的五条测试任务
+- 出现位置：
+  - [test-subjects.json](/home/windflying/Code/AdventureHouse/config/adventurers/test-subjects.json)
+  - [gift-test.json](/home/windflying/Code/AdventureHouse/config/quests/gift-test.json)
+  - [gift-test-boosters.json](/home/windflying/Code/AdventureHouse/config/items/gift-test-boosters.json)
+  - 对应 `config/text/` 文本文件
+  - `exclusiveTakerTemplateId`（任务模板）
+  - `startsInRoster`（冒险者模板）
+  - `starterStack`（物品定义）
+- 后续处理方向：
+  - 正式赠礼与养成内容稳定后，可删除或移入独立测试配置
+  - `anchor-a` 的 `startsInRoster: false` 应在序章可玩前改回默认
 
 ## 清理原则
 

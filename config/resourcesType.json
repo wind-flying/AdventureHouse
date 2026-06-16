@@ -2,7 +2,7 @@
   "resources": [
     {
       "id": "wood",
-      "name": "木材",
+      "name": "",
       "icon": "🌲",
       "category": "material",
       "sortOrder": 10,
@@ -11,7 +11,7 @@
     },
     {
       "id": "food",
-      "name": "食物",
+      "name": "",
       "icon": "🍞",
       "category": "food",
       "sortOrder": 10,
@@ -20,7 +20,7 @@
     },
     {
       "id": "stone",
-      "name": "石头",
+      "name": "",
       "icon": "🪨",
       "category": "material",
       "sortOrder": 20,
@@ -29,7 +29,7 @@
     },
     {
       "id": "treasure",
-      "name": "宝藏",
+      "name": "",
       "icon": "💰",
       "category": "treasure",
       "sortOrder": 10,

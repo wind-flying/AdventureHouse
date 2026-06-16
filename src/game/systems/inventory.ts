@@ -25,7 +25,11 @@ export function createInitialInventoryWithItems(
 ): PlayerInventory {
   const starterSword = equipmentDefinitions.find((definition) => definition.id === "starter-training-sword");
   return {
-    itemStacks: Object.fromEntries(itemDefinitions.map((definition) => [definition.id, 5])),
+    itemStacks: Object.fromEntries(
+      itemDefinitions
+        .map((definition) => [definition.id, definition.starterStack ?? 5] as const)
+        .filter(([, amount]) => amount > 0)
+    ),
     equipments: starterSword
       ? [createEquipmentInstance(starterSword, "equipment:starter-training-sword:initial", 1)]
       : []
@@ -52,7 +56,8 @@ export function createEquipmentInstance(
       };
     }),
     acquiredDay,
-    equippedByAdventurerId: null
+    equippedByAdventurerId: null,
+    customName: null
   };
 }
 
@@ -115,7 +120,10 @@ function sanitizeEquipmentInstances(
     .map((equipment) => ({
       ...equipment,
       effects: equipment.effects.map((effect): ItemEffectDefinition => ({...effect})),
-      equippedByAdventurerId: equipment.equippedByAdventurerId ?? null
+      equippedByAdventurerId: equipment.equippedByAdventurerId ?? null,
+      customName: typeof equipment.customName === "string" && equipment.customName.trim().length > 0
+        ? equipment.customName
+        : null
     }));
 }
 

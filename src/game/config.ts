@@ -10,6 +10,19 @@ import type {
 } from "./core/types";
 
 type WorldContentTextData = {
+  resources?: Record<string, {
+    name?: string | string[];
+  }>;
+  items?: Record<string, {
+    name?: string | string[];
+    playerDescription?: string | string[];
+    feedbackText?: string | string[];
+  }>;
+  equipment?: Record<string, {
+    name?: string | string[];
+    shortName?: string | string[];
+    playerDescription?: string | string[];
+  }>;
   adventurers?: Record<string, {
     name?: string | string[];
     title?: string | string[];
@@ -33,15 +46,29 @@ type WorldContentTextData = {
 
 type FlexibleTextValue = string | string[] | undefined;
 
-export const resources = resourcesData.resources as ResourceDefinition[];
 const itemModuleMap = import.meta.glob("../../config/items/*.json", {eager: true});
 const equipmentModuleMap = import.meta.glob("../../config/equipment/*.json", {eager: true});
 const adventurerModuleMap = import.meta.glob("../../config/adventurers/*.json", {eager: true});
 const nameModuleMap = import.meta.glob("../../config/names/*.json", {eager: true});
+const resourceTextModuleMap = import.meta.glob("../../config/text/resources/*.json", {eager: true});
+const itemTextModuleMap = import.meta.glob("../../config/text/items/*.json", {eager: true});
+const equipmentTextModuleMap = import.meta.glob("../../config/text/equipment/*.json", {eager: true});
 const adventurerTextModuleMap = import.meta.glob("../../config/text/adventurers/*.json", {eager: true});
 const questTextModuleMap = import.meta.glob("../../config/text/quests/*.json", {eager: true});
 const intelTextModuleMap = import.meta.glob("../../config/text/intel/*.json", {eager: true});
 const worldContentText: WorldContentTextData = {
+  resources: Object.assign({}, ...Object.values(resourceTextModuleMap).map((module) => {
+    const textFile = module as {default?: WorldContentTextData; resources?: WorldContentTextData["resources"]};
+    return textFile.default?.resources ?? textFile.resources ?? {};
+  })),
+  items: Object.assign({}, ...Object.values(itemTextModuleMap).map((module) => {
+    const textFile = module as {default?: WorldContentTextData; items?: WorldContentTextData["items"]};
+    return textFile.default?.items ?? textFile.items ?? {};
+  })),
+  equipment: Object.assign({}, ...Object.values(equipmentTextModuleMap).map((module) => {
+    const textFile = module as {default?: WorldContentTextData; equipment?: WorldContentTextData["equipment"]};
+    return textFile.default?.equipment ?? textFile.equipment ?? {};
+  })),
   adventurers: Object.assign({}, ...Object.values(adventurerTextModuleMap).map((module) => {
     const textFile = module as {default?: WorldContentTextData; adventurers?: WorldContentTextData["adventurers"]};
     return textFile.default?.adventurers ?? textFile.adventurers ?? {};
@@ -55,18 +82,46 @@ const worldContentText: WorldContentTextData = {
     return textFile.default?.intel ?? textFile.intel ?? {};
   }))
 };
+export const resourceTextPoolsById = worldContentText.resources ?? {};
+export const itemTextPoolsById = worldContentText.items ?? {};
+export const equipmentTextPoolsById = worldContentText.equipment ?? {};
 export const adventurerTextPoolsById = worldContentText.adventurers ?? {};
 export const questTextPoolsById = worldContentText.quests ?? {};
 export const intelTextPoolsById = worldContentText.intel ?? {};
+export const resources = (resourcesData.resources as ResourceDefinition[]).map((resource) => {
+  const text = resourceTextPoolsById[resource.id] ?? {};
+  return {
+    ...resource,
+    name: getDefaultTextValue(text.name, resource.name)
+  };
+}) as ResourceDefinition[];
 export const itemDefinitions = Object.values(itemModuleMap)
   .flatMap((module) => {
     const itemFile = module as {default?: {items?: ItemDefinition[]}; items?: ItemDefinition[]};
     return itemFile.default?.items ?? itemFile.items ?? [];
+  })
+  .map((item) => {
+    const text = itemTextPoolsById[item.id] ?? {};
+    return {
+      ...item,
+      name: getDefaultTextValue(text.name, item.name),
+      playerDescription: getDefaultTextValue(text.playerDescription, item.playerDescription),
+      feedbackText: getDefaultTextValue(text.feedbackText, item.feedbackText ?? "")
+    };
   }) as ItemDefinition[];
 export const equipmentDefinitions = Object.values(equipmentModuleMap)
   .flatMap((module) => {
     const equipmentFile = module as {default?: {equipment?: EquipmentDefinition[]}; equipment?: EquipmentDefinition[]};
     return equipmentFile.default?.equipment ?? equipmentFile.equipment ?? [];
+  })
+  .map((equipment) => {
+    const text = equipmentTextPoolsById[equipment.id] ?? {};
+    return {
+      ...equipment,
+      name: getDefaultTextValue(text.name, equipment.name),
+      shortName: getDefaultTextValue(text.shortName, equipment.shortName ?? equipment.name),
+      playerDescription: getDefaultTextValue(text.playerDescription, equipment.playerDescription)
+    };
   }) as EquipmentDefinition[];
 export const adventurerTemplates = Object.values(adventurerModuleMap)
   .flatMap((module) => {

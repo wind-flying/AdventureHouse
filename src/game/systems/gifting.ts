@@ -12,6 +12,7 @@ import type {
   GameData,
   ItemDefinition,
   ItemEffectDefinition,
+  QuestResultUsedItem,
   QuestFeatureAxis
 } from "../core/types";
 
@@ -38,6 +39,7 @@ export interface GiftedItemResolution {
   successChance: number;
   rolledChance: number;
   usedGiftItemIds: Set<string>;
+  usedGiftItems: QuestResultUsedItem[];
 }
 
 export function getGiftableItems(gameData: GameData): GiftableItemView[] {
@@ -99,16 +101,18 @@ export function tryResolveFailureWithGiftedItems(
   adventurer: Adventurer,
   input: QuestResolutionInput,
   matchingIntelCount: number,
-  initialBreakdown: QuestSuccessBreakdown
+  initialBreakdown: QuestSuccessBreakdown,
+  options: {forceAttempt?: boolean} = {}
 ): GiftedItemResolution {
   const usedGiftItemIds = new Set<string>();
+  const usedGiftItems: QuestResultUsedItem[] = [];
   let effectiveInput = cloneResolutionInput(input);
   let effectiveAdventurer = cloneAdventurerForGiftEffects(adventurer);
   let currentBreakdown = initialBreakdown;
   let lastRolledChance = 1;
 
   while (hasUsableGiftItems(gameData, adventurer, usedGiftItemIds)) {
-    if (Math.random() > getGiftUseChance(adventurer)) {
+    if (!options.forceAttempt && Math.random() > getGiftUseChance(adventurer)) {
       break;
     }
 
@@ -129,6 +133,11 @@ export function tryResolveFailureWithGiftedItems(
       }
 
       usedGiftItemIds.add(bestGift.gift.giftId);
+      usedGiftItems.push({
+        giftId: bestGift.gift.giftId,
+        itemId: bestGift.item.id,
+        itemName: bestGift.item.name
+      });
       effectiveInput = bestGift.nextInput;
       effectiveAdventurer = bestGift.nextAdventurer;
       currentBreakdown = bestGift.nextBreakdown;
@@ -142,7 +151,8 @@ export function tryResolveFailureWithGiftedItems(
           successBreakdown: currentBreakdown,
           successChance: currentBreakdown.finalChance,
           rolledChance,
-          usedGiftItemIds
+          usedGiftItemIds,
+          usedGiftItems
         };
       }
     }
@@ -157,7 +167,8 @@ export function tryResolveFailureWithGiftedItems(
     successBreakdown: currentBreakdown,
     successChance: currentBreakdown.finalChance,
     rolledChance: lastRolledChance,
-    usedGiftItemIds
+    usedGiftItemIds,
+    usedGiftItems
   };
 }
 
@@ -189,6 +200,10 @@ function resolveGiftBatch(gameData: GameData, adventurers: Adventurer[], itemIds
 
   if (accepted.length === 0 && rejected.length === 0) {
     return {ok: false, type: "error", message: "赠送失败：没有可赠送的物品。"};
+  }
+
+  if (accepted.length > 0) {
+    gameData.player.hasGiftedAdventurerItem = true;
   }
 
   return {
