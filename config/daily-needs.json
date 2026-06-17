@@ -1,0 +1,50 @@
+{
+  "categories": {
+    "food": {
+      "dailyNutritionMilli": 2000,
+      "deficitAcceptanceBoostPerDay": 0.04,
+      "deficitNoQuestExtraBoost": 0.06,
+      "noQuestStreakThresholdDays": 3
+    }
+  },
+  "ingredientNutritionMilli": {
+    "salt": 0,
+    "wheat": 100,
+    "greens": 80,
+    "rice": 100,
+    "mutton": 150
+  },
+  "nutritionByRef": {
+    "item:stone-tower-cake": 2000,
+    "item:trail-ration-low": 2000,
+    "item:trail-ration-mid": 2000,
+    "item:trail-ration-high": 3000
+  },
+  "trailRations": {
+    "low": "trail-ration-low",
+    "mid": "trail-ration-mid",
+    "high": "trail-ration-high"
+  },
+  "riskToRationTier": {
+    "safe": "low",
+    "risky": "mid",
+    "dangerous": "high"
+  },
+  "provisionAcceptanceBoost": {
+    "perNutritionPoint": 0.02,
+    "tierMultiplier": {
+      "low": 1,
+      "mid": 1.25,
+      "high": 1.6
+    },
+    "cap": 0.15
+  },
+  "stockpileTuning": {
+    "maxExtraUnitsPerDay": 2,
+    "baseChance": 0.18,
+    "cautionWeight": 0.22,
+    "greedWeight": -0.12,
+    "moneyComfortThreshold": 8
+  },
+  "rawIngredientScoringPenalty": 0.55
+}

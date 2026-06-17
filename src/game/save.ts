@@ -1,4 +1,6 @@
 import {createInitialGameData, INITIAL_DAY, LOG_HISTORY_LIMIT} from "./state";
+import {createInitialBailoutState} from "./systems/economy/bailout";
+import {sanitizeMarketStock} from "./systems/economy/marketStock";
 import {
   createInitialAdventurerInstances,
   restoreAdventurerInstance,
@@ -19,6 +21,10 @@ import type {
   SaveDataV5,
   SaveDataV6,
   SaveDataV7,
+  SaveDataV8,
+  SaveDataV9,
+  SaveDataV10,
+  SaveDataV11,
   SavedAdventurer,
   SavedQuest,
   StoryEntry
@@ -27,7 +33,7 @@ import type {
 const SAVE_STORAGE_KEY = "adventure-house.save";
 // 只在持久化结构真正变化时才升级版本。
 // 开发阶段的内部重构、公式细调、文案修改不应机械地增加存档版本。
-export const SAVE_FORMAT_VERSION = 7 as const;
+export const SAVE_FORMAT_VERSION = 11 as const;
 
 export function loadGameData(): GameData | null {
   const rawSave = readRawSave();
@@ -91,7 +97,7 @@ export function clearSavedGameData(): void {
   }
 }
 
-function createSaveData(gameData: GameData): SaveDataV7 {
+function createSaveData(gameData: GameData): SaveDataV11 {
   return {
     version: SAVE_FORMAT_VERSION,
     game: {
@@ -99,10 +105,21 @@ function createSaveData(gameData: GameData): SaveDataV7 {
       questIdCounter: gameData.questIdCounter,
       adventurerIdCounter: gameData.adventurerIdCounter,
       pinnedAdventurerIds: [...gameData.pinnedAdventurerIds],
+      marketId: gameData.marketId,
+      marketStock: Object.fromEntries(
+        Object.entries(gameData.marketStock).filter(([, amount]) => amount > 0)
+      ),
       player: {
         money: gameData.player.money,
         resultInsightLevel: gameData.player.resultInsightLevel,
         hasGiftedAdventurerItem: gameData.player.hasGiftedAdventurerItem,
+        shopPrices: {...gameData.player.shopPrices},
+        bailoutAccepted: gameData.player.bailoutAccepted,
+        bailoutOfferAmount: gameData.player.bailoutOfferAmount,
+        bailoutUnlocked: gameData.player.bailoutUnlocked,
+        bailoutPeakMoneySinceDecline: gameData.player.bailoutPeakMoneySinceDecline,
+        bailoutDaysBelowThreshold: gameData.player.bailoutDaysBelowThreshold,
+        pendingBailoutOffer: gameData.player.pendingBailoutOffer,
         quests: gameData.player.quests.map((quest) => createSavedQuest(quest)),
         stock: Object.fromEntries(
           Object.entries(gameData.player.stock).filter(([, amount]) => amount > 0)
@@ -140,34 +157,13 @@ function ensureConfiguredStartingEquipment(gameData: GameData): void {
 
       const equipment = createEquipmentInstance(definition, instanceId, INITIAL_DAY);
       equipment.equippedByAdventurerId = adventurer.id;
-      equipment.customName = getStartingEquipmentCustomName(adventurer.id, definitionId);
       gameData.player.inventory.equipments.push(equipment);
       existingEquipmentIds.add(instanceId);
     });
   });
 }
 
-function getStartingEquipmentCustomName(adventurerId: string, definitionId: string): string | null {
-  const customNames: Record<string, Record<string, string>> = {
-    "handcrafted:demo-full-loadout": {
-      "demo-short-sword": "&6&l灰河&7旧誓&c&l短剑",
-      "demo-guard-shield": "&9&l旧城&b巡夜&3圆盾",
-      "demo-scout-helm": "&5&l有裂纹的&d斥候盔",
-      "demo-field-armor": "&e&l褪色的&6远行胸甲",
-      "demo-knee-guards": "&a&l补过三次的&2护膝",
-      "demo-travel-boots": "&4走过&c北坡&4泥地的&l靴子",
-      "demo-copper-ring": "&6&l刻着&e小字的&n铜戒",
-      "demo-utility-hook": "&3&l磨亮&b的多用挂钩"
-    },
-    "handcrafted:demo-trusted-pack": {
-      "demo-scout-helm": "借来的轻斥候盔"
-    }
-  };
-
-  return customNames[adventurerId]?.[definitionId] ?? null;
-}
-
-function restoreGameDataFromSave(saveData: SaveDataV7): GameData {
+function restoreGameDataFromSave(saveData: SaveDataV11): GameData {
   const gameData = createInitialGameData();
   const configuredInitialAdventurers = gameData.adventurers.map((adventurer) => ({...adventurer}));
 
@@ -181,6 +177,8 @@ function restoreGameDataFromSave(saveData: SaveDataV7): GameData {
   gameData.player.money = getSafeInteger(saveData.game.player.money, gameData.player.money);
   gameData.player.resultInsightLevel = sanitizeResultInsightLevel(saveData.game.player.resultInsightLevel);
   gameData.player.hasGiftedAdventurerItem = saveData.game.player.hasGiftedAdventurerItem === true;
+  gameData.player.shopPrices = sanitizeShopPrices(saveData.game.player.shopPrices, gameData.itemDefinitions);
+  restoreBailoutState(gameData, saveData.game.player);
   const restoredStock: Record<string, number> = {...gameData.player.stock};
   Object.entries(saveData.game.player.stock).forEach(([resourceId, amount]) => {
     if (resourceId in restoredStock && typeof amount === "number" && amount >= 0) {
@@ -191,6 +189,8 @@ function restoreGameDataFromSave(saveData: SaveDataV7): GameData {
   gameData.player.inventory = sanitizeInventory(gameData, saveData.game.player.inventory);
   gameData.player.leads = saveData.game.player.leads.map((record) => ({...record}));
   gameData.player.discoveries = saveData.game.player.discoveries.map((record) => ({...record}));
+  gameData.marketId = typeof saveData.game.marketId === "string" ? saveData.game.marketId : gameData.marketId;
+  gameData.marketStock = sanitizeMarketStock(saveData.game.marketStock, gameData);
   gameData.dayLog = sanitizeStoryEntries(saveData.game.dayLog);
 
   gameData.adventurers = saveData.game.adventurers.map((savedAdventurer) => {
@@ -208,6 +208,7 @@ function restoreGameDataFromSave(saveData: SaveDataV7): GameData {
   gameData.player.quests = saveData.game.player.quests.map((savedQuest) => {
     const quest: Quest = {
       ...savedQuest,
+      provisionRations: savedQuest.provisionRations ?? null,
       result: null
     };
     quest.result = savedQuest.result ? restoreQuestResult(gameData, quest, savedQuest.result) : null;
@@ -254,37 +255,73 @@ function readRawSave(): unknown {
   }
 }
 
-function migrateSaveData(rawSave: unknown): SaveDataV7 | null {
+function migrateSaveData(rawSave: unknown): SaveDataV11 | null {
   if (!rawSave || typeof rawSave !== "object") {
     return null;
   }
 
-  const candidate = rawSave as Partial<SaveDataV1 | SaveDataV2 | SaveDataV3 | SaveDataV4 | SaveDataV5 | SaveDataV6 | SaveDataV7>;
+  const candidate = rawSave as Partial<SaveDataV1 | SaveDataV2 | SaveDataV3 | SaveDataV4 | SaveDataV5 | SaveDataV6 | SaveDataV7 | SaveDataV8 | SaveDataV9 | SaveDataV10 | SaveDataV11>;
+  let migrated: SaveDataV10 | SaveDataV11 | null = null;
+
   switch (candidate.version) {
     case 1:
-      return isSaveDataV1(candidate)
-        ? migrateSaveDataV6ToV7(migrateSaveDataV5ToV6(migrateSaveDataV4ToV5(migrateSaveDataV3ToV4(migrateSaveDataV2ToV3(migrateSaveDataV1ToV2(candidate))))))
+      migrated = isSaveDataV1(candidate)
+        ? migrateSaveDataV9ToV10(migrateSaveDataV8ToV9(migrateSaveDataV7ToV8(migrateSaveDataV6ToV7(migrateSaveDataV5ToV6(migrateSaveDataV4ToV5(migrateSaveDataV3ToV4(migrateSaveDataV2ToV3(migrateSaveDataV1ToV2(candidate)))))))))
         : null;
+      break;
     case 2:
-      return isSaveDataV2(candidate)
-        ? migrateSaveDataV6ToV7(migrateSaveDataV5ToV6(migrateSaveDataV4ToV5(migrateSaveDataV3ToV4(migrateSaveDataV2ToV3(candidate)))))
+      migrated = isSaveDataV2(candidate)
+        ? migrateSaveDataV9ToV10(migrateSaveDataV8ToV9(migrateSaveDataV7ToV8(migrateSaveDataV6ToV7(migrateSaveDataV5ToV6(migrateSaveDataV4ToV5(migrateSaveDataV3ToV4(migrateSaveDataV2ToV3(candidate))))))))
         : null;
+      break;
     case 3:
-      return isSaveDataV3(candidate) ? migrateSaveDataV6ToV7(migrateSaveDataV5ToV6(migrateSaveDataV4ToV5(migrateSaveDataV3ToV4(candidate)))) : null;
+      migrated = isSaveDataV3(candidate)
+        ? migrateSaveDataV9ToV10(migrateSaveDataV8ToV9(migrateSaveDataV7ToV8(migrateSaveDataV6ToV7(migrateSaveDataV5ToV6(migrateSaveDataV4ToV5(migrateSaveDataV3ToV4(candidate)))))))
+        : null;
+      break;
     case 4:
-      return isSaveDataV4(candidate) ? migrateSaveDataV6ToV7(migrateSaveDataV5ToV6(migrateSaveDataV4ToV5(candidate))) : null;
+      migrated = isSaveDataV4(candidate)
+        ? migrateSaveDataV9ToV10(migrateSaveDataV8ToV9(migrateSaveDataV7ToV8(migrateSaveDataV6ToV7(migrateSaveDataV5ToV6(migrateSaveDataV4ToV5(candidate))))))
+        : null;
+      break;
     case 5:
-      return isSaveDataV5(candidate) ? migrateSaveDataV6ToV7(migrateSaveDataV5ToV6(candidate)) : null;
+      migrated = isSaveDataV5(candidate)
+        ? migrateSaveDataV9ToV10(migrateSaveDataV8ToV9(migrateSaveDataV7ToV8(migrateSaveDataV6ToV7(migrateSaveDataV5ToV6(candidate)))))
+        : null;
+      break;
     case 6:
-      return isSaveDataV6(candidate) ? migrateSaveDataV6ToV7(candidate) : null;
+      migrated = isSaveDataV6(candidate)
+        ? migrateSaveDataV9ToV10(migrateSaveDataV8ToV9(migrateSaveDataV7ToV8(migrateSaveDataV6ToV7(candidate))))
+        : null;
+      break;
+    case 7:
+      migrated = isSaveDataV7(candidate)
+        ? migrateSaveDataV9ToV10(migrateSaveDataV8ToV9(migrateSaveDataV7ToV8(candidate)))
+        : null;
+      break;
+    case 8:
+      migrated = isSaveDataV8(candidate) ? migrateSaveDataV9ToV10(migrateSaveDataV8ToV9(candidate)) : null;
+      break;
+    case 9:
+      migrated = isSaveDataV9(candidate) ? migrateSaveDataV9ToV10(candidate) : null;
+      break;
+    case 10:
+      migrated = isSaveDataV10(candidate) ? candidate : null;
+      break;
     case SAVE_FORMAT_VERSION:
-      return isSaveDataV7(candidate) ? candidate : null;
+      return isSaveDataV11(candidate) ? candidate : null;
     default:
       return null;
   }
+
+  if (!migrated) {
+    return null;
+  }
+
+  return migrateSaveDataV10ToV11(migrated);
 }
 
-type SaveDataCandidate = Partial<SaveDataV1 | SaveDataV2 | SaveDataV3 | SaveDataV4 | SaveDataV5 | SaveDataV6 | SaveDataV7>;
+type SaveDataCandidate = Partial<SaveDataV1 | SaveDataV2 | SaveDataV3 | SaveDataV4 | SaveDataV5 | SaveDataV6 | SaveDataV7 | SaveDataV8 | SaveDataV9>;
 
 function isSaveDataV1(candidate: SaveDataCandidate): candidate is SaveDataV1 {
   return candidate.version === 1
@@ -364,6 +401,36 @@ function isSaveDataV6(candidate: SaveDataCandidate): candidate is SaveDataV6 {
 
 function isSaveDataV7(candidate: SaveDataCandidate): candidate is SaveDataV7 {
   return candidate.version === 7
+    && Number.isInteger(candidate.game?.adventurerIdCounter)
+    && Array.isArray(candidate.game?.pinnedAdventurerIds)
+    && Array.isArray(candidate.game?.adventurers)
+    && Array.isArray(candidate.game?.dayLog)
+    && Array.isArray(candidate.game?.player?.quests)
+    && Boolean(candidate.game?.player?.stock)
+    && typeof candidate.game?.player?.stock === "object"
+    && Boolean(candidate.game?.player?.inventory)
+    && typeof candidate.game?.player?.inventory === "object"
+    && Array.isArray(candidate.game?.player?.leads)
+    && Array.isArray(candidate.game?.player?.discoveries);
+}
+
+function isSaveDataV8(candidate: SaveDataCandidate): candidate is SaveDataV8 {
+  return candidate.version === 8
+    && Number.isInteger(candidate.game?.adventurerIdCounter)
+    && Array.isArray(candidate.game?.pinnedAdventurerIds)
+    && Array.isArray(candidate.game?.adventurers)
+    && Array.isArray(candidate.game?.dayLog)
+    && Array.isArray(candidate.game?.player?.quests)
+    && Boolean(candidate.game?.player?.stock)
+    && typeof candidate.game?.player?.stock === "object"
+    && Boolean(candidate.game?.player?.inventory)
+    && typeof candidate.game?.player?.inventory === "object"
+    && Array.isArray(candidate.game?.player?.leads)
+    && Array.isArray(candidate.game?.player?.discoveries);
+}
+
+function isSaveDataV9(candidate: SaveDataCandidate): candidate is SaveDataV9 {
+  return candidate.version === 9
     && Number.isInteger(candidate.game?.adventurerIdCounter)
     && Array.isArray(candidate.game?.pinnedAdventurerIds)
     && Array.isArray(candidate.game?.adventurers)
@@ -523,6 +590,130 @@ function migrateSaveDataV6ToV7(saveData: SaveDataV6): SaveDataV7 {
   };
 }
 
+function migrateSaveDataV7ToV8(saveData: SaveDataV7): SaveDataV8 {
+  return {
+    version: 8,
+    game: {
+      ...saveData.game,
+      player: {
+        ...saveData.game.player,
+        shopPrices: {}
+      }
+    }
+  };
+}
+
+function migrateSaveDataV8ToV9(saveData: SaveDataV8): SaveDataV9 {
+  const defaults = createInitialBailoutState();
+  return {
+    version: 9,
+    game: {
+      ...saveData.game,
+      player: {
+        ...saveData.game.player,
+        bailoutAccepted: defaults.bailoutAccepted,
+        bailoutOfferAmount: defaults.bailoutOfferAmount,
+        bailoutUnlocked: defaults.bailoutUnlocked,
+        bailoutPeakMoneySinceDecline: defaults.bailoutPeakMoneySinceDecline,
+        bailoutDaysBelowThreshold: defaults.bailoutDaysBelowThreshold,
+        pendingBailoutOffer: defaults.pendingBailoutOffer
+      }
+    }
+  };
+}
+
+function migrateSaveDataV9ToV10(saveData: SaveDataV9): SaveDataV10 {
+  return {
+    version: 10,
+    game: {
+      ...saveData.game,
+      player: {
+        ...saveData.game.player,
+        quests: saveData.game.player.quests.map((quest) => ({
+          ...quest,
+          provisionRations: quest.provisionRations ?? null
+        }))
+      },
+      adventurers: saveData.game.adventurers.map((adventurer) => ({
+        ...adventurer,
+        foodDeficitStreak: adventurer.foodDeficitStreak ?? 0,
+        daysWithoutQuestWhileDeficit: adventurer.daysWithoutQuestWhileDeficit ?? 0
+      }))
+    }
+  };
+}
+
+function migrateSaveDataV10ToV11(saveData: SaveDataV10): SaveDataV11 {
+  const fresh = createInitialGameData();
+  const knownResourceIds = new Set(fresh.resources.map((resource) => resource.id));
+  const sanitizedStock = Object.fromEntries(
+    Object.entries(saveData.game.player.stock).filter(([resourceId]) => knownResourceIds.has(resourceId))
+  );
+
+  return {
+    version: 11,
+    game: {
+      ...saveData.game,
+      marketId: fresh.marketId,
+      marketStock: {},
+      player: {
+        ...saveData.game.player,
+        stock: sanitizedStock
+      }
+    }
+  };
+}
+
+function isSaveDataV10(saveData: Partial<SaveDataV10>): saveData is SaveDataV10 {
+  return saveData.version === 10 && Boolean(saveData.game);
+}
+
+function isSaveDataV11(saveData: Partial<SaveDataV11>): saveData is SaveDataV11 {
+  return saveData.version === 11 && Boolean(saveData.game);
+}
+
+function restoreBailoutState(
+  gameData: GameData,
+  player: {
+    bailoutAccepted?: boolean;
+    bailoutOfferAmount?: number;
+    bailoutUnlocked?: boolean;
+    bailoutPeakMoneySinceDecline?: number;
+    bailoutDaysBelowThreshold?: number;
+    pendingBailoutOffer?: number | null;
+  }
+): void {
+  const defaults = createInitialBailoutState();
+  gameData.player.bailoutAccepted = player.bailoutAccepted === true;
+  gameData.player.bailoutOfferAmount = getSafePositiveInteger(
+    player.bailoutOfferAmount ?? defaults.bailoutOfferAmount,
+    defaults.bailoutOfferAmount
+  );
+  gameData.player.bailoutPeakMoneySinceDecline = getSafeInteger(
+    player.bailoutPeakMoneySinceDecline ?? defaults.bailoutPeakMoneySinceDecline,
+    defaults.bailoutPeakMoneySinceDecline
+  );
+  gameData.player.bailoutDaysBelowThreshold = Math.max(
+    0,
+    getSafeInteger(
+      player.bailoutDaysBelowThreshold ?? defaults.bailoutDaysBelowThreshold,
+      defaults.bailoutDaysBelowThreshold
+    )
+  );
+
+  if (gameData.player.bailoutAccepted) {
+    gameData.player.bailoutUnlocked = false;
+    gameData.player.pendingBailoutOffer = null;
+    return;
+  }
+
+  gameData.player.bailoutUnlocked = player.bailoutUnlocked !== false;
+  const pending = player.pendingBailoutOffer;
+  gameData.player.pendingBailoutOffer = typeof pending === "number" && Number.isInteger(pending) && pending > 0
+    ? pending
+    : null;
+}
+
 function cloneInventory(inventory: PlayerInventory): PlayerInventory {
   return {
     itemStacks: {...inventory.itemStacks},
@@ -531,6 +722,22 @@ function cloneInventory(inventory: PlayerInventory): PlayerInventory {
       effects: equipment.effects.map((effect) => ({...effect}))
     }))
   };
+}
+
+function sanitizeShopPrices(
+  shopPrices: Record<string, number> | undefined,
+  itemDefinitions: GameData["itemDefinitions"]
+): Record<string, number> {
+  if (!shopPrices || typeof shopPrices !== "object") {
+    return {};
+  }
+
+  const knownItemIds = new Set(itemDefinitions.map((item) => item.id));
+  return Object.fromEntries(
+    Object.entries(shopPrices).filter(([itemId, price]) => {
+      return knownItemIds.has(itemId) && Number.isInteger(price) && price >= 1 && price <= 99;
+    })
+  );
 }
 
 function appendMissingConfiguredInitialAdventurers(

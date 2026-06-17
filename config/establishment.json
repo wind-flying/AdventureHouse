@@ -1,0 +1,11 @@
+{
+  "establishment": {
+    "id": "inn-restaurant",
+    "type": "inn_restaurant",
+    "sellableItemCategories": ["food"],
+    "marketSellableResourceCategories": ["food"],
+    "marketSellableItemCategories": ["food", "consumable", "product", "misc"],
+    "baseFootTrafficIncome": 0,
+    "adventurerDailyLivingCost": 0
+  }
+}

@@ -21,15 +21,21 @@
       "focusText": "",
       "risk": "safe",
       "nature": "routine",
-      "resource": "food",
-      "minReward": 2,
-      "maxReward": 4,
+      "resource": "rice",
+      "minReward": 12,
+      "maxReward": 16,
+      "resultItems": [
+        {
+          "itemId": "stone-tower-cake",
+          "quantity": 1
+        }
+      ],
       "difficulty": "easy",
       "timingMode": "byDifficulty"
     },
     {
-      "id": "prologue-riverside-wood",
-      "textId": "prologue-riverside-wood",
+      "id": "prologue-mutton-run",
+      "textId": "prologue-mutton-run",
       "title": "",
       "description": "",
       "lineId": "adventure-house-opening",
@@ -48,15 +54,15 @@
       "focusText": "",
       "risk": "safe",
       "nature": "supply",
-      "resource": "wood",
-      "minReward": 2,
-      "maxReward": 5,
+      "resource": "mutton",
+      "minReward": 14,
+      "maxReward": 18,
       "difficulty": "easy",
       "timingMode": "byDifficulty"
     },
     {
-      "id": "prologue-hearth-stone",
-      "textId": "prologue-hearth-stone",
+      "id": "prologue-wheat-harvest",
+      "textId": "prologue-wheat-harvest",
       "title": "",
       "description": "",
       "lineId": "adventure-house-opening",
@@ -66,7 +72,7 @@
           "type": "default"
         }
       ],
-      "preferredArchetypeTags": ["quarry", "routine"],
+      "preferredArchetypeTags": ["porter", "routine"],
       "allowGeneratedTaker": true,
       "generatedTakerWeight": 0.34,
       "resultMode": "resource",
@@ -75,10 +81,64 @@
       "focusText": "",
       "risk": "risky",
       "nature": "supply",
-      "resource": "stone",
-      "minReward": 4,
-      "maxReward": 7,
+      "resource": "wheat",
+      "minReward": 32,
+      "maxReward": 38,
       "difficulty": "medium",
+      "timingMode": "byDifficulty"
+    },
+    {
+      "id": "prologue-greens-gather",
+      "textId": "prologue-greens-gather",
+      "title": "",
+      "description": "",
+      "lineId": "adventure-house-opening",
+      "lineTitle": "",
+      "unlockConditions": [
+        {
+          "type": "default"
+        }
+      ],
+      "preferredArchetypeTags": ["porter", "routine"],
+      "allowGeneratedTaker": true,
+      "generatedTakerWeight": 0.4,
+      "resultMode": "resource",
+      "publicationMode": "repeatable",
+      "publishMode": "stock",
+      "focusText": "",
+      "risk": "safe",
+      "nature": "routine",
+      "resource": "greens",
+      "minReward": 12,
+      "maxReward": 16,
+      "difficulty": "easy",
+      "timingMode": "byDifficulty"
+    },
+    {
+      "id": "prologue-salt-run",
+      "textId": "prologue-salt-run",
+      "title": "",
+      "description": "",
+      "lineId": "adventure-house-opening",
+      "lineTitle": "",
+      "unlockConditions": [
+        {
+          "type": "default"
+        }
+      ],
+      "preferredArchetypeTags": ["porter", "supply"],
+      "allowGeneratedTaker": true,
+      "generatedTakerWeight": 0.38,
+      "resultMode": "resource",
+      "publicationMode": "repeatable",
+      "publishMode": "stock",
+      "focusText": "",
+      "risk": "safe",
+      "nature": "supply",
+      "resource": "salt",
+      "minReward": 12,
+      "maxReward": 16,
+      "difficulty": "easy",
       "timingMode": "byDifficulty"
     },
     {

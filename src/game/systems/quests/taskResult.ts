@@ -1,6 +1,7 @@
 import {createStoryEntry} from "../../text/storyText";
 import {intelTextPoolsById} from "../../config";
 import {decayGiftedItemsAfterQuest, tryResolveFailureWithGiftedItems} from "../gifting";
+import {applyQuestResultItems} from "../economy/crafting";
 import {getQuestResourceLabel} from "../../ui/resourceDisplay";
 import {getUnlockedTemplatesFromQuestResolution} from "./questUnlocks";
 import {getQuestCapabilityWeights, getQuestResolutionInput, getQuestSuccessBreakdown, normalizeQuestFeatures} from "./taskResolution";
@@ -213,6 +214,10 @@ export function applyQuestResult(
     }
 
     gameData.player.stock[quest.resource] = (gameData.player.stock[quest.resource] ?? 0) + quest.quantity;
+    const template = getQuestTemplateById(gameData, quest.templateId);
+    if (template?.resultItems?.length) {
+      applyQuestResultItems(gameData, template.resultItems, nextDayEntries);
+    }
     nextDayEntries.push(
       createStoryEntry("task_completed", {
         day: gameData.day,
@@ -299,7 +304,7 @@ function getQuestOutcomeDetails(gameData: GameData, quest: Quest, template: Ques
     input,
     matchingIntelCount,
     successBreakdown,
-    {forceAttempt: template.contentStageTag === "test"}
+    {}
   );
   decayGiftedItemsAfterQuest(adventurer, giftResolution.usedGiftItemIds);
 

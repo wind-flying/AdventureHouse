@@ -13,10 +13,12 @@ import {renderOverviewTab} from "./tabs/overviewTab";
 import {
   populateQuestFilterOptions,
   populateQuestTemplateOptions,
+  refreshQuestEconomyHint,
   renderQuestsTab,
   syncQuestForm
 } from "./tabs/questsTab";
 import {renderStockTab} from "./tabs/stockTab";
+import {renderMarketTab} from "./tabs/marketTab";
 import {renderEncyclopedia} from "./encyclopedia";
 
 export {showNotification} from "./shared/notification";
@@ -24,6 +26,7 @@ export {
   populateAdventurerFilterOptions,
   populateQuestFilterOptions,
   populateQuestTemplateOptions,
+  refreshQuestEconomyHint,
   syncQuestForm
 };
 
@@ -41,6 +44,7 @@ export function render(gameData: GameData, elements: Elements): void {
   renderAdventurersTab(gameData, elements);
   renderIntelTab(gameData, elements);
   renderStockTab(gameData, elements);
+  renderMarketTab(gameData, elements);
   renderLogTab(gameData, elements);
   renderStoryRail(gameData, elements);
   renderEncyclopedia(gameData, elements);

@@ -27,7 +27,8 @@ export function createInitialInventoryWithItems(
   return {
     itemStacks: Object.fromEntries(
       itemDefinitions
-        .map((definition) => [definition.id, definition.starterStack ?? 5] as const)
+        .filter((definition) => definition.contentStageTag !== "test")
+        .map((definition) => [definition.id, definition.starterStack ?? 0] as const)
         .filter(([, amount]) => amount > 0)
     ),
     equipments: starterSword
@@ -133,4 +134,56 @@ function rollEquipmentStatValue(min: number, max: number, precision: number): nu
   const value = low + Math.random() * (high - low);
   const multiplier = 10 ** precision;
   return Math.round(value * multiplier) / multiplier;
+}
+
+export function getStockAmount(gameData: GameData, resourceId: string): number {
+  return gameData.player.stock[resourceId] ?? 0;
+}
+
+export function getItemStackAmount(gameData: GameData, itemId: string): number {
+  return gameData.player.inventory.itemStacks[itemId] ?? 0;
+}
+
+export function addStock(gameData: GameData, resourceId: string, quantity: number): void {
+  if (quantity <= 0) {
+    return;
+  }
+
+  gameData.player.stock[resourceId] = getStockAmount(gameData, resourceId) + quantity;
+}
+
+export function removeStock(gameData: GameData, resourceId: string, quantity: number): void {
+  if (quantity <= 0) {
+    return;
+  }
+
+  const nextAmount = Math.max(0, getStockAmount(gameData, resourceId) - quantity);
+  if (nextAmount === 0) {
+    delete gameData.player.stock[resourceId];
+    return;
+  }
+
+  gameData.player.stock[resourceId] = nextAmount;
+}
+
+export function addItemStack(gameData: GameData, itemId: string, quantity: number): void {
+  if (quantity <= 0) {
+    return;
+  }
+
+  gameData.player.inventory.itemStacks[itemId] = getItemStackAmount(gameData, itemId) + quantity;
+}
+
+export function removeItemStack(gameData: GameData, itemId: string, quantity: number): void {
+  if (quantity <= 0) {
+    return;
+  }
+
+  const nextAmount = Math.max(0, getItemStackAmount(gameData, itemId) - quantity);
+  if (nextAmount === 0) {
+    delete gameData.player.inventory.itemStacks[itemId];
+    return;
+  }
+
+  gameData.player.inventory.itemStacks[itemId] = nextAmount;
 }

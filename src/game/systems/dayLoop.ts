@@ -1,21 +1,39 @@
 import {LOG_HISTORY_LIMIT} from "../state";
 import {createStoryEntry} from "../text/storyText";
+import {isAdventurerPrivateStoryEntry} from "../text/storyPrivacy";
 import {advanceAdventurerAppearance} from "./adventurers/adventurerAppearance";
+import {expireAdventurerBuffs} from "./adventurers/adventurerBuffs";
+import {
+  resolveDailyFoodNeeds,
+  updateDaysWithoutQuestWhileDeficit
+} from "./adventurers/foodAllocation";
+import {resolveOptionalFoodStockpile} from "./adventurers/foodStockpile";
+import {tryTriggerBailoutOffer, updateBailoutTracking} from "./economy/bailout";
+import {simulateDailyInnRetail} from "./economy/innRetail";
 import {advanceQuestBoard} from "./quests/taskBoard";
 import type {GameData, StoryEntry} from "../core/types";
 
 export function advanceDay(gameData: GameData): void {
   gameData.day += 1;
-  gameData.player.money += gameData.dailyShopIncome;
+  expireAdventurerBuffs(gameData);
 
-  const nextDayEntries: StoryEntry[] = [
-    createStoryEntry("daily_income", {
-      day: gameData.day,
-      income: gameData.dailyShopIncome
-    })
-  ];
+  const nextDayEntries: StoryEntry[] = [];
 
+  resolveDailyFoodNeeds(gameData, nextDayEntries);
+  resolveOptionalFoodStockpile(gameData, nextDayEntries);
   advanceQuestBoard(gameData, nextDayEntries);
+  updateDaysWithoutQuestWhileDeficit(gameData);
+
+  const retailIncome = simulateDailyInnRetail(gameData, nextDayEntries);
+  if (retailIncome > 0) {
+    nextDayEntries.push(
+      createStoryEntry("daily_retail_income", {
+        day: gameData.day,
+        income: retailIncome
+      })
+    );
+  }
+
   advanceAdventurerAppearance(gameData, nextDayEntries);
 
   if (gameData.player.quests.length === 0) {
@@ -25,6 +43,9 @@ export function advanceDay(gameData: GameData): void {
       })
     );
   }
+
+  updateBailoutTracking(gameData);
+  tryTriggerBailoutOffer(gameData);
 
   gameData.dayLog = [...nextDayEntries, ...gameData.dayLog].slice(0, LOG_HISTORY_LIMIT);
 }
@@ -39,7 +60,7 @@ export function getTotalStock(gameData: GameData): number {
 
 export function getLatestDayEntries(gameData: GameData): StoryEntry[] {
   return gameData.dayLog
-    .filter((entry) => entry.day === gameData.day)
+    .filter((entry) => entry.day === gameData.day && !isAdventurerPrivateStoryEntry(entry))
     .sort((left, right) => getStoryEntryPriority(right) - getStoryEntryPriority(left));
 }
 

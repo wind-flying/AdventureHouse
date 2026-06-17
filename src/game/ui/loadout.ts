@@ -19,6 +19,7 @@ import {
 import {renderRichTextToHtml} from "../text/richText";
 import {loadoutDialogueTemplates} from "../text/loadoutText";
 import {uiLabels} from "../text/uiLabels";
+import {getActiveBuffRemainingDays} from "../systems/adventurers/adventurerBuffs";
 
 const LOADOUT_SLOTS: EquipmentSlot[] = ["helmet", "weapon", "shield", "armor", "legArmor", "boots", "accessory", "tool"];
 
@@ -213,6 +214,8 @@ function renderLoadoutDialog(gameData: GameData, elements: Elements, adventurerI
         ${buildMoneyMarkup(adventurer, canSeeMoney)}
         <h3>${uiLabels.loadout.carriedTitle}</h3>
         ${buildCarriedItemListMarkup(carriedItems, canSeeItems)}
+        <h3>${uiLabels.loadout.activeBuffTitle}</h3>
+        ${buildActiveBuffListMarkup(gameData, adventurer, canSeeItems)}
       </section>
     </div>
   `;
@@ -372,6 +375,27 @@ function buildMoneyMarkup(adventurer: Adventurer, canSeeMoney: boolean): string 
     <article class="loadout-money-row">
       <strong><span class="loadout-highlight money">${adventurer.carriedMoney}</span> ${uiLabels.loadout.moneySuffix}</strong>
     </article>
+  `;
+}
+
+function buildActiveBuffListMarkup(gameData: GameData, adventurer: Adventurer, canSeeItems: boolean): string {
+  if (!canSeeItems) {
+    return `<p class="empty-state">${uiLabels.loadout.hiddenCarriedItems}</p>`;
+  }
+
+  if (adventurer.activeBuffs.length === 0) {
+    return `<p class="empty-state">${uiLabels.loadout.emptyActiveBuffs}</p>`;
+  }
+
+  return `
+    <div class="loadout-item-list">
+      ${adventurer.activeBuffs.map((buff) => `
+        <article class="loadout-item-row">
+          <strong><span class="loadout-highlight item">${escapeHtml(buff.itemName)}</span></strong>
+          <span>${uiLabels.loadout.buffRemaining} <span class="loadout-highlight time">${getActiveBuffRemainingDays(buff, gameData.day)}</span> ${uiLabels.loadout.daySuffix}</span>
+        </article>
+      `).join("")}
+    </div>
   `;
 }
 

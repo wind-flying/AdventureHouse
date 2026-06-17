@@ -5,10 +5,11 @@
       "name": "",
       "icon": "🍰",
       "category": "food",
+      "consumableModel": "food",
       "sortOrder": 10,
       "stackable": true,
       "giftValue": 6,
-      "shelfLifeQuests": 2,
+      "basePrice": 8,
       "uses": 1,
       "playerDescription": "",
       "feedbackText": "",
@@ -18,14 +19,16 @@
           "target": "physique",
           "operation": "add",
           "value": 3,
-          "duration": "nextQuest"
+          "duration": "days",
+          "durationDays": 2
         },
         {
           "type": "capability",
           "target": "survival",
           "operation": "add",
           "value": 2,
-          "duration": "nextQuest"
+          "duration": "days",
+          "durationDays": 2
         }
       ]
     },
@@ -34,9 +37,11 @@
       "name": "",
       "icon": "🧪",
       "category": "consumable",
+      "consumableModel": "standard",
       "sortOrder": 20,
       "stackable": true,
       "giftValue": 8,
+      "basePrice": 10,
       "shelfLifeQuests": 3,
       "uses": 1,
       "playerDescription": "",

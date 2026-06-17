@@ -8,8 +8,16 @@ export const uiText: Record<string, string> = {
   emptyLatestStories: "今天还没有新的故事碎片。"
 };
 
-export function getQuestFormHint(estimatedDays: number): string {
-  return `预估耗时：${estimatedDays} 天。当前版本中，任务会在次日被接取，然后按天推进。`;
+export function getQuestFormHint(
+  estimatedDays: number,
+  options?: {stockDurationCapped?: boolean; stockDurationCap?: number}
+): string {
+  let text = `预估耗时：${estimatedDays} 天。当前版本中，任务会在次日被接取，然后按天推进。`;
+  if (options?.stockDurationCapped && options.stockDurationCap) {
+    text += `补货委托单趟耗时上限为 ${options.stockDurationCap} 天；数量再多也不继续延长，表示同一批许可劳力在时限内加量采收。`;
+  }
+
+  return text;
 }
 
 export function getQuestPublishModeText(mode: QuestPublishMode): string {
@@ -25,7 +33,7 @@ export function getQuantityHint(mode: QuestPublishMode): string {
     return "这类委托更像挂出一次调查或观察，不按数量收货。";
   }
 
-  return "";
+  return "数量指许可收获配额，成功时原料直接入账店内仓库，非市场现货。";
 }
 
 export function getQuestTemplateSummary(description: string, riskText: string, natureText: string): string {

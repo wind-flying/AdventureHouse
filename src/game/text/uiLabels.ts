@@ -16,6 +16,7 @@ export const uiLabels = {
     adventurers: "冒险者",
     intel: "消息板",
     stock: "库存",
+    market: "经营",
     log: "日志",
     save: "存档"
   },
@@ -29,7 +30,7 @@ export const uiLabels = {
     questsTitle: "任务",
     questsDescription: "这里同时负责发布任务和查看当前委托状态。",
     publishQuestTitle: "发布任务",
-    publishQuestDescription: "当前保留资源委托模型，并显示预估耗时。",
+    publishQuestDescription: "补货委托为许可收获劳务；调查委托按线索推进。",
     questListTitle: "任务列表",
     questListDescription: "查看当前所有委托及其推进状态。",
     adventurersTitle: "冒险者",
@@ -38,6 +39,8 @@ export const uiLabels = {
     intelDescription: "自动收录已得到的线索与发现，让这些结果从日志里独立出来。",
     stockTitle: "库存",
     stockDescription: "集中查看已获得的资源、物品和装备。",
+    marketTitle: "经营",
+    marketDescription: "在市场买卖原料，为饭店菜品定价，并把资源做成可售物品。",
     logTitle: "日志",
     logDescription: "完整记录最近一段时间的每日结果，方便回溯。",
     latestStoriesTitle: "今日动态",
@@ -49,8 +52,9 @@ export const uiLabels = {
     pace: "玩法节奏",
     focus: "当前重点",
     incomeValueSuffix: "钱 / 天",
+    incomeRetailOnly: "仅靠饭店零售与委托",
     paceValue: "手动进入下一天",
-    focusValue: "通过委托补货并观察回流结果"
+    focusValue: "通过委托补货、市场采购和饭店零售维持现金流"
   },
   form: {
     templateType: "任务类型",
@@ -61,7 +65,7 @@ export const uiLabels = {
     adventurerStatusFilter: "人物状态",
     adventurerPinnedFilter: "置顶分组",
     reward: "奖励金额",
-    stockReward: "采购预算",
+    stockReward: "劳务酬金",
     intelReward: "悬赏金额",
     quantity: "需求数量",
     quantityLocked: "调查委托不按数量结算",
@@ -92,7 +96,7 @@ export const uiLabels = {
     pin: "置顶",
     unpin: "取消置顶",
     gift: "赠送",
-    askLoadout: "问问带了什么",
+    askLoadout: "交谈",
     pinnedSection: "置顶人物",
     othersSection: "其他人物"
   },
@@ -110,6 +114,39 @@ export const uiLabels = {
   },
   stock: {
     empty: "库存还是空的。完成委托或获得物品后，这里才会出现对应分类。"
+  },
+  market: {
+    tradeTitle: "市场",
+    tradeDescription: "按市价买卖原料和特定物品。饭店不能卖的品类应走这里。",
+    innTitle: "饭店",
+    innDescription: "为食物定价、制作菜品，经营来店冒险者的零售。",
+    shopTitle: "定价",
+    shopDescription: "为食物类菜品设置售价。冒险者来店时会按你的定价购买。",
+    craftTitle: "厨房制作",
+    craftDescription: "把任务带回的原料做成可售菜品。",
+    unitPrice: (price: number) => `市价 ${price} 钱`,
+    buyPrice: (price: number) => `买入 ${price} 钱`,
+    sellPrice: (price: number) => `卖出 ${price} 钱`,
+    marketStock: (amount: number) => `市场 ${amount}`,
+    tradeHint: (buyPrice: number, sellPrice: number, marketAmount: number, playerAmount: number) =>
+      `${uiLabels.market.buyPrice(buyPrice)} · ${uiLabels.market.sellPrice(sellPrice)} · ${uiLabels.market.marketStock(marketAmount)} · ${uiLabels.market.owned(playerAmount)}`,
+    owned: (amount: number) => `持有 ${amount}`,
+    batchLabel: (size: number) => `x${size}`,
+    batchGroupLabel: (sectionTitle: string) => `${sectionTitle}批量数量`,
+    buyAction: (size: number) => `买 ${size}`,
+    sellAction: (size: number) => `卖 ${size}`,
+    shopHint: (marketPrice: number, amount: number) => `参考市价 ${marketPrice} 钱 · 库存 ${amount}`,
+    shopPriceLabel: (name: string) => `${name} 售价`,
+    savePrice: "保存售价",
+    craftInputs: (text: string) => `需要：${text}`,
+    craftAction: (size: number) => (size === 1 ? "制作" : `制作 x${size}`)
+  },
+  bailout: {
+    titlePlaceholder: "资助",
+    decline: "暂不接受",
+    accept: "收下资助",
+    acceptAmount: (amount: number) => `收下 ${amount} 钱`,
+    amountLabel: (amount: number) => `资助金额：${amount} 钱`
   },
   stockCategories: {
     material: "原料",
@@ -162,12 +199,15 @@ export const uiLabels = {
     carriedCount: (count: number) => `携带 ${count} 件`
   },
   loadout: {
-    title: "随身行装",
+    title: "交谈",
     close: "关闭",
     equipmentTitle: "全身装备",
     carriedTitle: "随身物品",
+    activeBuffTitle: "状态增益",
+    emptyActiveBuffs: "当前没有持续中的食物增益。",
+    buffRemaining: "剩余",
     moneyTitle: "携带金钱",
-    dialogueTitle: "他说",
+    dialogueTitle: "谈话",
     emptyEquipment: "暂未看到装备。",
     emptySlot: "空着",
     emptyCarriedItems: "他身上没有你送出的可用物品。",

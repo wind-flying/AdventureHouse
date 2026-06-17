@@ -22,6 +22,7 @@ import {
 } from "../text/uiText";
 import type {
   Adventurer,
+  EquipmentInstance,
   EquipmentSlot,
   GameData,
   IntelRecord,
@@ -35,6 +36,8 @@ import {getQuestDisplayIdByInternalId, getQuestPublishMode, getQuestTemplateById
 import {getFollowUpTemplatesForIntel} from "../systems/quests/questUnlocks";
 import {getQuestResultSummary, getQuestResultVisibleReasonTexts} from "../systems/quests/taskResult";
 import {formatResourcePreferences, getQuestResourceLabel, getResourceLabel} from "./resourceDisplay";
+import {getSatietyDescriptionForRef, getStackSatietySummaryForRef} from "../text/satietyText";
+import {isFoodItem} from "../systems/items/itemModel";
 
 export interface HeaderSummaryViewModel {
   dayText: string;
@@ -294,7 +297,7 @@ export function getStockSectionsViewModel(gameData: GameData): StockSectionViewM
         id: resource.id,
         label: `${resource.icon} ${resource.name}`,
         amount: String(gameData.player.stock[resource.id] ?? 0),
-        description: null,
+        description: getSatietyDescriptionForRef(gameData, "resource", resource.id),
         giftable: false
       });
     });
@@ -303,12 +306,16 @@ export function getStockSectionsViewModel(gameData: GameData): StockSectionViewM
     .filter((item) => (gameData.player.inventory.itemStacks[item.id] ?? 0) > 0)
     .sort((left, right) => compareStockSort(left.category, right.category, left.sortOrder, right.sortOrder))
     .forEach((item) => {
+      const amount = gameData.player.inventory.itemStacks[item.id] ?? 0;
+      const satietySummary = isFoodItem(item)
+        ? getStackSatietySummaryForRef(gameData, "item", item.id, amount)
+        : null;
       const section = getOrCreateStockSection(sections, item.category, getItemCategoryTitle(item.category));
       section.groups[0]?.items.push({
         id: item.id,
         label: `${item.icon} ${item.name}`,
-        amount: String(gameData.player.inventory.itemStacks[item.id] ?? 0),
-        description: item.playerDescription,
+        amount: String(amount),
+        description: satietySummary ? `${item.playerDescription}（${satietySummary}）` : item.playerDescription,
         giftable: true
       });
     });
@@ -438,7 +445,7 @@ function getOwnedEquipmentSection(gameData: GameData): StockSectionViewModel | n
 
 function formatEquipmentInventoryName(
   definition: {name: string; shortName?: string},
-  equipment: {customName: string | null; effects: Array<{target: string; value: number}>}
+  equipment: EquipmentInstance
 ): string {
   return escapeHtml(getEquipmentPrimaryLabel(equipment, definition));
 }

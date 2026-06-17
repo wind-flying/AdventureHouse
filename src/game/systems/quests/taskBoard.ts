@@ -11,6 +11,14 @@ import {
   triggerAdventurerContactEvent
 } from "../adventurers/adventurerAppearance";
 import {getDiscoveryLevelFromPoints} from "../adventurers/adventurerInstances";
+import {payAdventurerQuestReward} from "../economy/adventurerEconomy";
+import {getRecommendedQuestReward} from "./questEconomy";
+import {calculateStockQuestDaysUncapped, resolveStockQuestProfile} from "./stockQuestProfile";
+import {
+  provisionQuestTrailRations,
+  transferQuestProvisionRations,
+  tryReserveQuestProvisionFromPlayer
+} from "../adventurers/questProvisioning";
 import {
   chooseAdventurerForQuest as chooseAdventurerForQuestByAcceptance,
   filterAdventurersForQuestTemplate,
@@ -136,12 +144,39 @@ export function getRecommendedRewardForTemplate(gameData: GameData, templateId: 
     );
   }
 
-  const averageReward = Math.round((template.minReward + template.maxReward) / 2);
-  return Math.max(1, averageReward * quantity);
+  if (getQuestPublishMode(template) === "intel") {
+    return Math.max(1, Math.round((template.minReward + template.maxReward) / 2));
+  }
+
+  return getRecommendedQuestReward(gameData, template, quantity);
 }
 
 export function getEstimatedDaysForTemplate(gameData: GameData, templateId: string, quantity: number): number {
   const template = getQuestTemplateById(gameData, templateId);
+  const uncappedDays = calculateEstimatedDaysUncapped(gameData, template, quantity);
+
+  if (template && getQuestPublishMode(template) === "stock") {
+    return Math.min(gameData.questEconomyConfig.maxDaysPerStockQuest, uncappedDays);
+  }
+
+  return uncappedDays;
+}
+
+export function isStockQuestDurationCapped(gameData: GameData, templateId: string, quantity: number): boolean {
+  const template = getQuestTemplateById(gameData, templateId);
+  if (!template || getQuestPublishMode(template) !== "stock") {
+    return false;
+  }
+
+  const uncappedDays = calculateEstimatedDaysUncapped(gameData, template, quantity);
+  return uncappedDays > gameData.questEconomyConfig.maxDaysPerStockQuest;
+}
+
+function calculateEstimatedDaysUncapped(
+  gameData: GameData,
+  template: QuestTemplate | undefined,
+  quantity: number
+): number {
   if (template?.timingMode === "fixed") {
     return Math.max(
       QUEST_RULE_TUNING.fixedDurationMinimum,
@@ -149,11 +184,23 @@ export function getEstimatedDaysForTemplate(gameData: GameData, templateId: stri
     );
   }
 
+  if (template && getQuestPublishMode(template) === "stock") {
+    const profile = resolveStockQuestProfile(gameData, template);
+    if (profile) {
+      return calculateStockQuestDaysUncapped(profile, quantity);
+    }
+  }
+
   const baseDays = template
     ? QUEST_RULE_TUNING.baseDurationDays + QUEST_RULE_TUNING.difficultyOffset[template.difficulty]
     : QUEST_RULE_TUNING.baseDurationDays;
 
-  return baseDays + Math.floor((quantity - 1) / QUEST_RULE_TUNING.quantityDurationStep);
+  const extraDays = Math.floor((quantity - 1) / getQuantityDurationStep(gameData, template));
+  return baseDays + extraDays;
+}
+
+function getQuantityDurationStep(gameData: GameData, template: QuestTemplate | undefined): number {
+  return QUEST_RULE_TUNING.quantityDurationStep;
 }
 
 export function createQuest(gameData: GameData, input: CreateQuestInput): ActionResult {
@@ -183,6 +230,19 @@ export function createQuest(gameData: GameData, input: CreateQuestInput): Action
   }
 
   const estimatedDays = getEstimatedDaysForTemplate(gameData, templateId, quantity);
+  let provisionRations: Quest["provisionRations"] = null;
+  if (input.provideRations) {
+    const reserveResult = tryReserveQuestProvisionFromPlayer(gameData, {
+      totalDays: estimatedDays,
+      risk: template.risk
+    });
+    if (!reserveResult.ok) {
+      return {ok: false, message: reserveResult.message, type: "error"};
+    }
+
+    provisionRations = reserveResult.provision;
+  }
+
   const displayId = createDailyDisplayId(gameData, gameData.day);
   const textSeedKey = `${template.id}:${gameData.day}:${displayId}`;
   const generatedTemplateText = getGeneratedQuestTemplateText(template, textSeedKey);
@@ -211,6 +271,7 @@ export function createQuest(gameData: GameData, input: CreateQuestInput): Action
     daysRemaining: estimatedDays,
     adventurerId: null,
     adventurerName: null,
+    provisionRations,
     result: null
   };
 
@@ -290,6 +351,8 @@ export function advanceQuestBoard(gameData: GameData, nextDayEntries: StoryEntry
       adventurer.currentQuestId = quest.id;
       adventurer.lastSeenDay = gameData.day;
       increaseAcquaintance(adventurer, 1);
+      transferQuestProvisionRations(gameData, adventurer, quest, nextDayEntries);
+      provisionQuestTrailRations(gameData, adventurer, quest, nextDayEntries);
 
       nextDayEntries.push(
         createStoryEntry("task_started", {
@@ -314,6 +377,7 @@ export function advanceQuestBoard(gameData: GameData, nextDayEntries: StoryEntry
         adventurer.currentQuestId = null;
         adventurer.lastSeenDay = gameData.day;
         increaseAcquaintance(adventurer, 1);
+        payAdventurerQuestReward(gameData, adventurer, quest.reward);
       }
 
       const result = resolveQuestResult(gameData, quest);

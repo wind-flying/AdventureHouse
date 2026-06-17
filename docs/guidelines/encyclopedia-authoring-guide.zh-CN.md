@@ -67,7 +67,7 @@ entries: {
   - 玩家至少发布过一次任务后满足。
 - `firstAdventurerItemGifted`
   - 玩家首次向具体冒险者赠送物品后满足。
-  - 当前已预留条件类型；赠礼系统落地时，需要把对应玩家行为事实接入百科判断。
+  - 赠礼成功时由 `src/game/systems/gifting.ts` 写入 `player.hasGiftedAdventurerItem`。
 
 不要用天数代替实际行为，也不要为了未来规划提前写入无用途的存档字段。
 

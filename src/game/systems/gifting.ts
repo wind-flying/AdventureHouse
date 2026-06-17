@@ -16,11 +16,14 @@ import type {
   QuestFeatureAxis
 } from "../core/types";
 
+import {getAdventurerFinanceGiftScore} from "./economy/adventurerEconomy";
+import {applyFoodItemBuffs} from "./adventurers/adventurerBuffs";
+import {isFoodItem, isQuestConsumableItem} from "./items/itemModel";
+
 const GIFTING_TUNING = {
   acceptanceBaseChance: 0.42,
   acceptedAcquaintanceGain: 1,
-  maxAcquaintanceForGiftScore: 7,
-  financeScore: 0.5
+  maxAcquaintanceForGiftScore: 7
 } as const;
 
 export interface GiftableItemView {
@@ -187,10 +190,19 @@ function resolveGiftBatch(gameData: GameData, adventurers: Adventurer[], itemIds
       const chance = getGiftAcceptanceChance(adventurer, item);
       if (Math.random() <= chance) {
         gameData.player.inventory.itemStacks[itemId] = amount - 1;
-        adventurer.giftedItems.push(createAdventurerGiftItem(gameData, adventurer, item));
+        if (isFoodItem(item)) {
+          const buff = applyFoodItemBuffs(gameData, adventurer, item);
+          accepted.push(
+            buff
+              ? `${adventurer.name} 收下了 ${item.name}，状态会在接下来几天里更好一些`
+              : `${adventurer.name} 收下了 ${item.name}`
+          );
+        } else {
+          adventurer.giftedItems.push(createAdventurerGiftItem(gameData, adventurer, item));
+          accepted.push(`${adventurer.name} 接受了 ${item.name}`);
+        }
         adventurer.acquaintancePoints += GIFTING_TUNING.acceptedAcquaintanceGain;
         adventurer.knownLevel = getDiscoveryLevelFromPoints(adventurer.acquaintancePoints);
-        accepted.push(`${adventurer.name} 接受了 ${item.name}`);
         return;
       }
 
@@ -218,12 +230,16 @@ function createAdventurerGiftItem(
   adventurer: Adventurer,
   item: ItemDefinition
 ): AdventurerGiftItem {
+  if (!isQuestConsumableItem(item)) {
+    throw new Error(`物品 ${item.id} 不是任务随行消耗品，不能创建 gift 条目。`);
+  }
+
   const sequence = adventurer.giftedItems.length + 1;
   return {
     giftId: `gift:${adventurer.id}:${gameData.day}:${sequence}:${item.id}`,
     itemId: item.id,
     giftedDay: gameData.day,
-    remainingShelfLife: Math.max(1, item.shelfLifeQuests),
+    remainingShelfLife: Math.max(1, item.shelfLifeQuests ?? 1),
     remainingUses: Math.max(1, item.uses)
   };
 }
@@ -246,7 +262,7 @@ function getGiftAcceptanceChance(adventurer: Adventurer, item: ItemDefinition): 
       + acquaintanceScore * 0.2
       + compatibilityScore * 0.2
       + valueScore * 0.08
-      + GIFTING_TUNING.financeScore * 0.04
+      + getAdventurerFinanceGiftScore(adventurer) * 0.04
       + personalityScore,
     0.08,
     0.95

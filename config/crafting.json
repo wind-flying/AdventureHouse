@@ -1,0 +1,45 @@
+{
+  "recipes": [
+    {
+      "id": "craft-trail-ration-low",
+      "recipeTier": "simple",
+      "outputItemId": "trail-ration-low",
+      "outputQuantity": 1,
+      "inputs": [
+        { "kind": "resource", "refId": "rice", "quantity": 2 },
+        { "kind": "resource", "refId": "salt", "quantity": 1 }
+      ]
+    },
+    {
+      "id": "craft-trail-ration-mid",
+      "recipeTier": "mid",
+      "outputItemId": "trail-ration-mid",
+      "outputQuantity": 1,
+      "inputs": [
+        { "kind": "item", "refId": "trail-ration-low", "quantity": 1 },
+        { "kind": "resource", "refId": "mutton", "quantity": 1 }
+      ]
+    },
+    {
+      "id": "craft-trail-ration-high",
+      "recipeTier": "premium",
+      "outputItemId": "trail-ration-high",
+      "outputQuantity": 1,
+      "inputs": [
+        { "kind": "item", "refId": "trail-ration-mid", "quantity": 1 },
+        { "kind": "resource", "refId": "mutton", "quantity": 2 },
+        { "kind": "resource", "refId": "greens", "quantity": 2 }
+      ]
+    },
+    {
+      "id": "craft-stone-tower-cake",
+      "recipeTier": "premium",
+      "outputItemId": "stone-tower-cake",
+      "outputQuantity": 1,
+      "inputs": [
+        { "kind": "resource", "refId": "wheat", "quantity": 4 },
+        { "kind": "resource", "refId": "salt", "quantity": 1 }
+      ]
+    }
+  ]
+}

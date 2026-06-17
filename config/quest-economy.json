@@ -1,0 +1,33 @@
+{
+  "questEconomy": {
+    "trailCostMarginFlat": 2,
+    "trailCostMarginRatio": 0.15,
+    "netMarginPenaltyCap": 1,
+    "netMarginPenaltyPerCoin": 0.08,
+    "provisionBrokeMultiplier": 1.75,
+    "unavailableMarketCostPenalty": 999,
+    "maxDaysPerStockQuest": 3,
+    "stockQuestLaborOnly": true,
+    "stockQuestCargoCurve": {
+      "referenceCargoValue": 40,
+      "sweetSpotCargoValue": 96,
+      "breakEvenCargoValue": 144,
+      "highCargoReference": 200,
+      "anchorUnitCostRatio": 0.94,
+      "minUnitCostRatio": 0.86,
+      "lowQuantityMaxRatio": 1.12,
+      "highQuantityMaxRatio": 1.1,
+      "daysGamma": 1.25,
+      "difficultyMod": {
+        "easy": 1,
+        "medium": 0.85,
+        "hard": 0.7
+      },
+      "riskMod": {
+        "safe": 1,
+        "risky": 0.9,
+        "dangerous": 0.8
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 export type Difficulty = "easy" | "medium" | "hard";
 export type QuestStatus = "pending" | "active" | "completed";
-export type TabId = "overview" | "quests" | "adventurers" | "intel" | "stock" | "log" | "save";
+export type TabId = "overview" | "quests" | "adventurers" | "intel" | "stock" | "market" | "log" | "save";
 export type NotificationType = "info" | "success" | "error";
 export type QuestCategory = "daily" | "main";
 export type QuestTimingMode = "byDifficulty" | "fixed";
@@ -80,7 +80,7 @@ export type ItemCategory = "food" | "consumable" | "product" | "misc";
 export type EquipmentSlot = "weapon" | "shield" | "helmet" | "armor" | "legArmor" | "boots" | "accessory" | "tool";
 export type ItemEffectType = "capability" | "questFeature" | "safety";
 export type ItemEffectOperation = "add" | "multiply";
-export type ItemEffectDuration = "nextQuest" | "instant" | "passive";
+export type ItemEffectDuration = "nextQuest" | "instant" | "passive" | "days";
 export type ItemEffectTarget = AdventurerCapabilityAxis | QuestFeatureAxis | "risk";
 export type EquipmentStatRoll =
   | {
@@ -103,6 +103,8 @@ export interface ResourceDefinition {
   sortOrder?: number;
   basePrice?: number;
   rarity?: "common" | "uncommon" | "rare";
+  /** 补货委托货值锚点微调；1 为默认。 */
+  stockCargoBias?: number;
 }
 
 export interface ItemEffectDefinition {
@@ -111,7 +113,11 @@ export interface ItemEffectDefinition {
   operation: ItemEffectOperation;
   value: number;
   duration: ItemEffectDuration;
+  /** 仅 duration === "days" 时有效：增益持续的游戏内天数 */
+  durationDays?: number;
 }
+
+export type ItemConsumableModel = "food" | "standard";
 
 export interface ItemDefinition {
   id: string;
@@ -123,10 +129,23 @@ export interface ItemDefinition {
   starterStack?: number;
   contentStageTag?: string;
   giftValue: number;
-  shelfLifeQuests: number;
+  basePrice?: number;
+  /** 非食物消耗品：可随行任务数。食物类不设此项。 */
+  shelfLifeQuests?: number;
   uses: number;
+  /** food：按天增益；standard：按任务随行与次数（默认） */
+  consumableModel?: ItemConsumableModel;
   playerDescription: string;
   feedbackText?: string;
+  effects: ItemEffectDefinition[];
+}
+
+export interface AdventurerActiveBuff {
+  buffId: string;
+  itemId: string;
+  itemName: string;
+  appliedDay: number;
+  expiresDay: number;
   effects: ItemEffectDefinition[];
 }
 
@@ -179,6 +198,40 @@ export interface NamePoolDefinition {
   givenNames: string[];
 }
 
+export interface CraftingInput {
+  kind: "resource" | "item";
+  refId: string;
+  quantity: number;
+}
+
+export type CraftingRecipeTier = "simple" | "mid" | "premium";
+
+export interface CraftingRecipe {
+  id: string;
+  outputItemId: string;
+  outputQuantity: number;
+  recipeTier?: CraftingRecipeTier;
+  inputs: CraftingInput[];
+}
+
+export interface EstablishmentDefinition {
+  id: string;
+  type: string;
+  sellableItemCategories: ItemCategory[];
+  marketSellableResourceCategories: ResourceCategory[];
+  marketSellableItemCategories: ItemCategory[];
+  baseFootTrafficIncome: number;
+  adventurerDailyLivingCost: number;
+}
+
+export interface MarketListing {
+  id: string;
+  kind: "resource" | "item";
+  refId: string;
+  buyable: boolean;
+  sellable: boolean;
+}
+
 export interface QuestTemplate {
   id: string;
   title: string;
@@ -215,6 +268,12 @@ export interface QuestTemplate {
   generatedTakerWeight?: number;
   exclusiveTakerTemplateId?: string;
   contentStageTag?: string;
+  resultItems?: {
+    itemId: string;
+    quantity: number;
+  }[];
+  /** 补货委托货值锚点微调；1 为默认。 */
+  stockCargoBias?: number;
 }
 
 export type QuestUnlockCondition =
@@ -232,6 +291,102 @@ export type QuestUnlockCondition =
     intelId?: string;
     sourceTemplateId?: string;
   };
+
+export type TrailRationTier = "low" | "mid" | "high";
+
+export interface QuestProvisionRations {
+  itemId: string;
+  quantity: number;
+  tier: TrailRationTier;
+}
+
+export interface MarketPricingConfig {
+  buyMultiplier: number;
+  sellMultiplier: number;
+  surplusHintThreshold: number;
+}
+
+export interface StockQuestCargoCurve {
+  /** 1 天锚点时的合理载货货值（钱）。 */
+  referenceCargoValue: number;
+  /** 曲线甜蜜点货值（钱）。 */
+  sweetSpotCargoValue: number;
+  /** 相对市场持平的货值（钱）。 */
+  breakEvenCargoValue: number;
+  /** 超大批量惩罚参考货值（钱）。 */
+  highCargoReference: number;
+  /** 锚点有效单价 / 市场买入价，略小于 1 表示略赚。 */
+  anchorUnitCostRatio: number;
+  /** 甜蜜点有效单价比例（相对买入价，曲线最低点）。 */
+  minUnitCostRatio: number;
+  /** 极小批量时的有效单价比例上限（固定劳务摊薄不足）。 */
+  lowQuantityMaxRatio: number;
+  /** 超大批量时的有效单价比例上限（运输/损耗惩罚）。 */
+  highQuantityMaxRatio: number;
+  /** 超出锚点后，天数随超额数量的指数；>1 表示大批更慢。 */
+  daysGamma: number;
+  difficultyMod: Partial<Record<Difficulty, number>>;
+  riskMod: Partial<Record<QuestRisk, number>>;
+}
+
+export interface QuestEconomyConfig {
+  trailCostMarginFlat: number;
+  trailCostMarginRatio: number;
+  netMarginPenaltyCap: number;
+  netMarginPenaltyPerCoin: number;
+  provisionBrokeMultiplier: number;
+  unavailableMarketCostPenalty: number;
+  maxDaysPerStockQuest: number;
+  stockQuestLaborOnly: boolean;
+  stockQuestCargoCurve: StockQuestCargoCurve;
+}
+
+export interface PlayerStarterConfig {
+  itemStacks: Record<string, number>;
+}
+
+export interface AdventurerStarterCarriedItem {
+  itemId: string;
+  amount: number;
+}
+
+export interface AdventurerStarterProfile {
+  carriedMoney?: number;
+  carriedItems?: AdventurerStarterCarriedItem[];
+}
+
+export interface AdventurerStarterConfig {
+  defaults: Required<Pick<AdventurerStarterProfile, "carriedMoney" | "carriedItems">>;
+  byRole: Partial<Record<AdventurerRoleType, AdventurerStarterProfile>>;
+}
+
+export interface DailyNeedsConfig {
+  categories: {
+    food: {
+      dailyNutritionMilli: number;
+      deficitAcceptanceBoostPerDay: number;
+      deficitNoQuestExtraBoost: number;
+      noQuestStreakThresholdDays: number;
+    };
+  };
+  ingredientNutritionMilli: Record<string, number>;
+  nutritionByRef: Record<string, number>;
+  trailRations: Record<TrailRationTier, string>;
+  riskToRationTier: Record<QuestRisk, TrailRationTier>;
+  provisionAcceptanceBoost: {
+    perNutritionPoint: number;
+    tierMultiplier: Record<TrailRationTier, number>;
+    cap: number;
+  };
+  stockpileTuning: {
+    maxExtraUnitsPerDay: number;
+    baseChance: number;
+    cautionWeight: number;
+    greedWeight: number;
+    moneyComfortThreshold: number;
+  };
+  rawIngredientScoringPenalty: number;
+}
 
 export interface Quest {
   id: number;
@@ -254,6 +409,7 @@ export interface Quest {
   daysRemaining: number;
   adventurerId: string | null;
   adventurerName: string | null;
+  provisionRations: QuestProvisionRations | null;
   result: QuestResult | null;
 }
 
@@ -367,6 +523,10 @@ export interface AdventurerInstance extends AdventurerTemplate {
   giftedItems: AdventurerGiftItem[];
   carriedItems: AdventurerCarriedItem[];
   carriedMoney: number;
+  activeBuffs: AdventurerActiveBuff[];
+  foodDeficitStreak: number;
+  daysWithoutQuestWhileDeficit: number;
+  dailyFoodTalkNote: string | null;
 }
 
 export type Adventurer = AdventurerInstance;
@@ -388,6 +548,13 @@ export interface GameData {
     money: number;
     resultInsightLevel: ResultInsightLevel;
     hasGiftedAdventurerItem: boolean;
+    shopPrices: Record<string, number>;
+    bailoutAccepted: boolean;
+    bailoutOfferAmount: number;
+    bailoutUnlocked: boolean;
+    bailoutPeakMoneySinceDecline: number;
+    bailoutDaysBelowThreshold: number;
+    pendingBailoutOffer: number | null;
     quests: Quest[];
     stock: Record<string, number>;
     inventory: PlayerInventory;
@@ -397,6 +564,13 @@ export interface GameData {
   questIdCounter: number;
   adventurerIdCounter: number;
   dailyShopIncome: number;
+  establishment: EstablishmentDefinition;
+  marketId: string;
+  marketListings: MarketListing[];
+  marketStock: Record<string, number>;
+  marketPricing: MarketPricingConfig;
+  questEconomyConfig: QuestEconomyConfig;
+  craftingRecipes: CraftingRecipe[];
   resources: ResourceDefinition[];
   itemDefinitions: ItemDefinition[];
   equipmentDefinitions: EquipmentDefinition[];
@@ -405,6 +579,7 @@ export interface GameData {
   intelDefinitions: IntelDefinition[];
   adventurerTemplates: AdventurerTemplate[];
   adventurers: AdventurerInstance[];
+  dailyNeedsConfig: DailyNeedsConfig;
   dayLog: StoryEntry[];
 }
 
@@ -429,6 +604,7 @@ export interface SavedQuest {
   daysRemaining: number;
   adventurerId: string | null;
   adventurerName: string | null;
+  provisionRations?: QuestProvisionRations | null;
   result: SavedQuestResult | null;
 }
 
@@ -584,6 +760,118 @@ export interface SaveDataV7 {
   };
 }
 
+export interface SaveDataV8 {
+  version: 8;
+  game: {
+    day: number;
+    questIdCounter: number;
+    adventurerIdCounter: number;
+    pinnedAdventurerIds: string[];
+    player: {
+      money: number;
+      resultInsightLevel: ResultInsightLevel;
+      hasGiftedAdventurerItem?: boolean;
+      shopPrices?: Record<string, number>;
+      quests: SavedQuest[];
+      stock: Partial<Record<string, number>>;
+      inventory: PlayerInventory;
+      leads: IntelRecord[];
+      discoveries: IntelRecord[];
+    };
+    adventurers: SavedAdventurer[];
+    dayLog: StoryEntry[];
+  };
+}
+
+export interface SaveDataV9 {
+  version: 9;
+  game: {
+    day: number;
+    questIdCounter: number;
+    adventurerIdCounter: number;
+    pinnedAdventurerIds: string[];
+    player: {
+      money: number;
+      resultInsightLevel: ResultInsightLevel;
+      hasGiftedAdventurerItem?: boolean;
+      shopPrices?: Record<string, number>;
+      bailoutAccepted?: boolean;
+      bailoutOfferAmount?: number;
+      bailoutUnlocked?: boolean;
+      bailoutPeakMoneySinceDecline?: number;
+      bailoutDaysBelowThreshold?: number;
+      pendingBailoutOffer?: number | null;
+      quests: SavedQuest[];
+      stock: Partial<Record<string, number>>;
+      inventory: PlayerInventory;
+      leads: IntelRecord[];
+      discoveries: IntelRecord[];
+    };
+    adventurers: SavedAdventurer[];
+    dayLog: StoryEntry[];
+  };
+}
+
+export interface SaveDataV10 {
+  version: 10;
+  game: {
+    day: number;
+    questIdCounter: number;
+    adventurerIdCounter: number;
+    pinnedAdventurerIds: string[];
+    player: {
+      money: number;
+      resultInsightLevel: ResultInsightLevel;
+      hasGiftedAdventurerItem?: boolean;
+      shopPrices?: Record<string, number>;
+      bailoutAccepted?: boolean;
+      bailoutOfferAmount?: number;
+      bailoutUnlocked?: boolean;
+      bailoutPeakMoneySinceDecline?: number;
+      bailoutDaysBelowThreshold?: number;
+      pendingBailoutOffer?: number | null;
+      quests: SavedQuest[];
+      stock: Partial<Record<string, number>>;
+      inventory: PlayerInventory;
+      leads: IntelRecord[];
+      discoveries: IntelRecord[];
+    };
+    adventurers: SavedAdventurer[];
+    dayLog: StoryEntry[];
+  };
+}
+
+export interface SaveDataV11 {
+  version: 11;
+  game: {
+    day: number;
+    questIdCounter: number;
+    adventurerIdCounter: number;
+    pinnedAdventurerIds: string[];
+    marketId?: string;
+    marketStock?: Record<string, number>;
+    player: {
+      money: number;
+      resultInsightLevel: ResultInsightLevel;
+      hasGiftedAdventurerItem?: boolean;
+      shopPrices?: Record<string, number>;
+      bailoutAccepted?: boolean;
+      bailoutOfferAmount?: number;
+      bailoutUnlocked?: boolean;
+      bailoutPeakMoneySinceDecline?: number;
+      bailoutDaysBelowThreshold?: number;
+      pendingBailoutOffer?: number | null;
+      quests: SavedQuest[];
+      stock: Partial<Record<string, number>>;
+      inventory: PlayerInventory;
+      leads: IntelRecord[];
+      discoveries: IntelRecord[];
+    };
+    adventurers: SavedAdventurer[];
+    dayLog: StoryEntry[];
+  };
+}
+
 export interface Elements {
   container: HTMLDivElement | null;
   dayDisplay: HTMLSpanElement | null;
@@ -599,6 +887,11 @@ export interface Elements {
   giftContent: HTMLElement | null;
   giftCloseBtn: HTMLButtonElement | null;
   giftConfirmBtn: HTMLButtonElement | null;
+  bailoutModal: HTMLDivElement | null;
+  bailoutTitle: HTMLHeadingElement | null;
+  bailoutContent: HTMLElement | null;
+  bailoutAcceptBtn: HTMLButtonElement | null;
+  bailoutDeclineBtn: HTMLButtonElement | null;
   loadoutModal: HTMLDivElement | null;
   loadoutContent: HTMLElement | null;
   loadoutCloseBtn: HTMLButtonElement | null;
@@ -617,6 +910,8 @@ export interface Elements {
   templateDescription: HTMLParagraphElement | null;
   durationHint: HTMLParagraphElement | null;
   createQuestBtn: HTMLButtonElement | null;
+  provisionRationsCheckbox: HTMLInputElement | null;
+  rationHint: HTMLParagraphElement | null;
   nextDayBtn: HTMLButtonElement | null;
   tabButtons: HTMLButtonElement[];
   overviewQuestList: HTMLDivElement | null;
@@ -625,6 +920,7 @@ export interface Elements {
   adventurerList: HTMLDivElement | null;
   intelList: HTMLDivElement | null;
   stockList: HTMLDivElement | null;
+  marketList: HTMLDivElement | null;
   logList: HTMLDivElement | null;
 }
 
@@ -632,6 +928,7 @@ export interface CreateQuestInput {
   templateId: string;
   reward: number;
   quantity: number;
+  provideRations?: boolean;
 }
 
 export interface ActionResult {

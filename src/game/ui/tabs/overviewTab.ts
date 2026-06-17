@@ -22,7 +22,7 @@ export function getOverviewTabMarkup(gameData: GameData): string {
           <div class="overview-note-list">
             <div class="overview-note">
               <span>${uiLabels.overviewNotes.income}</span>
-              <strong>${gameData.dailyShopIncome} ${uiLabels.overviewNotes.incomeValueSuffix}</strong>
+              <strong>${uiLabels.overviewNotes.incomeRetailOnly}</strong>
             </div>
             <div class="overview-note">
               <span>${uiLabels.overviewNotes.pace}</span>

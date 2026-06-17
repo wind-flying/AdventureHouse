@@ -1,5 +1,5 @@
 import {INITIAL_DAY} from "../../state";
-import {adventurerTextPoolsById} from "../../config";
+import {adventurerStarter, adventurerTextPoolsById} from "../../config";
 import type {
   AdventurerDiscoveryLevel,
   AdventurerInstance,
@@ -9,6 +9,8 @@ import type {
   AdventurerTemplate,
   AdventurerCarriedItem,
   AdventurerGiftItem,
+  AdventurerActiveBuff,
+  AdventurerStarterCarriedItem,
   GameData,
   NamePoolDefinition,
   SavedAdventurer,
@@ -49,6 +51,37 @@ export function getDiscoveryLevelFromPoints(points: number): AdventurerDiscovery
   return "heard";
 }
 
+function getAdventurerStarterProfile(roleType: AdventurerRoleType): {
+  carriedMoney: number;
+  carriedItems: AdventurerStarterCarriedItem[];
+} {
+  const roleProfile = adventurerStarter.byRole[roleType];
+  return {
+    carriedMoney: roleProfile?.carriedMoney ?? adventurerStarter.defaults.carriedMoney,
+    carriedItems: roleProfile?.carriedItems ?? adventurerStarter.defaults.carriedItems
+  };
+}
+
+function createStarterCarriedItems(
+  instanceId: string,
+  day: number,
+  items: AdventurerStarterCarriedItem[]
+): AdventurerCarriedItem[] {
+  return items.flatMap((entry, index) => {
+    if (!entry.itemId || !Number.isInteger(entry.amount) || entry.amount <= 0) {
+      return [];
+    }
+
+    return [{
+      carryId: `carry:${instanceId}:${entry.itemId}:${day}:starter:${index + 1}`,
+      itemId: entry.itemId,
+      amount: entry.amount,
+      remainingShelfLife: 999,
+      remainingUses: 1
+    }];
+  });
+}
+
 export function createAdventurerInstanceFromTemplate(
   template: AdventurerTemplate,
   day: number,
@@ -56,6 +89,7 @@ export function createAdventurerInstanceFromTemplate(
   instanceId = createAdventurerInstanceId(template.id, originType)
 ): AdventurerInstance {
   const roleType = getAdventurerRoleType(template);
+  const starterProfile = getAdventurerStarterProfile(roleType);
   return {
     ...template,
     id: instanceId,
@@ -70,8 +104,16 @@ export function createAdventurerInstanceFromTemplate(
     lastSeenDay: template.knownByDefault ? day : null,
     currentQuestId: null,
     giftedItems: [],
-    carriedItems: sanitizeCarriedItems(template.startingCarriedItems),
-    carriedMoney: getSafeNonNegativeInteger(template.startingMoney, 0)
+    carriedItems: sanitizeCarriedItems(
+      template.startingCarriedItems?.length
+        ? template.startingCarriedItems
+        : createStarterCarriedItems(instanceId, day, starterProfile.carriedItems)
+    ),
+    carriedMoney: getSafeNonNegativeInteger(template.startingMoney ?? starterProfile.carriedMoney, 0),
+    activeBuffs: [],
+    foodDeficitStreak: 0,
+    daysWithoutQuestWhileDeficit: 0,
+    dailyFoodTalkNote: null
   };
 }
 
@@ -221,7 +263,13 @@ export function restoreAdventurerInstance(
     currentQuestId: getSafeNullableInteger(savedAdventurer.currentQuestId),
     giftedItems: sanitizeGiftedItems(savedAdventurer.giftedItems),
     carriedItems: sanitizeCarriedItems(savedAdventurer.carriedItems),
-    carriedMoney: getSafeNonNegativeInteger(savedAdventurer.carriedMoney, baseAdventurer?.carriedMoney ?? 0)
+    carriedMoney: getSafeNonNegativeInteger(savedAdventurer.carriedMoney, baseAdventurer?.carriedMoney ?? 0),
+    activeBuffs: sanitizeActiveBuffs(savedAdventurer.activeBuffs),
+    foodDeficitStreak: getSafeNonNegativeInteger(savedAdventurer.foodDeficitStreak, 0),
+    daysWithoutQuestWhileDeficit: getSafeNonNegativeInteger(savedAdventurer.daysWithoutQuestWhileDeficit, 0),
+    dailyFoodTalkNote: typeof savedAdventurer.dailyFoodTalkNote === "string"
+      ? savedAdventurer.dailyFoodTalkNote
+      : null
   };
 }
 
@@ -268,8 +316,30 @@ export function restoreLegacyAdventurerState(
     currentQuestId: getSafeNullableInteger(legacyState.currentQuestId),
     giftedItems: [...baseAdventurer.giftedItems],
     carriedItems: [...baseAdventurer.carriedItems],
-    carriedMoney: baseAdventurer.carriedMoney
+    carriedMoney: baseAdventurer.carriedMoney,
+    activeBuffs: [...baseAdventurer.activeBuffs]
   };
+}
+
+function sanitizeActiveBuffs(activeBuffs: AdventurerActiveBuff[] | undefined): AdventurerActiveBuff[] {
+  if (!Array.isArray(activeBuffs)) {
+    return [];
+  }
+
+  return activeBuffs
+    .filter((buff) => {
+      return typeof buff.buffId === "string"
+        && typeof buff.itemId === "string"
+        && typeof buff.itemName === "string"
+        && Number.isInteger(buff.appliedDay)
+        && Number.isInteger(buff.expiresDay)
+        && buff.expiresDay > buff.appliedDay
+        && Array.isArray(buff.effects);
+    })
+    .map((buff) => ({
+      ...buff,
+      effects: buff.effects.map((effect) => ({...effect}))
+    }));
 }
 
 function sanitizeGiftedItems(giftedItems: AdventurerGiftItem[] | undefined): AdventurerGiftItem[] {
@@ -319,7 +389,7 @@ function getSafeInteger(value: number, fallback: number): number {
 }
 
 function getSafeNonNegativeInteger(value: number | undefined, fallback: number): number {
-  if (!Number.isInteger(value) || value < 0) {
+  if (value === undefined || !Number.isInteger(value) || value < 0) {
     return fallback;
   }
 

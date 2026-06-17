@@ -23,6 +23,7 @@ import {
   populateQuestTemplateOptions,
   render,
   showNotification,
+  refreshQuestEconomyHint,
   syncQuestForm
 } from "./ui/ui";
 import type {Elements, GameData, TabId} from "./core/types";
@@ -31,12 +32,18 @@ import {
   openEncyclopedia,
   selectEncyclopediaEntry
 } from "./ui/encyclopedia";
+import {handleMarketAction} from "./ui/tabs/marketTab";
 import {
   closeGiftDialog,
   confirmGiftDialog,
   openGiftDialogForAdventurer,
   openGiftDialogForItem
 } from "./ui/gifting";
+import {
+  handleAcceptBailout,
+  handleDeclineBailout,
+  openBailoutDialogIfPending
+} from "./ui/bailoutDialog";
 import {
   bindLoadoutDialogEvents,
   dismissLoadoutOverlay,
@@ -62,6 +69,7 @@ export function initApp(): void {
   bindEvents(gameData, elements);
   syncQuestForm(gameData, elements);
   render(gameData, elements);
+  openBailoutDialogIfPending(gameData, elements, container);
 }
 
 function getClickElement(event: Event): Element | null {
@@ -114,6 +122,28 @@ function bindEvents(gameData: GameData, elements: Elements): void {
       return;
     }
 
+    if (origin.closest("#bailout-accept-btn")) {
+      const result = handleAcceptBailout(gameData, elements);
+      if (!result) {
+        return;
+      }
+      saveGameData(gameData);
+      render(gameData, elements);
+      showNotification(result.message, result.type);
+      return;
+    }
+
+    if (origin.closest("#bailout-decline-btn")) {
+      const result = handleDeclineBailout(gameData, elements);
+      if (!result) {
+        return;
+      }
+      saveGameData(gameData);
+      render(gameData, elements);
+      showNotification(result.message, result.type);
+      return;
+    }
+
     const loadoutButton = origin.closest<HTMLButtonElement>(".inspect-loadout");
     if (loadoutButton?.dataset.loadoutAdventurerId) {
       openLoadoutDialog(gameData, elements, loadoutButton.dataset.loadoutAdventurerId);
@@ -129,6 +159,18 @@ function bindEvents(gameData: GameData, elements: Elements): void {
     const giftStockButton = origin.closest<HTMLButtonElement>(".gift-stock-item");
     if (giftStockButton?.dataset.giftItemId) {
       openGiftDialogForItem(gameData, elements, giftStockButton.dataset.giftItemId);
+      return;
+    }
+
+    const marketAction = handleMarketAction(gameData, origin);
+    if (marketAction.handled) {
+      if (marketAction.result?.ok) {
+        saveGameData(gameData);
+      }
+      render(gameData, elements);
+      if (marketAction.result) {
+        showNotification(marketAction.result.message, marketAction.result.type);
+      }
       return;
     }
 
@@ -181,6 +223,7 @@ function bindEvents(gameData: GameData, elements: Elements): void {
     render(gameData, elements);
   });
   elements.quantityInput?.addEventListener("input", () => syncQuestForm(gameData, elements));
+  elements.rewardInput?.addEventListener("input", () => refreshQuestEconomyHint(gameData, elements));
   elements.createQuestBtn?.addEventListener("click", () => handleCreateQuest(gameData, elements));
   elements.exportSaveBtn?.addEventListener("click", () => handleExportSave(gameData, elements));
   elements.importSaveBtn?.addEventListener("click", () => {
@@ -194,6 +237,7 @@ function bindEvents(gameData: GameData, elements: Elements): void {
     advanceDay(gameData);
     saveGameData(gameData);
     render(gameData, elements);
+    openBailoutDialogIfPending(gameData, elements, elements.container);
   });
 
   elements.tabButtons.forEach((button) => {
@@ -216,7 +260,8 @@ function handleCreateQuest(gameData: GameData, elements: Elements): void {
   const result = createQuest(gameData, {
     templateId: elements.templateSelect.value,
     reward: Number.parseInt(elements.rewardInput.value, 10),
-    quantity: Number.parseInt(elements.quantityInput.value, 10)
+    quantity: Number.parseInt(elements.quantityInput.value, 10),
+    provideRations: elements.provisionRationsCheckbox?.checked === true
   });
 
   if (result.ok) {

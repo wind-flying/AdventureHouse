@@ -1,0 +1,16 @@
+{
+  "items": {
+    "trail-ration-low": {
+      "name": "粗制干粮",
+      "playerDescription": "便宜耐放的路粮，一份刚好撑过一天。可在经营页用食材制作。"
+    },
+    "trail-ration-mid": {
+      "name": "标准路粮",
+      "playerDescription": "冒险者常自备的均衡口粮，略能提振精神。由粗制干粮再加工而成。"
+    },
+    "trail-ration-high": {
+      "name": "精制路粮",
+      "playerDescription": "长途或高风险任务才舍得带的干粮，可当酬劳收着。由标准路粮加料精制。"
+    }
+  }
+}

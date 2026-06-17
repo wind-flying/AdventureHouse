@@ -1,0 +1,75 @@
+{
+  "items": [
+    {
+      "id": "trail-ration-low",
+      "name": "",
+      "icon": "🥖",
+      "category": "food",
+      "consumableModel": "food",
+      "sortOrder": 30,
+      "stackable": true,
+      "giftValue": 4,
+      "basePrice": 5,
+      "uses": 1,
+      "playerDescription": "",
+      "feedbackText": "",
+      "effects": []
+    },
+    {
+      "id": "trail-ration-mid",
+      "name": "",
+      "icon": "🍱",
+      "category": "food",
+      "consumableModel": "food",
+      "sortOrder": 31,
+      "stackable": true,
+      "giftValue": 7,
+      "basePrice": 9,
+      "uses": 1,
+      "playerDescription": "",
+      "feedbackText": "",
+      "effects": [
+        {
+          "type": "capability",
+          "target": "survival",
+          "operation": "add",
+          "value": 2,
+          "duration": "days",
+          "durationDays": 1
+        }
+      ]
+    },
+    {
+      "id": "trail-ration-high",
+      "name": "",
+      "icon": "🥘",
+      "category": "food",
+      "consumableModel": "food",
+      "sortOrder": 32,
+      "stackable": true,
+      "giftValue": 12,
+      "basePrice": 16,
+      "uses": 1,
+      "playerDescription": "",
+      "feedbackText": "",
+      "effects": [
+        {
+          "type": "capability",
+          "target": "survival",
+          "operation": "add",
+          "value": 4,
+          "duration": "days",
+          "durationDays": 2
+        },
+        {
+          "type": "capability",
+          "target": "physique",
+          "operation": "add",
+          "value": 2,
+          "duration": "days",
+          "durationDays": 2
+        }
+      ]
+    }
+  ]
+}

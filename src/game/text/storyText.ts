@@ -5,6 +5,10 @@ type StoryEventKey =
   | "opening_day"
   | "task_created"
   | "daily_income"
+  | "daily_retail_income"
+  | "bailout_accepted"
+  | "inn_retail_sale"
+  | "item_received"
   | "adventurer_introduced_at_inn"
   | "adventurer_referred_for_quest"
   | "task_started"
@@ -14,7 +18,15 @@ type StoryEventKey =
   | "task_lead_found"
   | "task_discovery_made"
   | "follow_up_unlocked"
-  | "quiet_day";
+  | "quiet_day"
+  | "daily_food_met"
+  | "daily_food_shortfall"
+  | "daily_food_stockpile"
+  | "trail_ration_purchase"
+  | "trail_ration_fallback"
+  | "trail_ration_shortfall"
+  | "anchor_food_deficit"
+  | "quest_provision_transferred";
 
 type StoryTemplateMap = {
   opening_day: {
@@ -29,6 +41,26 @@ type StoryTemplateMap = {
   daily_income: {
     day: number;
     income: number;
+  };
+  daily_retail_income: {
+    day: number;
+    income: number;
+  };
+  bailout_accepted: {
+    day: number;
+    adventurerName: string;
+    amount: number;
+  };
+  inn_retail_sale: {
+    day: number;
+    adventurerName: string;
+    itemName: string;
+    price: number;
+  };
+  item_received: {
+    day: number;
+    quantity: number;
+    itemName: string;
   };
   adventurer_introduced_at_inn: {
     day: number;
@@ -89,6 +121,55 @@ type StoryTemplateMap = {
   quiet_day: {
     day: number;
   };
+  daily_food_met: {
+    day: number;
+    adventurerName: string;
+    sourceText: string;
+    itemName: string;
+    nutrition: number;
+  };
+  daily_food_shortfall: {
+    day: number;
+    adventurerName: string;
+    shortfall: number;
+    dailyNeed: number;
+  };
+  daily_food_stockpile: {
+    day: number;
+    adventurerName: string;
+    nutrition: number;
+  };
+  trail_ration_purchase: {
+    day: number;
+    adventurerName: string;
+    itemName: string;
+    quantity: number;
+    sourceText: string;
+  };
+  trail_ration_fallback: {
+    day: number;
+    adventurerName: string;
+    questDisplayId: string;
+    itemName: string;
+    quantity: number;
+  };
+  trail_ration_shortfall: {
+    day: number;
+    adventurerName: string;
+    questDisplayId: string;
+    shortfall: number;
+  };
+  anchor_food_deficit: {
+    day: number;
+    adventurerName: string;
+  };
+  quest_provision_transferred: {
+    day: number;
+    adventurerName: string;
+    questDisplayId: string;
+    itemName: string;
+    quantity: number;
+  };
 };
 
 const storyText: Record<StoryEventKey, string[]> = {
@@ -106,6 +187,26 @@ const storyText: Record<StoryEventKey, string[]> = {
     "第 {day} 天：店铺完成日常营业，获得 {income} 钱。",
     "第 {day} 天：靠着今天的零散买卖，据点进账 {income} 钱。",
     "第 {day} 天：虽然没什么大事发生，但日常经营还是带来了 {income} 钱收入。"
+  ],
+  daily_retail_income: [
+    "第 {day} 天：饭店零售合计进账 {income} 钱。",
+    "第 {day} 天：来店冒险者买走了一些菜品，今天零售收入 {income} 钱。",
+    "第 {day} 天：菜单上的定价今天换来了 {income} 钱零售收入。"
+  ],
+  bailout_accepted: [
+    "第 {day} 天：{adventurerName} 把 {amount} 钱按在柜台上，让你先渡过这段难捱的日子。",
+    "第 {day} 天：你收下了 {adventurerName} 递来的 {amount} 钱，店里总算还能再撑一阵。",
+    "第 {day} 天：{adventurerName} 没有多说什么，只留下 {amount} 钱和一句「先把店撑下去」。"
+  ],
+  inn_retail_sale: [
+    "第 {day} 天：{adventurerName} 在店里买走了 {itemName}，付了 {price} 钱。",
+    "第 {day} 天：{adventurerName} 点了一份 {itemName}，收进 {price} 钱。",
+    "第 {day} 天：饭店今天卖出一道 {itemName}，{adventurerName} 付了 {price} 钱。"
+  ],
+  item_received: [
+    "第 {day} 天：店里新到了 {quantity} 个 {itemName}。",
+    "第 {day} 天：委托回流之外，你还收到了 {quantity} 个 {itemName}。",
+    "第 {day} 天：库存里多了 {quantity} 个 {itemName}。"
   ],
   adventurer_introduced_at_inn: introductionTextData.introductionTexts.adventurer_introduced_at_inn,
   adventurer_referred_for_quest: introductionTextData.introductionTexts.adventurer_referred_for_quest,
@@ -148,6 +249,46 @@ const storyText: Record<StoryEventKey, string[]> = {
     "第 {day} 天：今天没有新的委托变化，店里主要靠常规营业维持运转。",
     "第 {day} 天：村里风平浪静，公告板上没有新的波澜，只剩日常生意在缓慢推进。",
     "第 {day} 天：没有人带回特别的消息，这一天更多只是平稳地过去了。"
+  ],
+  daily_food_met: [
+    "第 {day} 天：{adventurerName} 用{sourceText}的 {itemName} 凑够了今日伙食（+{nutrition} 营养）。",
+    "第 {day} 天：{adventurerName} 今天在{sourceText}解决了吃饭问题，吃了 {itemName}。",
+    "第 {day} 天：{adventurerName} 靠 {itemName} 填饱了肚子，来源是{sourceText}。"
+  ],
+  daily_food_shortfall: [
+    "第 {day} 天：{adventurerName} 今天没凑满伙食，还差 {shortfall}/{dailyNeed} 营养点。",
+    "第 {day} 天：{adventurerName} 囊中羞涩，今日食物仍缺 {shortfall} 营养点。",
+    "第 {day} 天：{adventurerName} 没能吃够，缺口 {shortfall} 营养点还在累积。"
+  ],
+  daily_food_stockpile: [
+    "第 {day} 天：{adventurerName} 顺手又囤了些路粮（约 {nutrition} 营养点）。",
+    "第 {day} 天：{adventurerName} 觉得该多备点吃的，又买了一些备用口粮。",
+    "第 {day} 天：手头宽裕的 {adventurerName} 今天额外囤了约 {nutrition} 营养点的食物。"
+  ],
+  trail_ration_purchase: [
+    "第 {day} 天：{adventurerName} 从{sourceText}购入 {quantity} 份 {itemName} 作路粮。",
+    "第 {day} 天：{adventurerName} 为外出任务备了 {quantity} 份 {itemName}。",
+    "第 {day} 天：{adventurerName} 在{sourceText}买了 {quantity} 份 {itemName}，塞进背包。"
+  ],
+  trail_ration_fallback: [
+    "第 {day} 天：{adventurerName} 接任务 {questDisplayId} 时口粮不足，系统补发了 {quantity} 份 {itemName}。",
+    "第 {day} 天：任务 {questDisplayId} 出发前，{adventurerName} 靠备用干粮补齐了 {quantity} 份 {itemName}。",
+    "第 {day} 天：{adventurerName} 没能买齐路粮，只好带上 {quantity} 份 {itemName} 再出发。"
+  ],
+  trail_ration_shortfall: [
+    "第 {day} 天：{adventurerName} 接下任务 {questDisplayId}，但路粮仍差一截，只能硬着头皮出发。",
+    "第 {day} 天：任务 {questDisplayId} 出发前，{adventurerName} 没能凑齐足够口粮。",
+    "第 {day} 天：{adventurerName} 背包里的食物不够撑完整趟任务 {questDisplayId}。"
+  ],
+  anchor_food_deficit: [
+    "第 {day} 天：{adventurerName} 抿了抿嘴，低声说：「今天又没能吃饱……再这样下去，我可没力气帮你撑场面了。」",
+    "第 {day} 天：{adventurerName} 看着空盘子叹气：「店主，这日子过得有点紧，能不能想想办法？」",
+    "第 {day} 天：{adventurerName} 揉了揉肚子：「我不是贪嘴，只是这几天总差那么一口。」"
+  ],
+  quest_provision_transferred: [
+    "第 {day} 天：你事先准备的 {quantity} 份 {itemName} 交给了 {adventurerName}（任务 {questDisplayId}）。",
+    "第 {day} 天：{adventurerName} 接下任务 {questDisplayId} 时，收下了你供的 {quantity} 份 {itemName}。",
+    "第 {day} 天：店主供粮到位：{quantity} 份 {itemName} 已转入 {adventurerName} 的背包。"
   ]
 };
 
@@ -155,6 +296,10 @@ const storyEntryMeta: Record<StoryEventKey, {tone: StoryEntryTone; badge: string
   opening_day: {tone: "quest", badge: "开端"},
   task_created: {tone: "quest", badge: "委托"},
   daily_income: {tone: "reward", badge: "收益"},
+  daily_retail_income: {tone: "reward", badge: "收益"},
+  bailout_accepted: {tone: "reward", badge: "资助"},
+  inn_retail_sale: {tone: "reward", badge: "零售"},
+  item_received: {tone: "reward", badge: "入库"},
   adventurer_introduced_at_inn: {tone: "quest", badge: "新面孔"},
   adventurer_referred_for_quest: {tone: "quest", badge: "引介"},
   task_started: {tone: "quest", badge: "出发"},
@@ -164,7 +309,15 @@ const storyEntryMeta: Record<StoryEventKey, {tone: StoryEntryTone; badge: string
   task_lead_found: {tone: "quest", badge: "线索"},
   task_discovery_made: {tone: "reward", badge: "发现"},
   follow_up_unlocked: {tone: "quest", badge: "后续"},
-  quiet_day: {tone: "neutral", badge: null}
+  quiet_day: {tone: "neutral", badge: null},
+  daily_food_met: {tone: "neutral", badge: "进食"},
+  daily_food_shortfall: {tone: "quest", badge: "缺粮"},
+  daily_food_stockpile: {tone: "neutral", badge: "囤货"},
+  trail_ration_purchase: {tone: "neutral", badge: "路粮"},
+  trail_ration_fallback: {tone: "quest", badge: "路粮"},
+  trail_ration_shortfall: {tone: "quest", badge: "路粮"},
+  anchor_food_deficit: {tone: "quest", badge: "缺粮"},
+  quest_provision_transferred: {tone: "reward", badge: "供粮"}
 };
 
 export function createStoryEntry<TKey extends StoryEventKey>(

@@ -1,12 +1,22 @@
 import {
   adventurerTemplates,
+  craftingRecipes,
+  dailyNeedsConfig,
   equipmentDefinitions,
+  establishment,
   intelDefinitions,
   itemDefinitions,
+  marketId,
+  marketListings,
+  marketPricing,
   namePools,
+  playerStarter,
+  questEconomyConfig,
   questTemplates,
   resources
 } from "./config";
+import {createInitialBailoutState} from "./systems/economy/bailout";
+import {createEmptyMarketStock} from "./systems/economy/marketStock";
 import {createInitialAdventurerInstances} from "./systems/adventurers/adventurerInstances";
 import {createEquipmentInstance, createInitialInventoryWithItems} from "./systems/inventory";
 import {createStoryEntry} from "./text/storyText";
@@ -19,12 +29,17 @@ export const INITIAL_DAY = 1;
 export const INITIAL_PLAYER_MONEY = 120;
 export const INITIAL_QUEST_ID = 1;
 export const INITIAL_ADVENTURER_ID = 1;
-export const DAILY_SHOP_INCOME = 6;
+export const DAILY_SHOP_INCOME = 2;
 export const INITIAL_RESULT_INSIGHT_LEVEL = "basic" as const;
 
 export function createInitialGameData(): GameData {
   const adventurers = createInitialAdventurerInstances(adventurerTemplates, INITIAL_DAY);
   const inventory = createInitialInventoryWithItems(itemDefinitions, equipmentDefinitions);
+  Object.entries(playerStarter.itemStacks).forEach(([itemId, amount]) => {
+    if (Number.isInteger(amount) && amount > 0) {
+      inventory.itemStacks[itemId] = (inventory.itemStacks[itemId] ?? 0) + amount;
+    }
+  });
   adventurers.forEach((adventurer) => {
     adventurer.startingEquipmentDefinitionIds?.forEach((definitionId, index) => {
       const definition = equipmentDefinitions.find((candidate) => candidate.id === definitionId);
@@ -38,7 +53,6 @@ export function createInitialGameData(): GameData {
         INITIAL_DAY
       );
       equipment.equippedByAdventurerId = adventurer.id;
-      equipment.customName = getStartingEquipmentCustomName(adventurer.id, definitionId);
       inventory.equipments.push(equipment);
     });
   });
@@ -60,6 +74,8 @@ export function createInitialGameData(): GameData {
       money: INITIAL_PLAYER_MONEY,
       resultInsightLevel: INITIAL_RESULT_INSIGHT_LEVEL,
       hasGiftedAdventurerItem: false,
+      shopPrices: {},
+      ...createInitialBailoutState(),
       quests: [],
       stock: Object.fromEntries(resources.map((resource) => [resource.id, 0])),
       inventory,
@@ -68,7 +84,14 @@ export function createInitialGameData(): GameData {
     },
     questIdCounter: INITIAL_QUEST_ID,
     adventurerIdCounter: INITIAL_ADVENTURER_ID,
-    dailyShopIncome: DAILY_SHOP_INCOME,
+    dailyShopIncome: 0,
+    establishment,
+    marketId,
+    marketListings,
+    marketStock: createEmptyMarketStock(),
+    marketPricing,
+    questEconomyConfig,
+    craftingRecipes,
     resources,
     itemDefinitions,
     equipmentDefinitions,
@@ -77,30 +100,11 @@ export function createInitialGameData(): GameData {
     intelDefinitions,
     adventurerTemplates,
     adventurers,
+    dailyNeedsConfig,
     dayLog: [
       createStoryEntry("opening_day", {day: INITIAL_DAY})
     ]
   };
-}
-
-function getStartingEquipmentCustomName(adventurerId: string, definitionId: string): string | null {
-  const customNames: Record<string, Record<string, string>> = {
-    "handcrafted:demo-full-loadout": {
-      "demo-short-sword": "&6&l灰河&7旧誓&c&l短剑",
-      "demo-guard-shield": "&9&l旧城&b巡夜&3圆盾",
-      "demo-scout-helm": "&5&l有裂纹的&d斥候盔",
-      "demo-field-armor": "&e&l褪色的&6远行胸甲",
-      "demo-knee-guards": "&a&l补过三次的&2护膝",
-      "demo-travel-boots": "&4走过&c北坡&4泥地的&l靴子",
-      "demo-copper-ring": "&6&l刻着&e小字的&n铜戒",
-      "demo-utility-hook": "&3&l磨亮&b的多用挂钩"
-    },
-    "handcrafted:demo-trusted-pack": {
-      "demo-scout-helm": "借来的轻斥候盔"
-    }
-  };
-
-  return customNames[adventurerId]?.[definitionId] ?? null;
 }
 
 export function createEmptyElements(): Elements {
@@ -119,6 +123,11 @@ export function createEmptyElements(): Elements {
     giftContent: null,
     giftCloseBtn: null,
     giftConfirmBtn: null,
+    bailoutModal: null,
+    bailoutTitle: null,
+    bailoutContent: null,
+    bailoutAcceptBtn: null,
+    bailoutDeclineBtn: null,
     loadoutModal: null,
     loadoutContent: null,
     loadoutCloseBtn: null,
@@ -137,6 +146,8 @@ export function createEmptyElements(): Elements {
     templateDescription: null,
     durationHint: null,
     createQuestBtn: null,
+    provisionRationsCheckbox: null,
+    rationHint: null,
     nextDayBtn: null,
     tabButtons: [],
     overviewQuestList: null,
@@ -145,6 +156,7 @@ export function createEmptyElements(): Elements {
     adventurerList: null,
     intelList: null,
     stockList: null,
+    marketList: null,
     logList: null
   };
 }

@@ -7,6 +7,21 @@ import {
   normalizeQuestFeatures
 } from "./taskResolution.js";
 import type {Adventurer, GameData, Quest, QuestTemplate} from "../../core/types.js";
+import {withQuestBuffedCapabilities} from "../adventurers/adventurerBuffs";
+import {getProvisionAcceptanceBoost} from "../adventurers/dailyNeeds";
+import {
+  getEconomicAcceptanceBoost,
+  getEconomicInterestAdjustment,
+  getFoodDeficitAcceptanceBoost,
+  getAdventurerEconomicPressure
+} from "../economy/adventurerEconomy.js";
+import {
+  getProvisionAcceptanceBoostUnderPressure,
+  getQuestNetMarginAcceptanceAdjustment
+} from "./questEconomy.js";
+
+// Stock 补货委托（publishMode: stock）在 questEconomy.stockQuestLaborOnly 下
+// 仅按「现金酬金 − 路粮买价」评估净边际，不把原料当作可倒卖物资（qty×sellPrice）。
 
 export const QUEST_ACCEPTANCE_TUNING = {
   randomVariance: {
@@ -118,6 +133,7 @@ export interface QuestInterestBreakdown {
   disciplineAdjustment: number;
   taskAdjustment: number;
   recencyAdjustment: number;
+  economicAdjustment: number;
   finalThreshold: number;
 }
 
@@ -230,7 +246,16 @@ export function getQuestAcceptanceBreakdown(
       rewardPerDay / QUEST_ACCEPTANCE_TUNING.rewardPerDayBaseline,
       QUEST_ACCEPTANCE_TUNING.rewardCurveStrength
     )
-    * QUEST_ACCEPTANCE_TUNING.greedRewardWeight;
+    * QUEST_ACCEPTANCE_TUNING.greedRewardWeight
+    + getEconomicAcceptanceBoost(adventurer)
+    + getFoodDeficitAcceptanceBoost(gameData, adventurer)
+    + getProvisionAcceptanceBoost(gameData, quest)
+    + getQuestNetMarginAcceptanceAdjustment(gameData, quest)
+    + getProvisionAcceptanceBoostUnderPressure(
+      gameData,
+      quest,
+      getAdventurerEconomicPressure(adventurer)
+    );
   const sociabilityBonus = adventurer.personality.sociability * QUEST_ACCEPTANCE_TUNING.sociabilityFactor;
   const curiosityBonus = adventurer.personality.curiosity * (
     QUEST_ACCEPTANCE_TUNING.curiosity.ordinaryTaskWeight
@@ -253,7 +278,8 @@ export function getQuestAcceptanceBreakdown(
       - resilienceShortTaskPenalty * QUEST_ACCEPTANCE_TUNING.resilience.shortTaskPenalty
     );
 
-  const subjectiveFit = getQuestSubjectiveFit(quest, template, adventurer);
+  const buffedAdventurer = withQuestBuffedCapabilities(adventurer, gameData.day, quest.totalDays);
+  const subjectiveFit = getQuestSubjectiveFit(quest, template, buffedAdventurer);
 
   return {
     rewardPerDay,
@@ -295,6 +321,7 @@ export function getQuestInterestBreakdown(
   const disciplineAdjustment = adventurer.personality.discipline * QUEST_INTEREST_TUNING.personality.disciplineThresholdFactor;
   const taskAdjustment = getTaskAwareThresholdAdjustment(adventurer, quest, template);
   const recencyAdjustment = getQuestRecencyAdjustment(gameData, adventurer);
+  const economicAdjustment = getEconomicInterestAdjustment(adventurer);
 
   return {
     baseThreshold: QUEST_INTEREST_TUNING.baseThreshold,
@@ -305,6 +332,7 @@ export function getQuestInterestBreakdown(
     disciplineAdjustment,
     taskAdjustment,
     recencyAdjustment,
+    economicAdjustment,
     finalThreshold:
       QUEST_INTEREST_TUNING.baseThreshold
       + diligenceAdjustment
@@ -314,6 +342,7 @@ export function getQuestInterestBreakdown(
       + disciplineAdjustment
       + taskAdjustment
       + recencyAdjustment
+      + economicAdjustment
   };
 }
 

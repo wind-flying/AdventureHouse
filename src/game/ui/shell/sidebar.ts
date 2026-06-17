@@ -10,6 +10,7 @@ export function getSidebarMarkup(): string {
         <button class="tab-button" data-tab="adventurers" type="button">${uiLabels.navigation.adventurers}</button>
         <button class="tab-button" data-tab="intel" type="button">${uiLabels.navigation.intel}</button>
         <button class="tab-button" data-tab="stock" type="button">${uiLabels.navigation.stock}</button>
+        <button class="tab-button" data-tab="market" type="button">${uiLabels.navigation.market}</button>
         <button class="tab-button" data-tab="log" type="button">${uiLabels.navigation.log}</button>
         <button class="tab-button" data-tab="save" type="button">${uiLabels.navigation.save}</button>
       </div>

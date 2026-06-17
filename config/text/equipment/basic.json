@@ -24,46 +24,6 @@
       "name": "结实腿甲",
       "shortName": "腿甲",
       "playerDescription": "保护膝腿，适合需要走远路的委托。"
-    },
-    "demo-short-sword": {
-      "name": "灰河制式短剑",
-      "shortName": "短剑",
-      "playerDescription": "短而结实的护身剑，适合需要快速拔出的近身情况。"
-    },
-    "demo-guard-shield": {
-      "name": "巡夜圆盾",
-      "shortName": "圆盾",
-      "playerDescription": "老巡夜人常用的圆盾，边缘磨损但握把可靠。"
-    },
-    "demo-scout-helm": {
-      "name": "轻斥候盔",
-      "shortName": "轻盔",
-      "playerDescription": "视野开阔的轻盔，适合观察周围异常。"
-    },
-    "demo-field-armor": {
-      "name": "旧式野行甲",
-      "shortName": "野行甲",
-      "playerDescription": "轻便的旧甲，能挡住树枝、碎石和不太认真的袭击。"
-    },
-    "demo-knee-guards": {
-      "name": "皮革护膝",
-      "shortName": "护膝",
-      "playerDescription": "被反复修补过的护膝，适合长距离跋涉。"
-    },
-    "demo-travel-boots": {
-      "name": "厚底行靴",
-      "shortName": "行靴",
-      "playerDescription": "厚底靴，泥地和碎石路都能走得稳些。"
-    },
-    "demo-copper-ring": {
-      "name": "旧铜戒",
-      "shortName": "铜戒",
-      "playerDescription": "内侧刻着小字的铜戒，常被当作护符佩戴。"
-    },
-    "demo-utility-hook": {
-      "name": "多用挂钩",
-      "shortName": "挂钩",
-      "playerDescription": "绳索、灯、包袱都能临时挂住的小工具。"
     }
   }
 }

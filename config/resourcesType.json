@@ -1,40 +1,49 @@
 {
   "resources": [
     {
-      "id": "wood",
+      "id": "salt",
       "name": "",
-      "icon": "🌲",
-      "category": "material",
-      "sortOrder": 10,
+      "icon": "🧂",
+      "category": "food",
+      "sortOrder": 1,
       "basePrice": 1,
       "rarity": "common"
     },
     {
-      "id": "food",
+      "id": "wheat",
       "name": "",
-      "icon": "🍞",
+      "icon": "🌾",
       "category": "food",
-      "sortOrder": 10,
+      "sortOrder": 2,
       "basePrice": 2,
       "rarity": "common"
     },
     {
-      "id": "stone",
+      "id": "greens",
       "name": "",
-      "icon": "🪨",
-      "category": "material",
-      "sortOrder": 20,
+      "icon": "🥬",
+      "category": "food",
+      "sortOrder": 3,
+      "basePrice": 2,
+      "rarity": "common"
+    },
+    {
+      "id": "rice",
+      "name": "",
+      "icon": "🍚",
+      "category": "food",
+      "sortOrder": 4,
       "basePrice": 3,
       "rarity": "common"
     },
     {
-      "id": "treasure",
+      "id": "mutton",
       "name": "",
-      "icon": "💰",
-      "category": "treasure",
-      "sortOrder": 10,
-      "basePrice": 20,
-      "rarity": "rare"
+      "icon": "🥩",
+      "category": "food",
+      "sortOrder": 5,
+      "basePrice": 5,
+      "rarity": "common"
     }
   ]
 }

@@ -1,0 +1,21 @@
+{
+  "defaults": {
+    "carriedMoney": 6,
+    "carriedItems": [
+      {
+        "itemId": "trail-ration-low",
+        "amount": 3
+      }
+    ]
+  },
+  "byRole": {
+    "anchor": {
+      "carriedItems": [
+        {
+          "itemId": "trail-ration-low",
+          "amount": 5
+        }
+      ]
+    }
+  }
+}

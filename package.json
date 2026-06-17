@@ -7,6 +7,7 @@
     "dev": "vite",
     "dev:local": "vite",
     "build": "tsc && vite build",
+    "validate:config": "node scripts/validate-config.mjs",
     "preview": "vite preview"
   },
   "devDependencies": {

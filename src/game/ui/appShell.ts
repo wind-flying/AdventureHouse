@@ -9,8 +9,10 @@ import {getOverviewTabMarkup} from "./tabs/overviewTab";
 import {getQuestsTabMarkup} from "./tabs/questsTab";
 import {getSaveTabMarkup} from "./tabs/saveTab";
 import {getStockTabMarkup} from "./tabs/stockTab";
+import {getMarketTabMarkup} from "./tabs/marketTab";
 import {getEncyclopediaMarkup} from "./encyclopedia";
 import {getGiftingMarkup} from "./gifting";
+import {getBailoutDialogMarkup} from "./bailoutDialog";
 import {getLoadoutMarkup} from "./loadout";
 
 export function createAppShell(container: HTMLDivElement, gameData: GameData, elements: Elements): void {
@@ -25,6 +27,7 @@ export function createAppShell(container: HTMLDivElement, gameData: GameData, el
         ${getAdventurersTabMarkup()}
         ${getIntelTabMarkup()}
         ${getStockTabMarkup()}
+        ${getMarketTabMarkup()}
         ${getLogTabMarkup()}
         ${getSaveTabMarkup()}
       </section>
@@ -35,6 +38,7 @@ export function createAppShell(container: HTMLDivElement, gameData: GameData, el
     </main>
     ${getEncyclopediaMarkup()}
     ${getGiftingMarkup()}
+    ${getBailoutDialogMarkup()}
     ${getLoadoutMarkup()}
   `;
 
@@ -51,6 +55,11 @@ export function createAppShell(container: HTMLDivElement, gameData: GameData, el
   elements.giftContent = container.querySelector("#gift-content");
   elements.giftCloseBtn = container.querySelector("#gift-close-btn");
   elements.giftConfirmBtn = container.querySelector("#gift-confirm-btn");
+  elements.bailoutModal = container.querySelector("#bailout-modal");
+  elements.bailoutTitle = container.querySelector("#bailout-dialog-title");
+  elements.bailoutContent = container.querySelector("#bailout-content");
+  elements.bailoutAcceptBtn = container.querySelector("#bailout-accept-btn");
+  elements.bailoutDeclineBtn = container.querySelector("#bailout-decline-btn");
   elements.loadoutModal = container.querySelector("#loadout-modal");
   elements.loadoutContent = container.querySelector("#loadout-content");
   elements.loadoutCloseBtn = container.querySelector("#loadout-close-btn");
@@ -68,6 +77,8 @@ export function createAppShell(container: HTMLDivElement, gameData: GameData, el
   elements.quantityInput = container.querySelector("#quantity-input");
   elements.templateDescription = container.querySelector("#template-description");
   elements.durationHint = container.querySelector("#duration-hint");
+  elements.rationHint = container.querySelector("#ration-hint");
+  elements.provisionRationsCheckbox = container.querySelector("#provision-rations-checkbox");
   elements.createQuestBtn = container.querySelector("#create-quest-btn");
   elements.nextDayBtn = container.querySelector("#next-day-btn");
   elements.overviewQuestList = container.querySelector("#overview-quest-list");
@@ -76,6 +87,7 @@ export function createAppShell(container: HTMLDivElement, gameData: GameData, el
   elements.adventurerList = container.querySelector("#adventurer-list");
   elements.intelList = container.querySelector("#intel-list");
   elements.stockList = container.querySelector("#stock-list");
+  elements.marketList = container.querySelector("#market-list");
   elements.logList = container.querySelector("#log-list");
   elements.tabButtons = Array.from(container.querySelectorAll(".tab-button"));
 }

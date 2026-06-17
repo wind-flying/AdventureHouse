@@ -1,10 +1,25 @@
 import resourcesData from "../../config/resourcesType.json";
+import establishmentData from "../../config/establishment.json";
+import marketData from "../../config/market.json";
+import marketPricingData from "../../config/market-pricing.json";
+import questEconomyData from "../../config/quest-economy.json";
+import playerStarterData from "../../config/player-starter.json";
+import adventurerStarterData from "../../config/adventurer-starter.json";
+import craftingData from "../../config/crafting.json";
+import {dailyNeedsConfig} from "./systems/adventurers/dailyNeeds";
 import type {
+  AdventurerStarterConfig,
   AdventurerTemplate,
+  CraftingRecipe,
   EquipmentDefinition,
+  EstablishmentDefinition,
   ItemDefinition,
   IntelDefinition,
+  MarketListing,
+  MarketPricingConfig,
   NamePoolDefinition,
+  PlayerStarterConfig,
+  QuestEconomyConfig,
   QuestTemplate,
   ResourceDefinition
 } from "./core/types";
@@ -102,8 +117,10 @@ export const itemDefinitions = Object.values(itemModuleMap)
   })
   .map((item) => {
     const text = itemTextPoolsById[item.id] ?? {};
+    const consumableModel = item.consumableModel ?? (item.category === "food" ? "food" : "standard");
     return {
       ...item,
+      consumableModel,
       name: getDefaultTextValue(text.name, item.name),
       playerDescription: getDefaultTextValue(text.playerDescription, item.playerDescription),
       feedbackText: getDefaultTextValue(text.feedbackText, item.feedbackText ?? "")
@@ -180,6 +197,16 @@ export const intelDefinitions = Object.values(intelModuleMap)
       lineTitle: getDefaultTextValue(text.lineTitle, definition.lineTitle ?? "")
     };
   }) as IntelDefinition[];
+
+export const establishment = establishmentData.establishment as EstablishmentDefinition;
+export const marketId = (marketData.marketId as string) ?? "town-legal";
+export const marketListings = marketData.listings as MarketListing[];
+export const marketPricing = marketPricingData.pricing as MarketPricingConfig;
+export const questEconomyConfig = questEconomyData.questEconomy as QuestEconomyConfig;
+export const playerStarter = playerStarterData.starter as PlayerStarterConfig;
+export const adventurerStarter = adventurerStarterData as AdventurerStarterConfig;
+export const craftingRecipes = craftingData.recipes as CraftingRecipe[];
+export {dailyNeedsConfig};
 
 function getDefaultTextValue(value: FlexibleTextValue, fallback: string): string {
   if (Array.isArray(value)) {

@@ -3,23 +3,37 @@
     "prologue-pantry-restock": {
       "title": "清晨面包补货",
       "shortTitle": "面包补货",
-      "description": "店里刚开门，炉火和客人都不能断，需要尽快补一批能立刻用上的食材。",
+      "description": "店里刚开门，炉火和客人都不能断。你挂出劳务委托，请人按许可去稻田采收稻米并运回店内。",
       "lineTitle": "据点开张",
-      "focusText": "店里当天能用上的食材"
+      "focusText": "许可地稻米运回仓库"
     },
-    "prologue-riverside-wood": {
-      "title": "河滩柴薪征集",
-      "shortTitle": "柴薪征集",
-      "description": "雨后河滩容易冲上来能烧的木料，适合胆子不大但腿脚利落的人去收。",
+    "prologue-mutton-run": {
+      "title": "牧场羊肉采收",
+      "shortTitle": "羊肉采收",
+      "description": "荤菜备货不能断。你请人按许可去牧场割取羊肉，代收运回店内仓库。",
       "lineTitle": "据点开张",
-      "focusText": "雨后河滩上的柴薪"
+      "focusText": "许可地羊肉运回仓库"
     },
-    "prologue-hearth-stone": {
-      "title": "炉灶石料补缺",
-      "shortTitle": "石料补缺",
-      "description": "店里炉灶和灶台总得修修补补。你挂出一份石料收集委托，想找人带回能用的石块。",
+    "prologue-wheat-harvest": {
+      "title": "麦田许可收割",
+      "shortTitle": "小麦收割",
+      "description": "面食和路粮都离不了小麦。你雇人按许可去田里收割，运回店内入账。",
       "lineTitle": "据点开张",
-      "focusText": "能用于灶台修补的石料"
+      "focusText": "许可地小麦运回仓库"
+    },
+    "prologue-greens-gather": {
+      "title": "晨市时蔬许可集运",
+      "shortTitle": "时蔬集运",
+      "description": "清晨菜摊最好挑。你请人赶在太阳升高前，按许可采收时蔬并代收回仓。",
+      "lineTitle": "据点开张",
+      "focusText": "许可地时蔬运回仓库"
+    },
+    "prologue-salt-run": {
+      "title": "盐仓小袋许可补货",
+      "shortTitle": "盐仓补货",
+      "description": "调味和盐渍都靠盐。你挂出劳务委托，请人按许可从盐仓配额采收并运回厨房。",
+      "lineTitle": "据点开张",
+      "focusText": "许可地盐运回仓库"
     },
     "prologue-old-road-opening": {
       "title": [

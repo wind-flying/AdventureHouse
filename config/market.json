@@ -1,0 +1,14 @@
+{
+  "marketId": "town-legal",
+  "listings": [
+    { "id": "market-salt", "kind": "resource", "refId": "salt", "buyable": true, "sellable": true },
+    { "id": "market-wheat", "kind": "resource", "refId": "wheat", "buyable": true, "sellable": true },
+    { "id": "market-greens", "kind": "resource", "refId": "greens", "buyable": true, "sellable": true },
+    { "id": "market-rice", "kind": "resource", "refId": "rice", "buyable": true, "sellable": true },
+    { "id": "market-mutton", "kind": "resource", "refId": "mutton", "buyable": true, "sellable": true },
+    { "id": "market-stone-tower-cake", "kind": "item", "refId": "stone-tower-cake", "buyable": true, "sellable": true },
+    { "id": "market-trail-ration-low", "kind": "item", "refId": "trail-ration-low", "buyable": true, "sellable": true },
+    { "id": "market-trail-ration-mid", "kind": "item", "refId": "trail-ration-mid", "buyable": true, "sellable": true },
+    { "id": "market-trail-ration-high", "kind": "item", "refId": "trail-ration-high", "buyable": true, "sellable": true }
+  ]
+}

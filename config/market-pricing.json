@@ -1,0 +1,7 @@
+{
+  "pricing": {
+    "buyMultiplier": 1.3,
+    "sellMultiplier": 0.7,
+    "surplusHintThreshold": 0.15
+  }
+}

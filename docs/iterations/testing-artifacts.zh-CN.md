@@ -256,21 +256,18 @@
 ### 8. 赠礼测试内容包（`gift-test` / `test-novice`）
 
 - 类型：配置内容与少量程序字段
-- 当前用途：
-  - 验证赠送物品、携带出任务与能力增益是否按预期工作
-  - 提供五类能力各三档（小幅 / 中幅 / 大幅）测试道具，开局各 20 个
-  - 提供仅 `test-novice` 可接的五条测试任务
-- 出现位置：
-  - [test-subjects.json](/home/windflying/Code/AdventureHouse/config/adventurers/test-subjects.json)
-  - [gift-test.json](/home/windflying/Code/AdventureHouse/config/quests/gift-test.json)
-  - [gift-test-boosters.json](/home/windflying/Code/AdventureHouse/config/items/gift-test-boosters.json)
+- 状态：**已删除**（回归正式序章内容后不再保留并行测试包）
+- 曾用于：
+  - 验证赠送物品、携带出任务与能力增益
+  - 提供 `test-novice` 与五条限定接取测试任务
+- 已移除文件：
+  - `config/adventurers/test-subjects.json`
+  - `config/quests/gift-test.json`
+  - `config/items/gift-test-boosters.json`
   - 对应 `config/text/` 文本文件
-  - `exclusiveTakerTemplateId`（任务模板）
-  - `startsInRoster`（冒险者模板）
-  - `starterStack`（物品定义）
-- 后续处理方向：
-  - 正式赠礼与养成内容稳定后，可删除或移入独立测试配置
-  - `anchor-a` 的 `startsInRoster: false` 应在序章可玩前改回默认
+  - `config/equipment/basic.json` 中的 `demo-*` 演示装备
+- 保留的程序字段：
+  - `exclusiveTakerTemplateId`、`startsInRoster`、`starterStack`、`contentStageTag` 仍可作为正式配置能力使用
 
 ## 清理原则
 

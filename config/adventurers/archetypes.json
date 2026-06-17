@@ -13,7 +13,7 @@
       "designerNote": "世界观普通模板：偏日常补货与短线体力活。",
       "knownByDefault": false,
       "discoveryLevel": "heard",
-      "preferences": ["food", "wood"],
+      "preferences": ["rice", "wheat"],
       "personality": {
         "diligence": 0.71,
         "courage": -0.12,
@@ -47,7 +47,7 @@
       "designerNote": "世界观普通模板：偏调查、传闻与异常消息。",
       "knownByDefault": false,
       "discoveryLevel": "heard",
-      "preferences": ["food", "treasure"],
+      "preferences": ["mutton", "rice"],
       "personality": {
         "diligence": 0.22,
         "courage": 0.18,
@@ -81,7 +81,7 @@
       "designerNote": "世界观普通模板：偏高压长线和石料相关任务。",
       "knownByDefault": false,
       "discoveryLevel": "heard",
-      "preferences": ["stone", "treasure"],
+      "preferences": ["wheat", "mutton"],
       "personality": {
         "diligence": 0.37,
         "courage": 0.51,

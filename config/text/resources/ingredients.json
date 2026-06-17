@@ -1,0 +1,19 @@
+{
+  "resources": {
+    "salt": {
+      "name": "盐"
+    },
+    "wheat": {
+      "name": "小麦"
+    },
+    "greens": {
+      "name": "时蔬"
+    },
+    "rice": {
+      "name": "稻米"
+    },
+    "mutton": {
+      "name": "羊肉"
+    }
+  }
+}
