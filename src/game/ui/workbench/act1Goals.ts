@@ -304,11 +304,15 @@ function formatKitchenStockLine(gameData: GameData): string {
 
 function getCurrentActNodeTitle(gameData: GameData): string {
   const visible = getVisibleQuestTemplates(gameData);
+  const opening = visible.find((template) => getQuestPublishMode(template) === "stock" && template.lineTitle);
+  if (isKitchenTight(gameData) || gameData.day <= OPENING_WEEK_LAST_DAY) {
+    return opening?.lineTitle ?? uiLabels.workbench.act1Phase;
+  }
+
   const investigation = visible.find((template) => getQuestPublishMode(template) === "intel" && template.lineTitle);
   if (investigation?.lineTitle) {
     return investigation.lineTitle;
   }
 
-  const opening = visible.find((template) => template.lineTitle);
   return opening?.lineTitle ?? uiLabels.workbench.act1Phase;
 }

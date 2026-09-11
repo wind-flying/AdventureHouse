@@ -879,6 +879,12 @@
   display: none;
 }
 
+.tab-list-nested .tab-button {
+  min-height: 36px;
+  padding-left: 22px;
+  color: #6a5744;
+}
+
 .nav-sidebar {
   background: var(--surface-muted);
   border-right: 1px solid var(--divider-strong);
