@@ -21,28 +21,41 @@ export function getAdventurerDetailMarkup(): string {
 
 export function openAdventurerDetail(gameData: GameData, elements: Elements, adventurerId: string): void {
   const adventurer = findKnownAdventurer(gameData, adventurerId);
-  if (!adventurer || !elements.adventurerDetailModal || !elements.adventurerDetailContent) {
+  const modal = elements.adventurerDetailModal
+    ?? document.querySelector<HTMLDivElement>("#adventurer-detail-modal");
+  const content = elements.adventurerDetailContent
+    ?? document.querySelector<HTMLElement>("#adventurer-detail-content");
+  if (!adventurer || !modal || !content) {
     return;
   }
 
+  elements.adventurerDetailModal = modal;
+  elements.adventurerDetailContent = content;
+  elements.adventurerDetailCloseBtn = elements.adventurerDetailCloseBtn
+    ?? document.querySelector<HTMLButtonElement>("#adventurer-detail-close-btn");
+
   const viewModel = getAdventurerCardViewModel(gameData, adventurer);
-  elements.adventurerDetailContent.innerHTML = `
+  content.innerHTML = `
     <article class="adventurer-card">
       ${buildAdventurerMarkup(viewModel)}
     </article>
   `;
-  elements.adventurerDetailModal.dataset.adventurerId = adventurerId;
-  elements.adventurerDetailModal.hidden = false;
+  modal.dataset.adventurerId = adventurerId;
+  modal.hidden = false;
+  modal.classList.add("is-open");
   elements.adventurerDetailCloseBtn?.focus();
 }
 
 export function closeAdventurerDetail(elements: Elements): void {
-  if (!elements.adventurerDetailModal || elements.adventurerDetailModal.hidden) {
+  const modal = elements.adventurerDetailModal
+    ?? document.querySelector<HTMLDivElement>("#adventurer-detail-modal");
+  if (!modal || modal.hidden) {
     return;
   }
 
-  elements.adventurerDetailModal.hidden = true;
-  delete elements.adventurerDetailModal.dataset.adventurerId;
+  modal.hidden = true;
+  modal.classList.remove("is-open");
+  delete modal.dataset.adventurerId;
 }
 
 export function renderAdventurerDetailIfOpen(gameData: GameData, elements: Elements): void {

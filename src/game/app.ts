@@ -38,6 +38,7 @@ import {
   openAdventurerDetail
 } from "./ui/shell/adventurerDetail";
 import {normalizeTabId} from "./ui/shell/sidebar";
+import {setInTownAdventurerClickHandler} from "./ui/tabs/workbenchTab";
 import {handleMarketAction} from "./ui/tabs/marketTab";
 import {
   closeGiftDialog,
@@ -73,6 +74,9 @@ export function initApp(): void {
   ensureLoadoutElements(container, elements);
   bindLoadoutDialogEvents(gameData, elements);
   bindEvents(gameData, elements);
+  setInTownAdventurerClickHandler((adventurerId) => {
+    openAdventurerDetail(gameData, elements, adventurerId);
+  });
   syncQuestForm(gameData, elements);
   render(gameData, elements);
   openBailoutDialogIfPending(gameData, elements, container);

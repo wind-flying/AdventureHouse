@@ -10,6 +10,12 @@ import {
   getInTownAdventurerChips
 } from "../workbench/act1Goals";
 
+let onInTownAdventurerClick: ((adventurerId: string) => void) | null = null;
+
+export function setInTownAdventurerClickHandler(handler: (adventurerId: string) => void): void {
+  onInTownAdventurerClick = handler;
+}
+
 export function getWorkbenchTabMarkup(): string {
   return `
     <section class="tab-panel panel workbench-panel" data-panel="workbench">
@@ -107,11 +113,23 @@ function renderInTownStrip(root: HTMLElement, gameData: GameData): void {
   }
 
   strip.innerHTML = chips.map((chip) => `
-    <button class="in-town-chip" type="button" data-in-town-adventurer-id="${chip.id}">
+    <button class="in-town-chip" type="button" data-in-town-adventurer-id="${chip.id}"
+      aria-haspopup="dialog" title="${uiLabels.workbench.inTownDescription}">
       <strong>${chip.name}</strong>
       <span class="in-town-status ${chip.statusClass}">${chip.statusText}</span>
     </button>
   `).join("");
+
+  strip.querySelectorAll<HTMLButtonElement>("[data-in-town-adventurer-id]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const adventurerId = button.dataset.inTownAdventurerId;
+      if (adventurerId) {
+        onInTownAdventurerClick?.(adventurerId);
+      }
+    });
+  });
 }
 
 function renderStoryHint(root: HTMLElement, gameData: GameData): void {

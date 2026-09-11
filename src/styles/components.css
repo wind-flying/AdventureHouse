@@ -1376,7 +1376,7 @@ select:focus {
 .in-town-chip {
   display: grid;
   gap: 4px;
-  min-width: 132px;
+  min-width: 148px;
   padding: 10px 12px;
   border: 1px solid var(--divider-color);
   background: var(--surface-row);
@@ -1432,7 +1432,7 @@ select:focus {
 
 .adventurer-detail-overlay {
   position: fixed;
-  z-index: 105;
+  z-index: 120;
   inset: 0;
   display: grid;
   place-items: center;
@@ -1442,6 +1442,10 @@ select:focus {
 
 .adventurer-detail-overlay[hidden] {
   display: none;
+}
+
+.adventurer-detail-overlay.is-open {
+  display: grid;
 }
 
 .adventurer-detail-dialog {
