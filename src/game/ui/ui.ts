@@ -2,14 +2,13 @@ import type {Elements, GameData} from "../core/types";
 import {createAppShell} from "./appShell";
 import {renderHeader} from "./shell/header";
 import {renderTabs} from "./shell/sidebar";
-import {renderStoryRail} from "./shell/storyRail";
 import {
   populateAdventurerFilterOptions,
   renderAdventurersTab
 } from "./tabs/adventurersTab";
 import {renderIntelTab} from "./tabs/intelTab";
 import {renderLogTab} from "./tabs/logTab";
-import {renderOverviewTab} from "./tabs/overviewTab";
+import {renderWorkbenchTab} from "./tabs/workbenchTab";
 import {
   populateQuestFilterOptions,
   populateQuestTemplateOptions,
@@ -20,6 +19,7 @@ import {
 import {renderStockTab} from "./tabs/stockTab";
 import {renderMarketTab} from "./tabs/marketTab";
 import {renderEncyclopedia} from "./encyclopedia";
+import {renderAdventurerDetailIfOpen} from "./shell/adventurerDetail";
 
 export {showNotification} from "./shared/notification";
 export {
@@ -39,13 +39,13 @@ export function render(gameData: GameData, elements: Elements): void {
   syncQuestForm(gameData, elements);
   renderHeader(gameData, elements);
   renderTabs(gameData, elements);
-  renderOverviewTab(gameData, elements);
+  renderWorkbenchTab(gameData, elements);
   renderQuestsTab(gameData, elements);
   renderAdventurersTab(gameData, elements);
   renderIntelTab(gameData, elements);
   renderStockTab(gameData, elements);
   renderMarketTab(gameData, elements);
   renderLogTab(gameData, elements);
-  renderStoryRail(gameData, elements);
   renderEncyclopedia(gameData, elements);
+  renderAdventurerDetailIfOpen(gameData, elements);
 }

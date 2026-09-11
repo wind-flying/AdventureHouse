@@ -1,13 +1,10 @@
 import type {Elements, GameData} from "../../core/types";
-import {encyclopediaText} from "../../text/encyclopediaText";
 import {uiLabels} from "../../text/uiLabels";
 import {getHeaderSummaryViewModel} from "../viewModels";
 
 export function getHeaderMarkup(): string {
   return `
     <section class="status-panel panel">
-      <button id="encyclopedia-button" class="encyclopedia-button" type="button"
-        aria-label="${encyclopediaText.triggerLabel}" title="${encyclopediaText.triggerLabel}">?</button>
       <div class="toolbar-stats">
         <article class="summary-card"><span>${uiLabels.summary.day}</span><strong id="day-display"></strong></article>
         <article class="summary-card"><span>${uiLabels.summary.money}</span><strong id="money-display"></strong></article>

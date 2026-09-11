@@ -1,6 +1,6 @@
 export type Difficulty = "easy" | "medium" | "hard";
 export type QuestStatus = "pending" | "active" | "completed";
-export type TabId = "overview" | "quests" | "adventurers" | "intel" | "stock" | "market" | "log" | "save";
+export type TabId = "workbench" | "relief" | "quests" | "adventurers" | "intel" | "log" | "save";
 export type NotificationType = "info" | "success" | "error";
 export type QuestCategory = "daily" | "main";
 export type QuestTimingMode = "byDifficulty" | "fixed";
@@ -895,6 +895,9 @@ export interface Elements {
   loadoutModal: HTMLDivElement | null;
   loadoutContent: HTMLElement | null;
   loadoutCloseBtn: HTMLButtonElement | null;
+  adventurerDetailModal: HTMLDivElement | null;
+  adventurerDetailContent: HTMLElement | null;
+  adventurerDetailCloseBtn: HTMLButtonElement | null;
   exportSaveBtn: HTMLButtonElement | null;
   importSaveBtn: HTMLButtonElement | null;
   resetSaveBtn: HTMLButtonElement | null;
@@ -914,7 +917,6 @@ export interface Elements {
   rationHint: HTMLParagraphElement | null;
   nextDayBtn: HTMLButtonElement | null;
   tabButtons: HTMLButtonElement[];
-  overviewQuestList: HTMLDivElement | null;
   storyRailList: HTMLDivElement | null;
   questList: HTMLDivElement | null;
   adventurerList: HTMLDivElement | null;

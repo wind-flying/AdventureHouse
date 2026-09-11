@@ -59,7 +59,7 @@ export function createInitialGameData(): GameData {
 
   return {
     day: INITIAL_DAY,
-    activeTab: "overview",
+    activeTab: "workbench",
     questFilters: {
       status: "all",
       nature: "all"
@@ -131,6 +131,9 @@ export function createEmptyElements(): Elements {
     loadoutModal: null,
     loadoutContent: null,
     loadoutCloseBtn: null,
+    adventurerDetailModal: null,
+    adventurerDetailContent: null,
+    adventurerDetailCloseBtn: null,
     exportSaveBtn: null,
     importSaveBtn: null,
     resetSaveBtn: null,
@@ -150,7 +153,6 @@ export function createEmptyElements(): Elements {
     rationHint: null,
     nextDayBtn: null,
     tabButtons: [],
-    overviewQuestList: null,
     storyRailList: null,
     questList: null,
     adventurerList: null,

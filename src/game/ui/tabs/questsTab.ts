@@ -24,7 +24,7 @@ import {getBuyPrice} from "../../systems/economy/marketPricing";
 import {getResourceName} from "../resourceDisplay";
 import {getItemStackAmount} from "../../systems/inventory";
 import {getStackSatietySummaryForRef} from "../../text/satietyText";
-import {isQuestTemplateUnlocked} from "../../systems/quests/questUnlocks";
+import {getVisibleQuestTemplates} from "../../systems/quests/questVisibility";
 import {uiLabels} from "../../text/uiLabels";
 import {getQuestNatureText, getQuestRiskText} from "../../text/statusText";
 import {
@@ -332,25 +332,4 @@ function getFilteredQuests(gameData: GameData): Quest[] {
     return matchStatus && matchNature;
   });
   return sortQuestsForDisplay(filteredQuests, gameData.day);
-}
-
-function getVisibleQuestTemplates(gameData: GameData) {
-  return gameData.questTemplates.filter((template) => {
-    const hasHiddenOutcome = gameData.player.quests.some((quest) => {
-      if (quest.templateId !== template.id || quest.completedDay === null || !quest.result) {
-        return false;
-      }
-      return getQuestTemplateOutcomeVisibility(template, quest.result.outcome) === "hide";
-    });
-    return !hasHiddenOutcome && isQuestTemplateUnlocked(gameData, template);
-  });
-}
-
-function getQuestTemplateOutcomeVisibility(
-  template: GameData["questTemplates"][number],
-  outcome: "success" | "failure"
-) {
-  return outcome === "success"
-    ? template.successVisibility ?? "stay"
-    : template.failureVisibility ?? "stay";
 }
