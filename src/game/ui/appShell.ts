@@ -1,15 +1,14 @@
 import type {Elements, GameData} from "../core/types";
 import {getHeaderMarkup} from "./shell/header";
 import {getSidebarMarkup} from "./shell/sidebar";
-import {getStoryRailMarkup} from "./shell/storyRail";
+import {getAdventurerDetailMarkup} from "./shell/adventurerDetail";
 import {getAdventurersTabMarkup} from "./tabs/adventurersTab";
 import {getIntelTabMarkup} from "./tabs/intelTab";
 import {getLogTabMarkup} from "./tabs/logTab";
-import {getOverviewTabMarkup} from "./tabs/overviewTab";
+import {getWorkbenchTabMarkup} from "./tabs/workbenchTab";
 import {getQuestsTabMarkup} from "./tabs/questsTab";
 import {getSaveTabMarkup} from "./tabs/saveTab";
-import {getStockTabMarkup} from "./tabs/stockTab";
-import {getMarketTabMarkup} from "./tabs/marketTab";
+import {getReliefTabMarkup} from "./tabs/reliefTab";
 import {getEncyclopediaMarkup} from "./encyclopedia";
 import {getGiftingMarkup} from "./gifting";
 import {getBailoutDialogMarkup} from "./bailoutDialog";
@@ -22,24 +21,23 @@ export function createAppShell(container: HTMLDivElement, gameData: GameData, el
     <main class="workspace">
       ${getSidebarMarkup()}
       <section class="content-stage">
-        ${getOverviewTabMarkup(gameData)}
+        ${getWorkbenchTabMarkup()}
+        ${getReliefTabMarkup()}
         ${getQuestsTabMarkup()}
         ${getAdventurersTabMarkup()}
         ${getIntelTabMarkup()}
-        ${getStockTabMarkup()}
-        ${getMarketTabMarkup()}
         ${getLogTabMarkup()}
         ${getSaveTabMarkup()}
       </section>
       <aside class="right-rail">
         ${getHeaderMarkup()}
-        ${getStoryRailMarkup()}
       </aside>
     </main>
     ${getEncyclopediaMarkup()}
     ${getGiftingMarkup()}
     ${getBailoutDialogMarkup()}
     ${getLoadoutMarkup()}
+    ${getAdventurerDetailMarkup()}
   `;
 
   elements.dayDisplay = container.querySelector("#day-display");
@@ -63,6 +61,9 @@ export function createAppShell(container: HTMLDivElement, gameData: GameData, el
   elements.loadoutModal = container.querySelector("#loadout-modal");
   elements.loadoutContent = container.querySelector("#loadout-content");
   elements.loadoutCloseBtn = container.querySelector("#loadout-close-btn");
+  elements.adventurerDetailModal = container.querySelector("#adventurer-detail-modal");
+  elements.adventurerDetailContent = container.querySelector("#adventurer-detail-content");
+  elements.adventurerDetailCloseBtn = container.querySelector("#adventurer-detail-close-btn");
   elements.exportSaveBtn = container.querySelector("#export-save-btn");
   elements.importSaveBtn = container.querySelector("#import-save-btn");
   elements.resetSaveBtn = container.querySelector("#reset-save-btn");
@@ -81,7 +82,6 @@ export function createAppShell(container: HTMLDivElement, gameData: GameData, el
   elements.provisionRationsCheckbox = container.querySelector("#provision-rations-checkbox");
   elements.createQuestBtn = container.querySelector("#create-quest-btn");
   elements.nextDayBtn = container.querySelector("#next-day-btn");
-  elements.overviewQuestList = container.querySelector("#overview-quest-list");
   elements.storyRailList = container.querySelector("#story-rail-list");
   elements.questList = container.querySelector("#quest-list");
   elements.adventurerList = container.querySelector("#adventurer-list");
@@ -89,5 +89,5 @@ export function createAppShell(container: HTMLDivElement, gameData: GameData, el
   elements.stockList = container.querySelector("#stock-list");
   elements.marketList = container.querySelector("#market-list");
   elements.logList = container.querySelector("#log-list");
-  elements.tabButtons = Array.from(container.querySelectorAll(".tab-button"));
+  elements.tabButtons = Array.from(container.querySelectorAll(".tab-button[data-tab]"));
 }

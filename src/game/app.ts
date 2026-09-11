@@ -16,6 +16,7 @@ import {
 import {type QuestNatureFilter, type QuestStatusFilter} from "./questDefinitions";
 import {createEmptyElements, createInitialGameData} from "./state";
 import {createQuest} from "./systems/quests/taskBoard";
+import {createRecommendedStockQuest} from "./ui/workbench/act1Goals";
 import {
   createUI,
   populateAdventurerFilterOptions,
@@ -32,6 +33,12 @@ import {
   openEncyclopedia,
   selectEncyclopediaEntry
 } from "./ui/encyclopedia";
+import {
+  closeAdventurerDetail,
+  openAdventurerDetail
+} from "./ui/shell/adventurerDetail";
+import {normalizeTabId} from "./ui/shell/sidebar";
+import {setInTownAdventurerClickHandler} from "./ui/tabs/workbenchTab";
 import {handleMarketAction} from "./ui/tabs/marketTab";
 import {
   closeGiftDialog,
@@ -67,6 +74,9 @@ export function initApp(): void {
   ensureLoadoutElements(container, elements);
   bindLoadoutDialogEvents(gameData, elements);
   bindEvents(gameData, elements);
+  setInTownAdventurerClickHandler((adventurerId) => {
+    openAdventurerDetail(gameData, elements, adventurerId);
+  });
   syncQuestForm(gameData, elements);
   render(gameData, elements);
   openBailoutDialogIfPending(gameData, elements, container);
@@ -95,6 +105,14 @@ function bindEvents(gameData: GameData, elements: Elements): void {
   elements.encyclopediaModal?.addEventListener("click", (event) => {
     if (event.target === elements.encyclopediaModal) {
       closeEncyclopedia(elements);
+    }
+  });
+  elements.adventurerDetailCloseBtn?.addEventListener("click", () => {
+    closeAdventurerDetail(elements);
+  });
+  elements.adventurerDetailModal?.addEventListener("click", (event) => {
+    if (event.target === elements.adventurerDetailModal) {
+      closeAdventurerDetail(elements);
     }
   });
   elements.giftCloseBtn?.addEventListener("click", () => {
@@ -174,6 +192,25 @@ function bindEvents(gameData: GameData, elements: Elements): void {
       return;
     }
 
+    const quickPostButton = origin.closest<HTMLButtonElement>(".quick-post-stock");
+    if (quickPostButton) {
+      handleQuickPostStock(gameData, elements);
+      return;
+    }
+
+    const openQuestsButton = origin.closest<HTMLButtonElement>(".open-quests-btn");
+    if (openQuestsButton) {
+      gameData.activeTab = "quests";
+      render(gameData, elements);
+      return;
+    }
+
+    const inTownChip = origin.closest<HTMLButtonElement>("[data-in-town-adventurer-id]");
+    if (inTownChip?.dataset.inTownAdventurerId) {
+      openAdventurerDetail(gameData, elements, inTownChip.dataset.inTownAdventurerId);
+      return;
+    }
+
     const pinButton = origin.closest<HTMLButtonElement>(".pin-toggle");
     const adventurerId = pinButton?.dataset.adventurerId;
     if (pinButton && adventurerId) {
@@ -198,6 +235,7 @@ function bindEvents(gameData: GameData, elements: Elements): void {
     if (event.key === "Escape") {
       closeEncyclopedia(elements);
       closeGiftDialog(elements);
+      closeAdventurerDetail(elements);
       dismissLoadoutOverlay(elements);
     }
   });
@@ -246,10 +284,19 @@ function bindEvents(gameData: GameData, elements: Elements): void {
       if (!nextTab) {
         return;
       }
-      gameData.activeTab = nextTab;
+      gameData.activeTab = normalizeTabId(nextTab);
       render(gameData, elements);
     });
   });
+}
+
+function handleQuickPostStock(gameData: GameData, elements: Elements): void {
+  const result = createRecommendedStockQuest(gameData);
+  if (result.ok) {
+    saveGameData(gameData);
+  }
+  render(gameData, elements);
+  showNotification(result.message, result.type);
 }
 
 function handleCreateQuest(gameData: GameData, elements: Elements): void {

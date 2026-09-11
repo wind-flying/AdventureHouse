@@ -108,7 +108,7 @@ function buildAdventurerSection(
   return section;
 }
 
-function buildAdventurerMarkup(adventurer: AdventurerCardViewModel): string {
+export function buildAdventurerMarkup(adventurer: AdventurerCardViewModel): string {
   const head = `
     <div class="adventurer-head">
       <strong>${adventurer.name}</strong>
